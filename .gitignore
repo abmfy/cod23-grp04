@@ -1,3 +1,5 @@
+# Thinpad
+
 thinpad_top.cache/
 thinpad_top.hw/
 thinpad_top.runs/
@@ -9,3 +11,52 @@ thinpad_top.sim/
 /.lint/
 /.Xil
 /.Xilinx
+
+# Scala
+
+*.class
+*.log
+*.bak
+
+# sbt specific
+.cache/
+.history/
+.lib/
+dist/*
+target
+lib_managed/
+src_managed/
+project/boot/
+project/project
+project/plugins/project/
+
+# Scala-IDE specific
+.scala_dependencies
+.worksheet
+.bloop
+
+.idea
+out
+
+# Metals
+.metals
+project/metals.sbt
+
+# Eclipse
+bin/
+.classpath
+.project
+.settings
+.cache-main
+
+# User
+/*.vhd
+/*.v
+*.cf
+*.json
+*.vcd
+!tester/src/test/resources/*.vhd
+
+simWorkspace/
+tmp/
+null
