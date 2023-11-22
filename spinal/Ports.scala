@@ -30,14 +30,16 @@ case class ThinPadPorts(config: ThinPadIoConfig) extends Bundle {
 }
 
 case class ClockPorts() extends Bundle {
-    val clk_50M = in Bool()
+    // Promoted as clock domain signals
+    // val clk_50M = in Bool()
     val clk_11M0592 = in Bool()
     setName("")
 }
 
 case class ButtonPorts() extends Bundle {
     val push_btn = in Bool()
-    val reset_btn = in Bool()
+    // Promoted as clock domain signals
+    // val reset_btn = in Bool()
     setName("")
 }
 

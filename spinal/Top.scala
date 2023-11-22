@@ -6,6 +6,8 @@ case class ThinPadTop(io_config: ThinPadIoConfig = ThinPadIoConfig()) extends Co
     val io = ThinPadPorts(io_config)
     noIoPrefix()
 
-    val clk = io.clock.clk_50M
-    val reset = io.buttons.reset_btn
+    ClockDomain.current.renamePulledWires(
+        clock = "clk_50M",
+        reset = "reset_btn",
+    )
 }
