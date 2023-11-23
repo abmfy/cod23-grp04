@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Lab3Top
-// Git hash  : 0c0f64d8dd595335abac3af061b61a12577cee62
+// Git hash  : 7b801fbcdc7bf020a087b1f37b565b56780df063
 
 `timescale 1ns/1ps
 
@@ -28,6 +28,11 @@ module Lab3Top (
   localparam AluOp_ROL_1 = 4'd10;
   localparam AluOp_OP2 = 4'd11;
 
+  wire                bufferCC_1_io_dataIn;
+  wire                clkCtrl_pll_clk_out1;
+  wire                clkCtrl_pll_clk_out2;
+  wire                clkCtrl_pll_locked;
+  wire                bufferCC_1_io_dataOut;
   wire                trigger_1_io_trigger;
   wire       [15:0]   reg_file_io_rdata_a;
   wire       [15:0]   reg_file_io_rdata_b;
@@ -41,12 +46,27 @@ module Lab3Top (
   wire       [15:0]   controller_1_io_alu_b;
   wire       [3:0]    controller_1_io_alu_op;
   wire       [15:0]   controller_1_io_leds;
+  wire                sys_clk;
+  wire                sys_reset;
 
+  pll_example clkCtrl_pll (
+    .clk_in1  (clk_50M             ), //i
+    .reset    (reset_btn           ), //i
+    .clk_out1 (clkCtrl_pll_clk_out1), //o
+    .clk_out2 (clkCtrl_pll_clk_out2), //o
+    .locked   (clkCtrl_pll_locked  )  //o
+  );
+  BufferCC bufferCC_1 (
+    .io_dataIn  (bufferCC_1_io_dataIn ), //i
+    .io_dataOut (bufferCC_1_io_dataOut), //o
+    .sys_clk    (sys_clk              ), //i
+    .locked     (clkCtrl_pll_locked   )  //i
+  );
   Trigger trigger_1 (
     .io_push_btn (push_btn            ), //i
     .io_trigger  (trigger_1_io_trigger), //o
-    .clk_50M     (clk_50M             ), //i
-    .reset_btn   (reset_btn           )  //i
+    .sys_clk     (sys_clk             ), //i
+    .sys_reset   (sys_reset           )  //i
   );
   RegFile reg_file (
     .io_raddr_a (controller_1_io_reg_file_raddr_a[4:0]), //i
@@ -56,8 +76,8 @@ module Lab3Top (
     .io_waddr   (controller_1_io_reg_file_waddr[4:0]  ), //i
     .io_wdata   (controller_1_io_reg_file_wdata[15:0] ), //i
     .io_we      (controller_1_io_reg_file_we          ), //i
-    .clk_50M    (clk_50M                              ), //i
-    .reset_btn  (reset_btn                            )  //i
+    .sys_clk    (sys_clk                              ), //i
+    .sys_reset  (sys_reset                            )  //i
   );
   Alu alu_1 (
     .io_a  (controller_1_io_alu_a[15:0]), //i
@@ -80,9 +100,12 @@ module Lab3Top (
     .io_step             (trigger_1_io_trigger                 ), //i
     .io_dip_sw           (dip_sw[31:0]                         ), //i
     .io_leds             (controller_1_io_leds[15:0]           ), //o
-    .clk_50M             (clk_50M                              ), //i
-    .reset_btn           (reset_btn                            )  //i
+    .sys_clk             (sys_clk                              ), //i
+    .sys_reset           (sys_reset                            )  //i
   );
+  assign sys_clk = clkCtrl_pll_clk_out1;
+  assign bufferCC_1_io_dataIn = (1'b0 ^ 1'b0);
+  assign sys_reset = bufferCC_1_io_dataOut;
   assign leds = controller_1_io_leds;
   assign dpy0 = 8'h00;
   assign dpy1 = 8'h00;
@@ -104,8 +127,8 @@ module Controller (
   input  wire          io_step,
   input  wire [31:0]   io_dip_sw,
   output reg  [15:0]   io_leds,
-  input  wire          clk_50M,
-  input  wire          reset_btn
+  input  wire          sys_clk,
+  input  wire          sys_reset
 );
   localparam AluOp_OP1 = 4'd0;
   localparam AluOp_ADD = 4'd1;
@@ -327,8 +350,8 @@ module Controller (
     end
   end
 
-  always @(posedge clk_50M or posedge reset_btn) begin
-    if(reset_btn) begin
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
       io_reg_file_we <= 1'b0;
       inst_reg <= 32'h00000000;
       fsm_stateReg <= fsm_enumDef_BOOT;
@@ -356,7 +379,7 @@ module Controller (
     end
   end
 
-  always @(posedge clk_50M) begin
+  always @(posedge sys_clk) begin
     case(fsm_stateReg)
       fsm_enumDef_init : begin
       end
@@ -524,8 +547,8 @@ module RegFile (
   input  wire [4:0]    io_waddr,
   input  wire [15:0]   io_wdata,
   input  wire          io_we,
-  input  wire          clk_50M,
-  input  wire          reset_btn
+  input  wire          sys_clk,
+  input  wire          sys_reset
 );
 
   reg        [15:0]   _zz_io_rdata_a;
@@ -643,8 +666,8 @@ module RegFile (
   assign io_rdata_b = _zz_io_rdata_b;
   assign when_RegFile_l34 = (io_we && (io_waddr != 5'h00));
   assign _zz_1 = ({31'd0,1'b1} <<< io_waddr);
-  always @(posedge clk_50M or posedge reset_btn) begin
-    if(reset_btn) begin
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
       mem_0 <= 16'h0000;
       mem_1 <= 16'h0000;
       mem_2 <= 16'h0000;
@@ -785,21 +808,45 @@ endmodule
 module Trigger (
   input  wire          io_push_btn,
   output wire          io_trigger,
-  input  wire          clk_50M,
-  input  wire          reset_btn
+  input  wire          sys_clk,
+  input  wire          sys_reset
 );
 
   reg                 io_push_btn_regNext;
   reg                 _zz_io_trigger;
 
   assign io_trigger = _zz_io_trigger;
-  always @(posedge clk_50M or posedge reset_btn) begin
-    if(reset_btn) begin
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
       io_push_btn_regNext <= 1'b0;
       _zz_io_trigger <= 1'b0;
     end else begin
       io_push_btn_regNext <= io_push_btn;
       _zz_io_trigger <= (io_push_btn && (! io_push_btn_regNext));
+    end
+  end
+
+
+endmodule
+
+module BufferCC (
+  input  wire          io_dataIn,
+  output wire          io_dataOut,
+  input  wire          sys_clk,
+  input  wire          locked
+);
+
+  (* async_reg = "true" *) reg                 buffers_0;
+  (* async_reg = "true" *) reg                 buffers_1;
+
+  assign io_dataOut = buffers_1;
+  always @(posedge sys_clk or negedge locked) begin
+    if(!locked) begin
+      buffers_0 <= 1'b1;
+      buffers_1 <= 1'b1;
+    end else begin
+      buffers_0 <= io_dataIn;
+      buffers_1 <= buffers_0;
     end
   end
 

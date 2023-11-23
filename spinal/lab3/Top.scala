@@ -30,7 +30,7 @@ class Lab3Top extends ThinPadTop(ThinPadIoConfig(
 }
 
 object GenerateLab3 extends App {
-    Config.spinal.generate(InOutWrapper(new Lab3Top))
+    Config.spinal.generate(InOutWrapper(new Lab3Top)).printPruned()
 }
 
 object TestLab3 extends App {
