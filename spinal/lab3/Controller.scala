@@ -35,7 +35,7 @@ class Controller(width: Int = 16) extends Component {
         val is_peek = is_itype && inst_reg(6 downto 3) === B"0010"
         val is_poke = is_itype && inst_reg(6 downto 3) === B"0001"
 
-        val imm = inst_reg(31 downto 16) asUInt
+        val imm = inst_reg(31 downto 16) asBits
         val rd = inst_reg(11 downto 7) asUInt
         val rs1 = inst_reg(19 downto 15) asUInt
         val rs2 = inst_reg(24 downto 20) asUInt
@@ -46,9 +46,10 @@ class Controller(width: Int = 16) extends Component {
     val fsm = new StateMachine {
         val init: State = new State with EntryPoint {
             whenIsActive {
+                io.reg_file.we := False
                 when (io.step) {
                     inst_reg := io.dip_sw
-                    goto (decode)
+                    goto(decode)
                 }
             }
         }
@@ -57,14 +58,14 @@ class Controller(width: Int = 16) extends Component {
                 when (instr.is_rtype) {
                     io.reg_file.raddr_a := instr.rs1
                     io.reg_file.raddr_b := instr.rs2
-                    goto (calc)
+                    goto(calc)
                 } elsewhen (instr.is_peek) {
                     io.reg_file.raddr_a := instr.rd
-                    goto (read_reg)
+                    goto(read_reg)
                 } elsewhen (instr.is_poke) {
-                    goto (write_reg)
+                    goto(write_reg)
                 } otherwise {
-                    goto (init)
+                    exit()
                 }
             }
         }
@@ -73,13 +74,13 @@ class Controller(width: Int = 16) extends Component {
                 io.alu.a := io.reg_file.rdata_a
                 io.alu.b := io.reg_file.rdata_b
                 io.alu.op := instr.opcode
-                goto (write_reg)
+                goto(write_reg)
             }
         }
         val read_reg: State = new State {
             whenIsActive {
                 io.leds := io.reg_file.rdata_a
-                goto (init)
+                exit()
             }
         }
         val write_reg: State = new State {
@@ -87,10 +88,7 @@ class Controller(width: Int = 16) extends Component {
                 io.reg_file.we.set
                 io.reg_file.waddr := instr.rd
                 io.reg_file.wdata := instr.is_rtype ? io.alu.y | instr.imm.asBits
-                goto (init)
-            }
-            onExit {
-                io.reg_file.we.clear
+                exit()
             }
         }
     }

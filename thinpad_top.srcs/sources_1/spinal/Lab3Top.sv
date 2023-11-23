@@ -1,21 +1,19 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Lab3Top
-// Git hash  : a12564e9b7dc8822edf042446f7d9a009f130921
+// Git hash  : 0c0f64d8dd595335abac3af061b61a12577cee62
 
 `timescale 1ns/1ps
 
 module Lab3Top (
-  input  wire          clk_50M,
   input  wire          clk_11M0592,
   input  wire          push_btn,
-  input  wire          reset_btn,
   input  wire [3:0]    touch_btn,
   input  wire [31:0]   dip_sw,
   output wire [15:0]   leds,
   output wire [7:0]    dpy0,
   output wire [7:0]    dpy1,
-  input  wire          clk,
-  input  wire          reset
+  input  wire          clk_50M,
+  input  wire          reset_btn
 );
   localparam AluOp_OP1 = 4'd0;
   localparam AluOp_ADD = 4'd1;
@@ -47,8 +45,8 @@ module Lab3Top (
   Trigger trigger_1 (
     .io_push_btn (push_btn            ), //i
     .io_trigger  (trigger_1_io_trigger), //o
-    .clk         (clk                 ), //i
-    .reset       (reset               )  //i
+    .clk_50M     (clk_50M             ), //i
+    .reset_btn   (reset_btn           )  //i
   );
   RegFile reg_file (
     .io_raddr_a (controller_1_io_reg_file_raddr_a[4:0]), //i
@@ -58,8 +56,8 @@ module Lab3Top (
     .io_waddr   (controller_1_io_reg_file_waddr[4:0]  ), //i
     .io_wdata   (controller_1_io_reg_file_wdata[15:0] ), //i
     .io_we      (controller_1_io_reg_file_we          ), //i
-    .clk        (clk                                  ), //i
-    .reset      (reset                                )  //i
+    .clk_50M    (clk_50M                              ), //i
+    .reset_btn  (reset_btn                            )  //i
   );
   Alu alu_1 (
     .io_a  (controller_1_io_alu_a[15:0]), //i
@@ -82,8 +80,8 @@ module Lab3Top (
     .io_step             (trigger_1_io_trigger                 ), //i
     .io_dip_sw           (dip_sw[31:0]                         ), //i
     .io_leds             (controller_1_io_leds[15:0]           ), //o
-    .clk                 (clk                                  ), //i
-    .reset               (reset                                )  //i
+    .clk_50M             (clk_50M                              ), //i
+    .reset_btn           (reset_btn                            )  //i
   );
   assign leds = controller_1_io_leds;
   assign dpy0 = 8'h00;
@@ -106,8 +104,8 @@ module Controller (
   input  wire          io_step,
   input  wire [31:0]   io_dip_sw,
   output reg  [15:0]   io_leds,
-  input  wire          clk,
-  input  wire          reset
+  input  wire          clk_50M,
+  input  wire          reset_btn
 );
   localparam AluOp_OP1 = 4'd0;
   localparam AluOp_ADD = 4'd1;
@@ -139,12 +137,11 @@ module Controller (
   wire       [4:0]    instr_rs2;
   wire       [3:0]    instr_opcode;
   wire       [3:0]    _zz_instr_opcode;
-  wire                fsm_wantExit;
+  reg                 fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
   reg        [2:0]    fsm_stateReg;
   reg        [2:0]    fsm_stateNext;
-  wire                when_StateMachine_l237;
   `ifndef SYNTHESIS
   reg [39:0] io_alu_op_string;
   reg [39:0] instr_opcode_string;
@@ -240,7 +237,33 @@ module Controller (
   assign instr_rs2 = inst_reg[24 : 20];
   assign _zz_instr_opcode = inst_reg[6 : 3];
   assign instr_opcode = _zz_instr_opcode;
-  assign fsm_wantExit = 1'b0;
+  always @(*) begin
+    fsm_wantExit = 1'b0;
+    case(fsm_stateReg)
+      fsm_enumDef_init : begin
+      end
+      fsm_enumDef_decode : begin
+        if(!instr_is_rtype) begin
+          if(!instr_is_peek) begin
+            if(!instr_is_poke) begin
+              fsm_wantExit = 1'b1;
+            end
+          end
+        end
+      end
+      fsm_enumDef_calc : begin
+      end
+      fsm_enumDef_read_reg : begin
+        fsm_wantExit = 1'b1;
+      end
+      fsm_enumDef_write_reg : begin
+        fsm_wantExit = 1'b1;
+      end
+      default : begin
+      end
+    endcase
+  end
+
   always @(*) begin
     fsm_wantStart = 1'b0;
     case(fsm_stateReg)
@@ -279,7 +302,7 @@ module Controller (
             if(instr_is_poke) begin
               fsm_stateNext = fsm_enumDef_write_reg;
             end else begin
-              fsm_stateNext = fsm_enumDef_init;
+              fsm_stateNext = fsm_enumDef_BOOT;
             end
           end
         end
@@ -288,10 +311,10 @@ module Controller (
         fsm_stateNext = fsm_enumDef_write_reg;
       end
       fsm_enumDef_read_reg : begin
-        fsm_stateNext = fsm_enumDef_init;
+        fsm_stateNext = fsm_enumDef_BOOT;
       end
       fsm_enumDef_write_reg : begin
-        fsm_stateNext = fsm_enumDef_init;
+        fsm_stateNext = fsm_enumDef_BOOT;
       end
       default : begin
       end
@@ -304,9 +327,8 @@ module Controller (
     end
   end
 
-  assign when_StateMachine_l237 = ((fsm_stateReg == fsm_enumDef_write_reg) && (! (fsm_stateNext == fsm_enumDef_write_reg)));
-  always @(posedge clk or posedge reset) begin
-    if(reset) begin
+  always @(posedge clk_50M or posedge reset_btn) begin
+    if(reset_btn) begin
       io_reg_file_we <= 1'b0;
       inst_reg <= 32'h00000000;
       fsm_stateReg <= fsm_enumDef_BOOT;
@@ -314,6 +336,7 @@ module Controller (
       fsm_stateReg <= fsm_stateNext;
       case(fsm_stateReg)
         fsm_enumDef_init : begin
+          io_reg_file_we <= 1'b0;
           if(io_step) begin
             inst_reg <= io_dip_sw;
           end
@@ -330,13 +353,10 @@ module Controller (
         default : begin
         end
       endcase
-      if(when_StateMachine_l237) begin
-        io_reg_file_we <= 1'b0;
-      end
     end
   end
 
-  always @(posedge clk) begin
+  always @(posedge clk_50M) begin
     case(fsm_stateReg)
       fsm_enumDef_init : begin
       end
@@ -504,8 +524,8 @@ module RegFile (
   input  wire [4:0]    io_waddr,
   input  wire [15:0]   io_wdata,
   input  wire          io_we,
-  input  wire          clk,
-  input  wire          reset
+  input  wire          clk_50M,
+  input  wire          reset_btn
 );
 
   reg        [15:0]   _zz_io_rdata_a;
@@ -623,8 +643,8 @@ module RegFile (
   assign io_rdata_b = _zz_io_rdata_b;
   assign when_RegFile_l34 = (io_we && (io_waddr != 5'h00));
   assign _zz_1 = ({31'd0,1'b1} <<< io_waddr);
-  always @(posedge clk or posedge reset) begin
-    if(reset) begin
+  always @(posedge clk_50M or posedge reset_btn) begin
+    if(reset_btn) begin
       mem_0 <= 16'h0000;
       mem_1 <= 16'h0000;
       mem_2 <= 16'h0000;
@@ -765,16 +785,16 @@ endmodule
 module Trigger (
   input  wire          io_push_btn,
   output wire          io_trigger,
-  input  wire          clk,
-  input  wire          reset
+  input  wire          clk_50M,
+  input  wire          reset_btn
 );
 
   reg                 io_push_btn_regNext;
   reg                 _zz_io_trigger;
 
   assign io_trigger = _zz_io_trigger;
-  always @(posedge clk or posedge reset) begin
-    if(reset) begin
+  always @(posedge clk_50M or posedge reset_btn) begin
+    if(reset_btn) begin
       io_push_btn_regNext <= 1'b0;
       _zz_io_trigger <= 1'b0;
     end else begin
