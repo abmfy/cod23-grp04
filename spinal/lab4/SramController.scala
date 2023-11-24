@@ -21,11 +21,7 @@ class SramController extends Component {
 
     io.sram.addr := get_addr
     io.sram.ce_n := !(io.wb.cyc && io.wb.stb && !io.wb.ack)
-    io.sram.be_n := ~get_sel
-
-    def get_sel: Bits = {
-        io.wb.sel |<< offset
-    }
+    io.sram.be_n := ~io.wb.sel
 
     def get_addr: UInt = {
         io.wb.adr(2, SRAM_ADDR_WIDTH bits)

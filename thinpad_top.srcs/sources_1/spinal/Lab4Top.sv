@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Lab4Top
-// Git hash  : 25ad60e4bd214579734150ce0f2d493f7ca6312a
+// Git hash  : ebf9b7119b7ff737909982298b14eee2824dabdf
 
 `timescale 1ns/1ps
 
@@ -1051,14 +1051,13 @@ module SramController (
   localparam fsm_enumDef_write = 3'd3;
   localparam fsm_enumDef_write_2 = 3'd4;
 
-  wire       [3:0]    _zz_io_sram_be_n;
   wire       [1:0]    offset;
   reg                 fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
   reg        [2:0]    fsm_stateReg;
   reg        [2:0]    fsm_stateNext;
-  wire                when_SramController_l52;
+  wire                when_SramController_l48;
   wire                when_StateMachine_l253;
   wire                when_StateMachine_l253_1;
   `ifndef SYNTHESIS
@@ -1067,7 +1066,6 @@ module SramController (
   `endif
 
 
-  assign _zz_io_sram_be_n = (io_wb_sel <<< offset);
   `ifndef SYNTHESIS
   always @(*) begin
     case(fsm_stateReg)
@@ -1095,8 +1093,8 @@ module SramController (
   assign io_wb_dat_r = io_sram_data_read;
   assign io_sram_data_write = io_wb_dat_w;
   assign io_sram_addr = io_wb_adr[21 : 2];
-  assign io_sram_ce_n = (! (io_wb_cyc && io_wb_stb));
-  assign io_sram_be_n = (~ _zz_io_sram_be_n);
+  assign io_sram_ce_n = (! ((io_wb_cyc && io_wb_stb) && (! io_wb_ack)));
+  assign io_sram_be_n = (~ io_wb_sel);
   always @(*) begin
     fsm_wantExit = 1'b0;
     case(fsm_stateReg)
@@ -1203,7 +1201,7 @@ module SramController (
     fsm_stateNext = fsm_stateReg;
     case(fsm_stateReg)
       fsm_enumDef_idle : begin
-        if(when_SramController_l52) begin
+        if(when_SramController_l48) begin
           if(io_wb_we) begin
             fsm_stateNext = fsm_enumDef_write;
           end else begin
@@ -1231,7 +1229,7 @@ module SramController (
     end
   end
 
-  assign when_SramController_l52 = (io_wb_cyc && io_wb_stb);
+  assign when_SramController_l48 = (io_wb_cyc && io_wb_stb);
   assign when_StateMachine_l253 = ((! (fsm_stateReg == fsm_enumDef_idle)) && (fsm_stateNext == fsm_enumDef_idle));
   assign when_StateMachine_l253_1 = ((! (fsm_stateReg == fsm_enumDef_write)) && (fsm_stateNext == fsm_enumDef_write));
   always @(posedge sys_clk or posedge sys_reset) begin
