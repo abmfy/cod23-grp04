@@ -43,7 +43,7 @@ module lab4_tb;
 
   initial begin
     // 在这里可以自定义测试输入序列，例如：
-    dip_sw = 32'h2;
+    dip_sw = 32'h1;
     touch_btn = 0;
     reset_btn = 0;
     push_btn = 0;
@@ -63,7 +63,7 @@ module lab4_tb;
   end
 
   // 待测试用户设计
-  lab4_top dut (
+  Lab4Top dut (
       .clk_50M(clk_50M),
       .clk_11M0592(clk_11M0592),
       .push_btn(push_btn),
@@ -73,13 +73,13 @@ module lab4_tb;
       .leds(leds),
       .dpy1(dpy1),
       .dpy0(dpy0),
-      .txd(txd),
-      .rxd(rxd),
-      .uart_rdn(uart_rdn),
-      .uart_wrn(uart_wrn),
-      .uart_dataready(uart_dataready),
-      .uart_tbre(uart_tbre),
-      .uart_tsre(uart_tsre),
+      // .txd(txd),
+      // .rxd(rxd),
+      // .uart_rdn(uart_rdn),
+      // .uart_wrn(uart_wrn),
+      // .uart_dataready(uart_dataready),
+      // .uart_tbre(uart_tbre),
+      // .uart_tsre(uart_tsre),
       .base_ram_data(base_ram_data),
       .base_ram_addr(base_ram_addr),
       .base_ram_ce_n(base_ram_ce_n),
@@ -91,15 +91,15 @@ module lab4_tb;
       .ext_ram_ce_n(ext_ram_ce_n),
       .ext_ram_oe_n(ext_ram_oe_n),
       .ext_ram_we_n(ext_ram_we_n),
-      .ext_ram_be_n(ext_ram_be_n),
-      .flash_d(),
-      .flash_a(),
-      .flash_rp_n(),
-      .flash_vpen(),
-      .flash_oe_n(),
-      .flash_ce_n(),
-      .flash_byte_n(),
-      .flash_we_n()
+      .ext_ram_be_n(ext_ram_be_n)
+      // .flash_d(),
+      // .flash_a(),
+      // .flash_rp_n(),
+      // .flash_vpen(),
+      // .flash_oe_n(),
+      // .flash_ce_n(),
+      // .flash_byte_n(),
+      // .flash_we_n()
   );
 
   // 时钟源
@@ -109,15 +109,15 @@ module lab4_tb;
   );
 
   // CPLD 串口仿真模型
-  cpld_model cpld (
-      .clk_uart(clk_11M0592),
-      .uart_rdn(uart_rdn),
-      .uart_wrn(uart_wrn),
-      .uart_dataready(uart_dataready),
-      .uart_tbre(uart_tbre),
-      .uart_tsre(uart_tsre),
-      .data(base_ram_data[7:0])
-  );
+  // cpld_model cpld (
+  //     .clk_uart(clk_11M0592),
+  //     .uart_rdn(uart_rdn),
+  //     .uart_wrn(uart_wrn),
+  //     .uart_dataready(uart_dataready),
+  //     .uart_tbre(uart_tbre),
+  //     .uart_tsre(uart_tsre),
+  //     .data(base_ram_data[7:0])
+  // );
   // 直连串口仿真模型
   uart_model uart (
     .rxd (txd),
