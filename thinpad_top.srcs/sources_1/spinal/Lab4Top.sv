@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Lab4Top
-// Git hash  : 4dff7282c747b895261090675059eac800caf417
+// Git hash  : 25ad60e4bd214579734150ce0f2d493f7ca6312a
 
 `timescale 1ns/1ps
 
@@ -1136,7 +1136,7 @@ module SramController (
   always @(*) begin
     io_wb_ack = 1'b0;
     if(when_StateMachine_l253) begin
-      io_wb_ack = 1'b0;
+      io_wb_ack = 1'b1;
     end
   end
 
