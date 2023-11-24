@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Lab4Top
-// Git hash  : 1e372b713cb3fbece23b8022cc5a2d30ec3df4a7
+// Git hash  : 4dff7282c747b895261090675059eac800caf417
 
 `timescale 1ns/1ps
 
@@ -1279,8 +1279,8 @@ module WbMux (
 
   assign slave_match_0 = (((io_wb_adr ^ 32'h80000000) & 32'hffc00000) == 32'h00000000);
   assign slave_match_1 = (((io_wb_adr ^ 32'h80400000) & 32'hffc00000) == 32'h00000000);
-  assign slave_sel_0 = (slave_match_0 && (1'b1 == 1'b0));
-  assign slave_sel_1 = (slave_match_1 && ((1'b1 || slave_match_0) == 1'b0));
+  assign slave_sel_0 = (slave_match_0 && (1'b0 == 1'b0));
+  assign slave_sel_1 = (slave_match_1 && ((1'b0 || slave_match_0) == 1'b0));
   assign io_wb_dat_r = (slave_sel_0 ? io_slaves_0_dat_r : io_slaves_1_dat_r);
   assign io_wb_ack = (io_slaves_0_ack || io_slaves_1_ack);
   assign io_slaves_0_cyc = (io_wb_cyc && slave_sel_0);
