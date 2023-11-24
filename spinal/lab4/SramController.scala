@@ -20,7 +20,7 @@ class SramController extends Component {
     io.sram.data.write := io.wb.dat_w
 
     io.sram.addr := get_addr
-    io.sram.ce_n := !(io.wb.cyc && io.wb.stb)
+    io.sram.ce_n := !(io.wb.cyc && io.wb.stb && !io.wb.ack)
     io.sram.be_n := ~get_sel
 
     def get_sel: Bits = {
@@ -83,9 +83,4 @@ class SramController extends Component {
             }
         }
     }    
-}
-
-object GenerateSramController extends App {
-    Config.spinal.generate(InOutWrapper(new SramController)).printPruned()
-    Predef
 }
