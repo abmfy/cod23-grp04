@@ -46,7 +46,7 @@ class SramController extends Component {
         io.sram.data.writeEnable := False
         val idle: State = new State with EntryPoint {
             onEntry {
-                io.wb.ack := False
+                io.wb.ack := True
             }
             whenIsActive {
                 when (io.wb.cyc && io.wb.stb) {
@@ -83,4 +83,9 @@ class SramController extends Component {
             }
         }
     }    
+}
+
+object GenerateSramController extends App {
+    Config.spinal.generate(InOutWrapper(new SramController)).printPruned()
+    Predef
 }
