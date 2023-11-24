@@ -50,7 +50,18 @@ case class SramModelConfig (
 class SramModel(
     config: SramModelConfig = SramModelConfig()
 ) extends Component {
-    val io = slave port WishbonePorts()
+    val io = new Bundle {
+        val wb = slave port WishbonePorts()
+        val sram = master port SramPorts()
+    }
+
+    io.sram.addr := 0
+    io.sram.be_n := B"1111"
+    io.sram.ce_n := True
+    io.sram.oe_n := True
+    io.sram.we_n := True
+    io.sram.data.writeEnable := False
+    io.sram.data.write := 0
 
     val DATA_WIDTH = config.data_width
     val ADDR_WIDTH = config.addr_width
@@ -68,12 +79,12 @@ class SramModel(
 
     val mem = Mem(Bits(DATA_WIDTH bits), 1 << VALID_ADDR_WIDTH)
 
-    val adr_i_valid = (io.adr >> (ADDR_WIDTH - VALID_ADDR_WIDTH)).resized
+    val adr_i_valid = (io.wb.adr >> (ADDR_WIDTH - VALID_ADDR_WIDTH)).resized
 
-    io.dat_r := dat_o_reg
-    io.ack := ack_o_reg
+    io.wb.dat_r := dat_o_reg
+    io.wb.ack := ack_o_reg
 
-    val init_content = config.init_file match {
+    mem.init(config.init_file match {
         case Some(filename) => {
             val buffer = ArrayBuffer.fill(1 << VALID_ADDR_WIDTH)(B(0, DATA_WIDTH bits))
             val bytes = Files.readAllBytes(Paths.get(filename))
@@ -86,25 +97,22 @@ class SramModel(
                 }
                 buffer(i) = word
             }
-            buffer.toArray
+            buffer.toSeq
         }
         case None => {
             Array.fill(1 << VALID_ADDR_WIDTH)(B(0, DATA_WIDTH bits))
         }
-    }
+    })
 
-    mem.init(init_content)
+    val enable = io.wb.cyc && io.wb.stb && !io.wb.ack
 
-    ack_o_reg := False
+    dat_o_reg := mem(adr_i_valid)
+    mem.write(
+        address = adr_i_valid,
+        data = io.wb.dat_w,
+        enable = enable && io.wb.we,
+        mask = io.wb.sel,
+    )
 
-    when (io.cyc && io.stb && !io.ack) {
-        dat_o_reg := mem.readWriteSync(
-            address = adr_i_valid,
-            data = io.dat_w,
-            enable = True,
-            write = io.we,
-            mask = io.sel,
-        )
-        ack_o_reg := True
-    }
+    ack_o_reg := enable
 }

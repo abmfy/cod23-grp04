@@ -151,9 +151,9 @@ module lfsr_prng #(
 
   always @* begin
     if (INVERT) begin
-      output_reg <= ~lfsr_data;
+      output_reg = ~lfsr_data;
     end else begin
-      output_reg <= lfsr_data;
+      output_reg = lfsr_data;
     end
   end
 

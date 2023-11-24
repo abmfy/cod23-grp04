@@ -64,24 +64,12 @@ class Lab4Top (
 
     if (simulation) {
         val base, ext = new SramModel
-        base.io <> mux.io.slaves(0)
-        ext.io <> mux.io.slaves(1)
 
-        io.base_ram.addr := 0
-        io.base_ram.be_n := B"1111"
-        io.base_ram.ce_n := True
-        io.base_ram.oe_n := True
-        io.base_ram.we_n := True
-        io.base_ram.data.writeEnable := False
-        io.base_ram.data.write := 0
+        base.io.sram <> io.base_ram
+        base.io.wb <> mux.io.slaves(0)
 
-        io.ext_ram.addr := 0
-        io.ext_ram.be_n := B"1111"
-        io.ext_ram.ce_n := True
-        io.ext_ram.oe_n := True
-        io.ext_ram.we_n := True
-        io.ext_ram.data.writeEnable := False
-        io.ext_ram.data.write := 0
+        ext.io.sram <> io.ext_ram
+        ext.io.wb <> mux.io.slaves(1)
 
     } else {
         // Slave interface 0 (to BaseRAM controller)
@@ -112,5 +100,7 @@ object TestLab4 extends App {
 
         dut.io.buttons.push_btn #= true
         waitUntil(dut.io.gpio.leds.toInt != 0)
+
+        sleep(100 ns)
     }
 }
