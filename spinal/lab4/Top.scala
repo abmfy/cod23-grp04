@@ -1,11 +1,15 @@
 package cod.lab4
 import cod._
+import cod.sim._
 
 import spinal.core._
+import spinal.core.sim._
 import spinal.lib._
 import spinal.lib.io._
 
-class Lab4Top extends ThinPadTop(ThinPadIoConfig(
+class Lab4Top (
+    simulation: Boolean = false,
+) extends ThinPadTop(ThinPadIoConfig(
     enableUart = false,
 )) {
     io.gpio.dpy0 := 0
@@ -58,19 +62,55 @@ class Lab4Top extends ThinPadTop(ThinPadIoConfig(
 
     // Lab4 Slaves begin
 
-    // Slave interface 0 (to BaseRAM controller)
-    // Address range: 0x8000_0000 ~ 0x803f_ffff
-    val base = new SramController
-    base.io.sram <> io.base_ram
-    base.io.wb <> mux.io.slaves(0)
+    if (simulation) {
+        val base, ext = new SramModel
+        base.io <> mux.io.slaves(0)
+        ext.io <> mux.io.slaves(1)
 
-    // Slave interface 1 (to ExtRAM SRAM)
-    // Address range: 0x8040_0000 ~ 0x807f_ffff
-    val ext = new SramController
-    ext.io.sram <> io.ext_ram
-    ext.io.wb <> mux.io.slaves(1)
+        io.base_ram.addr := 0
+        io.base_ram.be_n := B"1111"
+        io.base_ram.ce_n := True
+        io.base_ram.oe_n := True
+        io.base_ram.we_n := True
+        io.base_ram.data.writeEnable := False
+        io.base_ram.data.write := 0
+
+        io.ext_ram.addr := 0
+        io.ext_ram.be_n := B"1111"
+        io.ext_ram.ce_n := True
+        io.ext_ram.oe_n := True
+        io.ext_ram.we_n := True
+        io.ext_ram.data.writeEnable := False
+        io.ext_ram.data.write := 0
+
+    } else {
+        // Slave interface 0 (to BaseRAM controller)
+        // Address range: 0x8000_0000 ~ 0x803f_ffff
+        val base = new SramController
+        base.io.sram <> io.base_ram
+        base.io.wb <> mux.io.slaves(0)
+
+        // Slave interface 1 (to ExtRAM SRAM)
+        // Address range: 0x8040_0000 ~ 0x807f_ffff
+        val ext = new SramController
+        ext.io.sram <> io.ext_ram
+        ext.io.wb <> mux.io.slaves(1)
+    }    
 }
 
 object GenerateLab4 extends App {
     Config.spinal.generate(InOutWrapper(new Lab4Top)).printPruned()
+}
+
+object TestLab4 extends App {
+    Config.sim.compile(InOutWrapper(new Lab4Top(simulation = true))).doSim { dut =>
+        dut.io.gpio.dip_sw #= 2
+        dut.io.buttons.push_btn #= false
+
+        dut.clockDomain.forkStimulus(10 ns)
+        dut.clockDomain.waitSampling()
+
+        dut.io.buttons.push_btn #= true
+        waitUntil(dut.io.gpio.leds.toInt != 0)
+    }
 }
