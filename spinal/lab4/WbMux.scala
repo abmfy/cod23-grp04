@@ -40,7 +40,7 @@ class WbMux(config: WbMuxConfig) extends Component {
     }
 
     val slave_sel = for (i <- 0 until config.slave_count) yield {
-        slave_match(i) && slave_match.slice(0, i).fold(True)(_ || _) === False
+        slave_match(i) && slave_match.slice(0, i).fold(False)(_ || _) === False
     }
 
     // Master
