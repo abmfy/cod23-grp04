@@ -29,6 +29,7 @@ package cod.sim
 import cod._
 
 import spinal.core._
+import spinal.core.sim._
 import spinal.lib._
 
 import scala.collection.mutable.ArrayBuffer
@@ -74,11 +75,13 @@ class SramModel(
     // Size of words (8, 16, 32, or 64 bits)
     val WORD_SIZE = DATA_WIDTH / WORD_WIDTH
 
+    // Total count of words
+    val SRAM_SIZE = 1 << VALID_ADDR_WIDTH
+
     val dat_o_reg = Reg(Bits(DATA_WIDTH bits)) init(0)
     val ack_o_reg = Reg(Bool()) init(False)
 
-    val mem = Mem(Bits(DATA_WIDTH bits), 1 << VALID_ADDR_WIDTH)
-
+    val mem = Mem(Bits(DATA_WIDTH bits), 1 << VALID_ADDR_WIDTH) simPublic()
     val adr_i_valid = (io.wb.adr >> (ADDR_WIDTH - VALID_ADDR_WIDTH)).resized
 
     io.wb.dat_r := dat_o_reg
