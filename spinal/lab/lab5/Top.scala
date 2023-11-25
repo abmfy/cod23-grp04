@@ -54,7 +54,7 @@ class Lab5Top (
 
         (base, ext)
     }
-    val uart = new UartController
+    val uart = new cod.UartController
     uart.io.uart <> io.uart0
     uart.io.wb <> mux.io.slaves(2)
 }

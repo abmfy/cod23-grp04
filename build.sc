@@ -13,4 +13,14 @@ object cod extends SbtModule {
     ivy"com.github.spinalhdl::spinalhdl-lib:$spinalVersion"
   )
   def scalacPluginIvyDeps = Agg(ivy"com.github.spinalhdl::spinalhdl-idsl-plugin:$spinalVersion")
+  def mainClass = Some("cod.Generate")
 }
+
+def compile() = cod.run()
+def c() = compile()
+
+def run() = compile()
+def r() = run()
+
+def test() = cod.runMain("cod.Test")
+def t() = test()

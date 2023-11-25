@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Lab4Top
-// Git hash  : ebf9b7119b7ff737909982298b14eee2824dabdf
+// Git hash  : b0ae1e4d36febd5b7784834dbb13fe18e9dbe54c
 
 `timescale 1ns/1ps
 
@@ -59,24 +59,24 @@ module Lab4Top (
   wire       [31:0]   tester_error_addr;
   wire       [31:0]   tester_error_read_data;
   wire       [31:0]   tester_error_expected_data;
-  wire                base_io_wb_ack;
-  wire       [31:0]   base_io_wb_dat_r;
-  wire       [19:0]   base_io_sram_addr;
-  wire       [3:0]    base_io_sram_be_n;
-  wire                base_io_sram_ce_n;
-  wire                base_io_sram_oe_n;
-  wire                base_io_sram_we_n;
-  wire       [31:0]   base_io_sram_data_write;
-  wire                base_io_sram_data_writeEnable;
-  wire                ext_io_wb_ack;
-  wire       [31:0]   ext_io_wb_dat_r;
-  wire       [19:0]   ext_io_sram_addr;
-  wire       [3:0]    ext_io_sram_be_n;
-  wire                ext_io_sram_ce_n;
-  wire                ext_io_sram_oe_n;
-  wire                ext_io_sram_we_n;
-  wire       [31:0]   ext_io_sram_data_write;
-  wire                ext_io_sram_data_writeEnable;
+  wire                sramController_2_io_wb_ack;
+  wire       [31:0]   sramController_2_io_wb_dat_r;
+  wire       [19:0]   sramController_2_io_sram_addr;
+  wire       [3:0]    sramController_2_io_sram_be_n;
+  wire                sramController_2_io_sram_ce_n;
+  wire                sramController_2_io_sram_oe_n;
+  wire                sramController_2_io_sram_we_n;
+  wire       [31:0]   sramController_2_io_sram_data_write;
+  wire                sramController_2_io_sram_data_writeEnable;
+  wire                sramController_3_io_wb_ack;
+  wire       [31:0]   sramController_3_io_wb_dat_r;
+  wire       [19:0]   sramController_3_io_sram_addr;
+  wire       [3:0]    sramController_3_io_sram_be_n;
+  wire                sramController_3_io_sram_ce_n;
+  wire                sramController_3_io_sram_oe_n;
+  wire                sramController_3_io_sram_we_n;
+  wire       [31:0]   sramController_3_io_sram_data_write;
+  wire                sramController_3_io_sram_data_writeEnable;
   reg                 _zz_ext_ram_data;
   reg                 _zz_ext_ram_data_1;
   reg                 _zz_ext_ram_data_2;
@@ -243,30 +243,30 @@ module Lab4Top (
     .locked     (clkCtrl_pll_locked   )  //i
   );
   WbMux mux (
-    .io_wb_cyc         (tester_wb_cyc_o            ), //i
-    .io_wb_stb         (tester_wb_stb_o            ), //i
-    .io_wb_ack         (mux_io_wb_ack              ), //o
-    .io_wb_we          (tester_wb_we_o             ), //i
-    .io_wb_adr         (tester_wb_adr_o[31:0]      ), //i
-    .io_wb_dat_r       (mux_io_wb_dat_r[31:0]      ), //o
-    .io_wb_dat_w       (tester_wb_dat_o[31:0]      ), //i
-    .io_wb_sel         (tester_wb_sel_o[3:0]       ), //i
-    .io_slaves_0_cyc   (mux_io_slaves_0_cyc        ), //o
-    .io_slaves_0_stb   (mux_io_slaves_0_stb        ), //o
-    .io_slaves_0_ack   (base_io_wb_ack             ), //i
-    .io_slaves_0_we    (mux_io_slaves_0_we         ), //o
-    .io_slaves_0_adr   (mux_io_slaves_0_adr[31:0]  ), //o
-    .io_slaves_0_dat_r (base_io_wb_dat_r[31:0]     ), //i
-    .io_slaves_0_dat_w (mux_io_slaves_0_dat_w[31:0]), //o
-    .io_slaves_0_sel   (mux_io_slaves_0_sel[3:0]   ), //o
-    .io_slaves_1_cyc   (mux_io_slaves_1_cyc        ), //o
-    .io_slaves_1_stb   (mux_io_slaves_1_stb        ), //o
-    .io_slaves_1_ack   (ext_io_wb_ack              ), //i
-    .io_slaves_1_we    (mux_io_slaves_1_we         ), //o
-    .io_slaves_1_adr   (mux_io_slaves_1_adr[31:0]  ), //o
-    .io_slaves_1_dat_r (ext_io_wb_dat_r[31:0]      ), //i
-    .io_slaves_1_dat_w (mux_io_slaves_1_dat_w[31:0]), //o
-    .io_slaves_1_sel   (mux_io_slaves_1_sel[3:0]   )  //o
+    .io_wb_cyc         (tester_wb_cyc_o                   ), //i
+    .io_wb_stb         (tester_wb_stb_o                   ), //i
+    .io_wb_ack         (mux_io_wb_ack                     ), //o
+    .io_wb_we          (tester_wb_we_o                    ), //i
+    .io_wb_adr         (tester_wb_adr_o[31:0]             ), //i
+    .io_wb_dat_r       (mux_io_wb_dat_r[31:0]             ), //o
+    .io_wb_dat_w       (tester_wb_dat_o[31:0]             ), //i
+    .io_wb_sel         (tester_wb_sel_o[3:0]              ), //i
+    .io_slaves_0_cyc   (mux_io_slaves_0_cyc               ), //o
+    .io_slaves_0_stb   (mux_io_slaves_0_stb               ), //o
+    .io_slaves_0_ack   (sramController_2_io_wb_ack        ), //i
+    .io_slaves_0_we    (mux_io_slaves_0_we                ), //o
+    .io_slaves_0_adr   (mux_io_slaves_0_adr[31:0]         ), //o
+    .io_slaves_0_dat_r (sramController_2_io_wb_dat_r[31:0]), //i
+    .io_slaves_0_dat_w (mux_io_slaves_0_dat_w[31:0]       ), //o
+    .io_slaves_0_sel   (mux_io_slaves_0_sel[3:0]          ), //o
+    .io_slaves_1_cyc   (mux_io_slaves_1_cyc               ), //o
+    .io_slaves_1_stb   (mux_io_slaves_1_stb               ), //o
+    .io_slaves_1_ack   (sramController_3_io_wb_ack        ), //i
+    .io_slaves_1_we    (mux_io_slaves_1_we                ), //o
+    .io_slaves_1_adr   (mux_io_slaves_1_adr[31:0]         ), //o
+    .io_slaves_1_dat_r (sramController_3_io_wb_dat_r[31:0]), //i
+    .io_slaves_1_dat_w (mux_io_slaves_1_dat_w[31:0]       ), //o
+    .io_slaves_1_sel   (mux_io_slaves_1_sel[3:0]          )  //o
   );
   sram_tester #(
     .ADDR_WIDTH(32),
@@ -294,45 +294,45 @@ module Lab4Top (
     .error_read_data     (tester_error_read_data[31:0]    ), //o
     .error_expected_data (tester_error_expected_data[31:0])  //o
   );
-  SramController base (
-    .io_wb_cyc                (mux_io_slaves_0_cyc          ), //i
-    .io_wb_stb                (mux_io_slaves_0_stb          ), //i
-    .io_wb_ack                (base_io_wb_ack               ), //o
-    .io_wb_we                 (mux_io_slaves_0_we           ), //i
-    .io_wb_adr                (mux_io_slaves_0_adr[31:0]    ), //i
-    .io_wb_dat_r              (base_io_wb_dat_r[31:0]       ), //o
-    .io_wb_dat_w              (mux_io_slaves_0_dat_w[31:0]  ), //i
-    .io_wb_sel                (mux_io_slaves_0_sel[3:0]     ), //i
-    .io_sram_data_read        (_zz_io_sram_data_read[31:0]  ), //i
-    .io_sram_data_write       (base_io_sram_data_write[31:0]), //o
-    .io_sram_data_writeEnable (base_io_sram_data_writeEnable), //o
-    .io_sram_addr             (base_io_sram_addr[19:0]      ), //o
-    .io_sram_be_n             (base_io_sram_be_n[3:0]       ), //o
-    .io_sram_ce_n             (base_io_sram_ce_n            ), //o
-    .io_sram_oe_n             (base_io_sram_oe_n            ), //o
-    .io_sram_we_n             (base_io_sram_we_n            ), //o
-    .sys_clk                  (sys_clk                      ), //i
-    .sys_reset                (sys_reset                    )  //i
+  SramController sramController_2 (
+    .io_wb_cyc                (mux_io_slaves_0_cyc                      ), //i
+    .io_wb_stb                (mux_io_slaves_0_stb                      ), //i
+    .io_wb_ack                (sramController_2_io_wb_ack               ), //o
+    .io_wb_we                 (mux_io_slaves_0_we                       ), //i
+    .io_wb_adr                (mux_io_slaves_0_adr[31:0]                ), //i
+    .io_wb_dat_r              (sramController_2_io_wb_dat_r[31:0]       ), //o
+    .io_wb_dat_w              (mux_io_slaves_0_dat_w[31:0]              ), //i
+    .io_wb_sel                (mux_io_slaves_0_sel[3:0]                 ), //i
+    .io_sram_data_read        (_zz_io_sram_data_read[31:0]              ), //i
+    .io_sram_data_write       (sramController_2_io_sram_data_write[31:0]), //o
+    .io_sram_data_writeEnable (sramController_2_io_sram_data_writeEnable), //o
+    .io_sram_addr             (sramController_2_io_sram_addr[19:0]      ), //o
+    .io_sram_be_n             (sramController_2_io_sram_be_n[3:0]       ), //o
+    .io_sram_ce_n             (sramController_2_io_sram_ce_n            ), //o
+    .io_sram_oe_n             (sramController_2_io_sram_oe_n            ), //o
+    .io_sram_we_n             (sramController_2_io_sram_we_n            ), //o
+    .sys_clk                  (sys_clk                                  ), //i
+    .sys_reset                (sys_reset                                )  //i
   );
-  SramController ext (
-    .io_wb_cyc                (mux_io_slaves_1_cyc          ), //i
-    .io_wb_stb                (mux_io_slaves_1_stb          ), //i
-    .io_wb_ack                (ext_io_wb_ack                ), //o
-    .io_wb_we                 (mux_io_slaves_1_we           ), //i
-    .io_wb_adr                (mux_io_slaves_1_adr[31:0]    ), //i
-    .io_wb_dat_r              (ext_io_wb_dat_r[31:0]        ), //o
-    .io_wb_dat_w              (mux_io_slaves_1_dat_w[31:0]  ), //i
-    .io_wb_sel                (mux_io_slaves_1_sel[3:0]     ), //i
-    .io_sram_data_read        (_zz_io_sram_data_read_1[31:0]), //i
-    .io_sram_data_write       (ext_io_sram_data_write[31:0] ), //o
-    .io_sram_data_writeEnable (ext_io_sram_data_writeEnable ), //o
-    .io_sram_addr             (ext_io_sram_addr[19:0]       ), //o
-    .io_sram_be_n             (ext_io_sram_be_n[3:0]        ), //o
-    .io_sram_ce_n             (ext_io_sram_ce_n             ), //o
-    .io_sram_oe_n             (ext_io_sram_oe_n             ), //o
-    .io_sram_we_n             (ext_io_sram_we_n             ), //o
-    .sys_clk                  (sys_clk                      ), //i
-    .sys_reset                (sys_reset                    )  //i
+  SramController sramController_3 (
+    .io_wb_cyc                (mux_io_slaves_1_cyc                      ), //i
+    .io_wb_stb                (mux_io_slaves_1_stb                      ), //i
+    .io_wb_ack                (sramController_3_io_wb_ack               ), //o
+    .io_wb_we                 (mux_io_slaves_1_we                       ), //i
+    .io_wb_adr                (mux_io_slaves_1_adr[31:0]                ), //i
+    .io_wb_dat_r              (sramController_3_io_wb_dat_r[31:0]       ), //o
+    .io_wb_dat_w              (mux_io_slaves_1_dat_w[31:0]              ), //i
+    .io_wb_sel                (mux_io_slaves_1_sel[3:0]                 ), //i
+    .io_sram_data_read        (_zz_io_sram_data_read_1[31:0]            ), //i
+    .io_sram_data_write       (sramController_3_io_sram_data_write[31:0]), //o
+    .io_sram_data_writeEnable (sramController_3_io_sram_data_writeEnable), //o
+    .io_sram_addr             (sramController_3_io_sram_addr[19:0]      ), //o
+    .io_sram_be_n             (sramController_3_io_sram_be_n[3:0]       ), //o
+    .io_sram_ce_n             (sramController_3_io_sram_ce_n            ), //o
+    .io_sram_oe_n             (sramController_3_io_sram_oe_n            ), //o
+    .io_sram_we_n             (sramController_3_io_sram_we_n            ), //o
+    .sys_clk                  (sys_clk                                  ), //i
+    .sys_reset                (sys_reset                                )  //i
   );
   assign base_ram_data[0] = _zz_base_ram_data_31 ? _zz_base_ram_data_33[0] : 1'bz;
   assign base_ram_data[1] = _zz_base_ram_data_30 ? _zz_base_ram_data_33[1] : 1'bz;
@@ -866,20 +866,20 @@ module Lab4Top (
   assign test_error_addr = tester_error_addr;
   assign test_error_read_data = tester_error_read_data;
   assign test_error_expected_data = tester_error_expected_data;
-  assign _zz_base_ram_data_32 = base_io_sram_data_write;
-  assign _zz_when_InOutWrapper_l13 = base_io_sram_data_writeEnable;
-  assign base_ram_addr = base_io_sram_addr;
-  assign base_ram_be_n = base_io_sram_be_n;
-  assign base_ram_ce_n = base_io_sram_ce_n;
-  assign base_ram_oe_n = base_io_sram_oe_n;
-  assign base_ram_we_n = base_io_sram_we_n;
-  assign _zz_ext_ram_data_32 = ext_io_sram_data_write;
-  assign _zz_when_InOutWrapper_l13_1 = ext_io_sram_data_writeEnable;
-  assign ext_ram_addr = ext_io_sram_addr;
-  assign ext_ram_be_n = ext_io_sram_be_n;
-  assign ext_ram_ce_n = ext_io_sram_ce_n;
-  assign ext_ram_oe_n = ext_io_sram_oe_n;
-  assign ext_ram_we_n = ext_io_sram_we_n;
+  assign _zz_base_ram_data_32 = sramController_2_io_sram_data_write;
+  assign _zz_when_InOutWrapper_l13 = sramController_2_io_sram_data_writeEnable;
+  assign base_ram_addr = sramController_2_io_sram_addr;
+  assign base_ram_be_n = sramController_2_io_sram_be_n;
+  assign base_ram_ce_n = sramController_2_io_sram_ce_n;
+  assign base_ram_oe_n = sramController_2_io_sram_oe_n;
+  assign base_ram_we_n = sramController_2_io_sram_we_n;
+  assign _zz_ext_ram_data_32 = sramController_3_io_sram_data_write;
+  assign _zz_when_InOutWrapper_l13_1 = sramController_3_io_sram_data_writeEnable;
+  assign ext_ram_addr = sramController_3_io_sram_addr;
+  assign ext_ram_be_n = sramController_3_io_sram_be_n;
+  assign ext_ram_ce_n = sramController_3_io_sram_ce_n;
+  assign ext_ram_oe_n = sramController_3_io_sram_oe_n;
+  assign ext_ram_we_n = sramController_3_io_sram_we_n;
   assign when_InOutWrapper_l13 = _zz_when_InOutWrapper_l13_2[0];
   always @(*) begin
     _zz_io_sram_data_read_2[0] = base_ram_data[0];
