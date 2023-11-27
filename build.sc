@@ -22,7 +22,7 @@ def c() = compile()
 def run() = compile()
 def r() = run()
 
-val DEFAULT_TESTCASE = "cod.tb.Lab6"
+val DEFAULT_TESTCASE = "Lab6"
 
-def test(testcase: String = DEFAULT_TESTCASE) = cod.runMain(testcase)
+def test(testcase: String = DEFAULT_TESTCASE) = cod.runMain("cod.tb." + testcase)
 def t(testcase: String = DEFAULT_TESTCASE) = test(testcase)
