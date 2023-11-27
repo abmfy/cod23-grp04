@@ -43,6 +43,14 @@ class MEM extends Component {
         io.o.reg_we := False
     }
 
+    def req(): Unit = {
+        io.wb.stb := True
+        io.wb.we := io.i.mem_we
+        io.wb.adr := mem_adr
+        io.wb.sel := mem_sel
+        io.wb.dat_w := mem_data_write
+    }
+
     def proceed(): Unit = {
         io.o.reg_we := io.i.reg_we
         io.o.reg_addr_d := io.i.reg_addr_d
@@ -68,6 +76,7 @@ class MEM extends Component {
             whenIsActive {
                 when (io.i.mem_en) {
                     bubble()
+                    req()
                     goto(fetch)
                 } otherwise {
                     proceed()
@@ -77,11 +86,7 @@ class MEM extends Component {
         val fetch: State = new State {
             whenIsActive {
                 bubble()
-                io.wb.stb := True
-                io.wb.we := io.i.mem_we
-                io.wb.adr := mem_adr
-                io.wb.sel := mem_sel
-                io.wb.dat_w := mem_data_write
+                req()
                 when (io.wb.ack) {
                     proceed()
                     goto(start)

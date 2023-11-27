@@ -6,7 +6,9 @@ import spinal.lib._
 import spinal.lib.io._
 
 class Top (
-    simulation: Boolean = false
+    simulation: Boolean = false,
+    base_sram_init: Option[String] = None,
+    ext_sram_init: Option[String] = None,
 ) extends ThinPadTop {
     // Components
     val reg_file = new RegFile
@@ -81,11 +83,11 @@ class Top (
 
     // Slaves
     val (base_ram, ext_ram) = if (simulation) {
-        val base = new SramModel
+        val base = new SramModel(SramModelConfig(init_file = base_sram_init))
         base.io.sram <> io.base_ram
         base.io.wb <> mux.io.slaves(0)
 
-        val ext = new SramModel
+        val ext = new SramModel(SramModelConfig(init_file = ext_sram_init))
         ext.io.sram <> io.ext_ram
         ext.io.wb <> mux.io.slaves(1)
 

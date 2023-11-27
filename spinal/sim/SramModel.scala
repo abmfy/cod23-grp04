@@ -89,18 +89,21 @@ class SramModel(
 
     mem.init(config.init_file match {
         case Some(filename) => {
-            val buffer = ArrayBuffer.fill(1 << VALID_ADDR_WIDTH)(B(0, DATA_WIDTH bits))
+            val buffer = ArrayBuffer[Long]()
             val bytes = Files.readAllBytes(Paths.get(filename))
             for (i <- 0 until bytes.length by WORD_WIDTH) {
-                val word = B(0, DATA_WIDTH bits)
+                var word = 0L
                 for (j <- 0 until WORD_WIDTH) {
                     if (i + j < bytes.length) {
-                        word(j * 8, 8 bits) := B(bytes(i + j))
+                        word |= (bytes(i + j).toLong & 0xff) << j * 8
                     }
                 }
-                buffer(i) = word
+                buffer += word
             }
-            buffer.toSeq
+            buffer
+                .toSeq
+                .padTo(1 << VALID_ADDR_WIDTH, 0L)
+                .map(B(_, DATA_WIDTH bits))
         }
         case None => {
             Array.fill(1 << VALID_ADDR_WIDTH)(B(0, DATA_WIDTH bits))

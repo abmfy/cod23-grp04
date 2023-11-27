@@ -84,7 +84,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
             whenIsActive {
                 bubble()
                 io.wb.we := False
-                io.wb.adr := io.o.pc
+                io.wb.adr := pc
                 io.wb.sel := Sel.WORD
 
                 // Fetch complete

@@ -1,6 +1,7 @@
 package cod
 
 import spinal.core._
+import spinal.core.sim._
 import spinal.lib._
 
 import Instr._
@@ -332,8 +333,6 @@ class ID extends Component {
         val res = False
         switch (instr_kind) {
             is (
-                LB,
-                LW,
                 SB,
                 SW,
             ) {

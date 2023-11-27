@@ -27,7 +27,7 @@ object TestLab5 extends App {
 
         val baud_period = (1 sec) / dut.uart.config.baud
         
-        UartModel.decoder(dut.io.uart0.txd, baud_period)
+        UartModel.decoder(dut.io.uart0.txd, baud_period) { _ => () }
 
         // Testbench
 
