@@ -17,14 +17,54 @@ object Types {
     def reg() = UInt(5 bits)
     def reg(width: Int) = UInt(width bits)
 
-    def sel = UInt(4 bits)
+    def sel = Bits(4 bits)
+}
 
-    val NONE = B"0000"
-    val BYTE = B"0001"
-    val HALF = B"0011"
-    val WORD = B"1111"
+object Sel {
+    def NONE = B"0000"
+    def BYTE = B"0001"
+    def HALF = B"0011"
+    def WORD = B"1111"
+}
+
+object RegSel extends SpinalEnum {
+    val ALU, MEM, PC = newElement()
+}
+
+object BrType extends SpinalEnum {
+    val F, T, EQ, NE = newElement()
 }
 
 object AluOp extends SpinalEnum {
     val OP1, ADD, SUB, AND, OR, XOR, NOT, SLL, SRL, SRA, ROL, OP2 = newElement()
+}
+
+object Instr extends SpinalEnum {
+    val UNK, 
+        LUI,
+        AUIPC,
+        JAL,
+        JALR,
+        BEQ,
+        BNE,
+        LB,
+        LW,
+        SB,
+        SW,
+        ADDI,
+        ORI,
+        ANDI,
+        SLLI,
+        SRLI,
+        ADD,
+        XOR,
+        OR,
+        AND
+        = newElement()
+
+    val NOP = 0x13
+}
+
+object InstrType extends SpinalEnum {
+    val R, I, S, B, U, J = newElement()
 }

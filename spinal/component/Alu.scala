@@ -3,7 +3,7 @@ package cod
 import spinal.core._
 import spinal.lib._
 
-case class AluPorts(width: Int = 16) extends Bundle with IMasterSlave {
+case class AluPorts(width: Int = 32) extends Bundle with IMasterSlave {
     val a = Types.data(width)
     val b = Types.data(width)
     val op = AluOp()
@@ -15,7 +15,7 @@ case class AluPorts(width: Int = 16) extends Bundle with IMasterSlave {
     }
 }
 
-class Alu(width: Int = 16) extends Component {
+class Alu(width: Int = 32) extends Component {
     val io = slave port AluPorts(width)
 
     val s_a = io.a asSInt
