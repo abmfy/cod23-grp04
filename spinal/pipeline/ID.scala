@@ -12,11 +12,8 @@ class ID extends Component {
         val i = slave port IF_ID()
         val o = master port ID_EXE()
 
-        // Hazard handling
-        val reg_addr_d = in Vec(Types.reg, 3)
         val stall = in Bool()
         val bubble = in Bool()
-        val stall_req = out Bool()
 
         // RegFile
         val reg = master port RegFileReadPorts()
@@ -415,6 +412,8 @@ class ID extends Component {
     io.o.pc.setAsReg() init(0)
     io.o.reg_data_a.setAsReg() init(0)
     io.o.reg_data_b.setAsReg() init(0)
+    io.o.reg_addr_a.setAsReg() init(0)
+    io.o.reg_addr_b.setAsReg() init(0)
     io.o.reg_addr_d.setAsReg() init(0)
     io.o.alu_op.setAsReg() init(AluOp.ADD)
     io.o.br_type.setAsReg() init(BrType.F)
@@ -432,13 +431,15 @@ class ID extends Component {
 
     when (io.stall) {
         // Pass
-    } elsewhen (io.bubble || io.stall_req) {
+    } elsewhen (io.bubble) {
         bubble()
     } otherwise {
         io.o.pc := io.i.pc
         
         io.o.reg_data_a := io.reg.data_a
         io.o.reg_data_b := io.reg.data_b
+        io.o.reg_addr_a := rs1
+        io.o.reg_addr_b := rs2
         io.o.reg_addr_d := rd
         io.o.alu_op := alu_op
         io.o.br_type := br_type
@@ -450,13 +451,5 @@ class ID extends Component {
         io.o.mem_sel := mem_sel
         io.o.reg_we := reg_we
         io.o.reg_sel := reg_sel
-    }
-
-    // Data hazard
-    io.stall_req := False
-    io.reg_addr_d.foreach { addr => 
-        when (addr =/= 0 && (addr === rs1 || addr === rs2)) {
-            io.stall_req := True
-        }
     }
 }

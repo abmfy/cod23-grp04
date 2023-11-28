@@ -10,6 +10,9 @@ class EXE extends Component {
 
         val br = master port BranchPorts()
 
+        // Forwarding
+        val forward = slave port ForwardPorts()
+
         // Hazard handling
         val stall = in Bool()
         val flush_req = out Bool()
@@ -28,8 +31,21 @@ class EXE extends Component {
     io.o.reg_sel.setAsReg() init(RegSel.ALU)
     io.o.alu_y.setAsReg() init(0)
 
-    io.alu.a := io.i.use_pc ? io.i.pc.asBits | io.i.reg_data_a
-    io.alu.b := io.i.use_rs2 ? io.i.reg_data_b | io.i.imm
+    val reg_a = CombInit(io.i.reg_data_a)
+    val reg_b = CombInit(io.i.reg_data_b)
+
+    // Forwarding
+    when (io.forward.we && io.forward.addr =/= 0) {
+        when (io.forward.addr === io.i.reg_addr_a) {
+            reg_a := io.forward.data
+        }
+        when (io.forward.addr === io.i.reg_addr_b) {
+            reg_b := io.forward.data
+        }
+    }
+
+    io.alu.a := io.i.use_pc ? io.i.pc.asBits | reg_a
+    io.alu.b := io.i.use_rs2 ? reg_b | io.i.imm
     io.alu.op := io.i.alu_op
 
     when (io.stall) {
@@ -38,7 +54,7 @@ class EXE extends Component {
         io.o.alu_y := io.alu.y
 
         io.o.pc := io.i.pc
-        io.o.reg_data_b := io.i.reg_data_b
+        io.o.reg_data_b := reg_b
         io.o.reg_addr_d := io.i.reg_addr_d
         io.o.mem_en := io.i.mem_en
         io.o.mem_we := io.i.mem_we
@@ -58,10 +74,10 @@ class EXE extends Component {
             io.br.br := True
         }
         is (EQ) {
-            io.br.br := io.i.reg_data_a === io.i.reg_data_b
+            io.br.br := reg_a === reg_b
         }
         is (NE) {
-            io.br.br := io.i.reg_data_a =/= io.i.reg_data_b
+            io.br.br := reg_a =/= reg_b
         }
     }
 

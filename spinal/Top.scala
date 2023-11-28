@@ -37,23 +37,19 @@ class Top (
 
     If.io.br <> Exe.io.br
 
-    If.io.stall := !Exe.io.flush_req && (Id.io.stall_req || Mem.io.stall_req)
+    If.io.stall := !Exe.io.flush_req && Mem.io.stall_req
     If.io.bubble := Exe.io.flush_req
 
     // ID
     Id.io.reg <> reg_file.io.r
-
-    Id.io.reg_addr_d := Vec (
-        Exe.io.o.reg_we ? Exe.io.o.reg_addr_d | 0,
-        Mem.io.o.reg_we ? Mem.io.o.reg_addr_d | 0,
-        Wb.io.reg.we ? Wb.io.reg.addr | 0,
-    )
 
     Id.io.stall := Exe.io.flush_req && Mem.io.stall_req
     Id.io.bubble := Exe.io.flush_req
 
     // EXE
     Exe.io.alu <> alu.io
+
+    Exe.io.forward <> Mem.io.forward
 
     Exe.io.stall := Mem.io.stall_req
 

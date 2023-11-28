@@ -29,11 +29,11 @@ object Instr19 extends App {
         var passed = false
         
         UartModel.decoder(dut.io.uart0.txd, baud_period) { char =>
-            if (char == 'F') {
-                simFailure(s"Failed")
-            } else {
+            if (char == 'P') {
                 println(s"Passed")
                 passed = true
+            } else {
+                simFailure(s"Failed, received '$char'")
             }
         }
 

@@ -15,7 +15,7 @@ case class IF_ID() extends Bundle with IMasterSlave {
 case class ID_EXE() extends Bundle with IMasterSlave {
     val pc = Types.addr
     val reg_data_a, reg_data_b = Types.data
-    val reg_addr_d = Types.reg
+    val reg_addr_a, reg_addr_b, reg_addr_d = Types.reg
     val alu_op = AluOp()
     val br_type = BrType()
     val imm = Types.data
@@ -29,7 +29,7 @@ case class ID_EXE() extends Bundle with IMasterSlave {
         out (
             pc,
             reg_data_a, reg_data_b,
-            reg_addr_d,
+            reg_addr_a, reg_addr_b, reg_addr_d,
             alu_op,
             br_type,
             imm,
@@ -86,5 +86,15 @@ case class BranchPorts() extends Bundle with IMasterSlave {
 
     override def asMaster(): Unit = {
         out (br, pc)
+    }
+}
+
+case class ForwardPorts() extends Bundle with IMasterSlave {
+    val we = Bool()
+    val addr = Types.reg
+    val data = Types.data
+
+    override def asMaster(): Unit = {
+        out (we, addr, data)
     }
 }

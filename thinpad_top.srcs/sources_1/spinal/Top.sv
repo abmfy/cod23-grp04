@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : 49f16bfc963a57810dcd8eb4ce0069d8f68d8b16
+// Git hash  : 7052a75b4aa654b8401979b4de7e15ff5d3cfc0e
 
 `timescale 1ns/1ps
 
@@ -51,9 +51,6 @@ module Top (
 
   wire                bufferCC_1_io_dataIn;
   wire                If_2_io_stall;
-  wire       [4:0]    Id_1_io_reg_addr_d_0;
-  wire       [4:0]    Id_1_io_reg_addr_d_1;
-  wire       [4:0]    Id_1_io_reg_addr_d_2;
   wire                Id_1_io_stall;
   wire       [3:0]    seg_l_iDIG;
   wire       [3:0]    seg_h_iDIG;
@@ -75,6 +72,8 @@ module Top (
   wire       [31:0]   Id_1_io_o_pc;
   wire       [31:0]   Id_1_io_o_reg_data_a;
   wire       [31:0]   Id_1_io_o_reg_data_b;
+  wire       [4:0]    Id_1_io_o_reg_addr_a;
+  wire       [4:0]    Id_1_io_o_reg_addr_b;
   wire       [4:0]    Id_1_io_o_reg_addr_d;
   wire       [3:0]    Id_1_io_o_alu_op;
   wire       [1:0]    Id_1_io_o_br_type;
@@ -86,7 +85,6 @@ module Top (
   wire       [3:0]    Id_1_io_o_mem_sel;
   wire                Id_1_io_o_reg_we;
   wire       [1:0]    Id_1_io_o_reg_sel;
-  wire                Id_1_io_stall_req;
   wire       [4:0]    Id_1_io_reg_addr_a;
   wire       [4:0]    Id_1_io_reg_addr_b;
   wire       [31:0]   Exe_1_io_o_pc;
@@ -107,6 +105,9 @@ module Top (
   wire                Mem_1_io_o_reg_we;
   wire       [4:0]    Mem_1_io_o_reg_addr_d;
   wire       [31:0]   Mem_1_io_o_reg_data_d;
+  wire                Mem_1_io_forward_we;
+  wire       [4:0]    Mem_1_io_forward_addr;
+  wire       [31:0]   Mem_1_io_forward_data;
   wire                Mem_1_io_stall_req;
   wire                Mem_1_io_wb_cyc;
   wire                Mem_1_io_wb_stb;
@@ -367,6 +368,8 @@ module Top (
     .io_o_pc         (Id_1_io_o_pc[31:0]        ), //o
     .io_o_reg_data_a (Id_1_io_o_reg_data_a[31:0]), //o
     .io_o_reg_data_b (Id_1_io_o_reg_data_b[31:0]), //o
+    .io_o_reg_addr_a (Id_1_io_o_reg_addr_a[4:0] ), //o
+    .io_o_reg_addr_b (Id_1_io_o_reg_addr_b[4:0] ), //o
     .io_o_reg_addr_d (Id_1_io_o_reg_addr_d[4:0] ), //o
     .io_o_alu_op     (Id_1_io_o_alu_op[3:0]     ), //o
     .io_o_br_type    (Id_1_io_o_br_type[1:0]    ), //o
@@ -378,12 +381,8 @@ module Top (
     .io_o_mem_sel    (Id_1_io_o_mem_sel[3:0]    ), //o
     .io_o_reg_we     (Id_1_io_o_reg_we          ), //o
     .io_o_reg_sel    (Id_1_io_o_reg_sel[1:0]    ), //o
-    .io_reg_addr_d_0 (Id_1_io_reg_addr_d_0[4:0] ), //i
-    .io_reg_addr_d_1 (Id_1_io_reg_addr_d_1[4:0] ), //i
-    .io_reg_addr_d_2 (Id_1_io_reg_addr_d_2[4:0] ), //i
     .io_stall        (Id_1_io_stall             ), //i
     .io_bubble       (Exe_1_io_flush_req        ), //i
-    .io_stall_req    (Id_1_io_stall_req         ), //o
     .io_reg_addr_a   (Id_1_io_reg_addr_a[4:0]   ), //o
     .io_reg_data_a   (reg_file_io_r_data_a[31:0]), //i
     .io_reg_addr_b   (Id_1_io_reg_addr_b[4:0]   ), //o
@@ -395,6 +394,8 @@ module Top (
     .io_i_pc         (Id_1_io_o_pc[31:0]         ), //i
     .io_i_reg_data_a (Id_1_io_o_reg_data_a[31:0] ), //i
     .io_i_reg_data_b (Id_1_io_o_reg_data_b[31:0] ), //i
+    .io_i_reg_addr_a (Id_1_io_o_reg_addr_a[4:0]  ), //i
+    .io_i_reg_addr_b (Id_1_io_o_reg_addr_b[4:0]  ), //i
     .io_i_reg_addr_d (Id_1_io_o_reg_addr_d[4:0]  ), //i
     .io_i_alu_op     (Id_1_io_o_alu_op[3:0]      ), //i
     .io_i_br_type    (Id_1_io_o_br_type[1:0]     ), //i
@@ -417,6 +418,9 @@ module Top (
     .io_o_alu_y      (Exe_1_io_o_alu_y[31:0]     ), //o
     .io_br_br        (Exe_1_io_br_br             ), //o
     .io_br_pc        (Exe_1_io_br_pc[31:0]       ), //o
+    .io_forward_we   (Mem_1_io_forward_we        ), //i
+    .io_forward_addr (Mem_1_io_forward_addr[4:0] ), //i
+    .io_forward_data (Mem_1_io_forward_data[31:0]), //i
     .io_stall        (Mem_1_io_stall_req         ), //i
     .io_flush_req    (Exe_1_io_flush_req         ), //o
     .io_alu_a        (Exe_1_io_alu_a[31:0]       ), //o
@@ -439,6 +443,9 @@ module Top (
     .io_o_reg_we     (Mem_1_io_o_reg_we                 ), //o
     .io_o_reg_addr_d (Mem_1_io_o_reg_addr_d[4:0]        ), //o
     .io_o_reg_data_d (Mem_1_io_o_reg_data_d[31:0]       ), //o
+    .io_forward_we   (Mem_1_io_forward_we               ), //o
+    .io_forward_addr (Mem_1_io_forward_addr[4:0]        ), //o
+    .io_forward_data (Mem_1_io_forward_data[31:0]       ), //o
     .io_stall_req    (Mem_1_io_stall_req                ), //o
     .io_wb_cyc       (Mem_1_io_wb_cyc                   ), //o
     .io_wb_stb       (Mem_1_io_wb_stb                   ), //o
@@ -1108,10 +1115,7 @@ module Top (
   assign dpy0 = seg_l_oSEG1;
   assign dpy1 = seg_h_oSEG1;
   assign leds = If_2_io_o_instr[15:0];
-  assign If_2_io_stall = ((! Exe_1_io_flush_req) && (Id_1_io_stall_req || Mem_1_io_stall_req));
-  assign Id_1_io_reg_addr_d_0 = (Exe_1_io_o_reg_we ? Exe_1_io_o_reg_addr_d : 5'h00);
-  assign Id_1_io_reg_addr_d_1 = (Mem_1_io_o_reg_we ? Mem_1_io_o_reg_addr_d : 5'h00);
-  assign Id_1_io_reg_addr_d_2 = (Wb_1_io_reg_we ? Wb_1_io_reg_addr : 5'h00);
+  assign If_2_io_stall = ((! Exe_1_io_flush_req) && Mem_1_io_stall_req);
   assign Id_1_io_stall = (Exe_1_io_flush_req && Mem_1_io_stall_req);
   assign _zz_base_ram_data_32 = base_ram_io_sram_data_write;
   assign _zz_when_InOutWrapper_l13 = base_ram_io_sram_data_writeEnable;
@@ -1662,6 +1666,9 @@ module MEM (
   output reg           io_o_reg_we,
   output reg  [4:0]    io_o_reg_addr_d,
   output reg  [31:0]   io_o_reg_data_d,
+  output wire          io_forward_we,
+  output wire [4:0]    io_forward_addr,
+  output wire [31:0]   io_forward_data,
   output wire          io_stall_req,
   output wire          io_wb_cyc,
   output reg           io_wb_stb,
@@ -1681,6 +1688,14 @@ module MEM (
   localparam fsm_enumDef_start = 2'd1;
   localparam fsm_enumDef_fetch = 2'd2;
 
+  wire       [5:0]    _zz__zz_io_forward_data_1;
+  wire       [31:0]   _zz__zz_io_forward_data_2;
+  wire       [7:0]    _zz__zz_io_forward_data_2_1;
+  wire       [31:0]   _zz__zz_io_forward_data_2_2;
+  wire       [15:0]   _zz__zz_io_forward_data_2_3;
+  wire       [31:0]   _zz__zz_io_forward_data_2_4;
+  wire       [31:0]   _zz__zz_io_forward_data_2_5;
+  wire       [31:0]   _zz__zz_io_forward_data;
   wire       [5:0]    _zz_io_wb_dat_w;
   wire       [5:0]    _zz__zz_io_o_reg_data_d_1;
   wire       [31:0]   _zz__zz_io_o_reg_data_d_2;
@@ -1701,6 +1716,9 @@ module MEM (
   wire       [31:0]   _zz__zz_io_o_reg_data_d_3;
   wire       [31:0]   mem_adr;
   wire       [1:0]    offset;
+  reg        [31:0]   _zz_io_forward_data;
+  wire       [31:0]   _zz_io_forward_data_1;
+  reg        [31:0]   _zz_io_forward_data_2;
   wire                fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
@@ -1719,6 +1737,14 @@ module MEM (
   `endif
 
 
+  assign _zz__zz_io_forward_data_1 = (offset * 4'b1000);
+  assign _zz__zz_io_forward_data_2_1 = _zz_io_forward_data_1[7 : 0];
+  assign _zz__zz_io_forward_data_2 = {{24{_zz__zz_io_forward_data_2_1[7]}}, _zz__zz_io_forward_data_2_1};
+  assign _zz__zz_io_forward_data_2_3 = _zz_io_forward_data_1[15 : 0];
+  assign _zz__zz_io_forward_data_2_2 = {{16{_zz__zz_io_forward_data_2_3[15]}}, _zz__zz_io_forward_data_2_3};
+  assign _zz__zz_io_forward_data_2_5 = _zz_io_forward_data_1[31 : 0];
+  assign _zz__zz_io_forward_data_2_4 = _zz__zz_io_forward_data_2_5;
+  assign _zz__zz_io_forward_data = (io_i_pc + 32'h00000004);
   assign _zz_io_wb_dat_w = (offset * 4'b1000);
   assign _zz__zz_io_o_reg_data_d_1 = (offset * 4'b1000);
   assign _zz__zz_io_o_reg_data_d_2_1 = _zz_io_o_reg_data_d_1[7 : 0];
@@ -1766,6 +1792,41 @@ module MEM (
 
   assign mem_adr = io_i_alu_y;
   assign offset = mem_adr[1 : 0];
+  assign io_forward_we = io_i_mem_en;
+  assign io_forward_addr = io_i_reg_addr_d;
+  always @(*) begin
+    case(io_i_reg_sel)
+      RegSel_ALU : begin
+        _zz_io_forward_data = io_i_alu_y;
+      end
+      RegSel_MEM : begin
+        _zz_io_forward_data = _zz_io_forward_data_2;
+      end
+      default : begin
+        _zz_io_forward_data = _zz__zz_io_forward_data;
+      end
+    endcase
+  end
+
+  assign _zz_io_forward_data_1 = (io_wb_dat_r >>> _zz__zz_io_forward_data_1);
+  always @(*) begin
+    _zz_io_forward_data_2 = 32'h00000000;
+    case(io_i_mem_sel)
+      4'b0001 : begin
+        _zz_io_forward_data_2 = _zz__zz_io_forward_data_2;
+      end
+      4'b0011 : begin
+        _zz_io_forward_data_2 = _zz__zz_io_forward_data_2_2;
+      end
+      4'b1111 : begin
+        _zz_io_forward_data_2 = _zz__zz_io_forward_data_2_4;
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  assign io_forward_data = _zz_io_forward_data;
   assign io_stall_req = (io_i_mem_en && (! io_wb_ack));
   assign io_wb_cyc = io_wb_stb;
   assign fsm_wantExit = 1'b0;
@@ -1990,6 +2051,8 @@ module EXE (
   input  wire [31:0]   io_i_pc,
   input  wire [31:0]   io_i_reg_data_a,
   input  wire [31:0]   io_i_reg_data_b,
+  input  wire [4:0]    io_i_reg_addr_a,
+  input  wire [4:0]    io_i_reg_addr_b,
   input  wire [4:0]    io_i_reg_addr_d,
   input  wire [3:0]    io_i_alu_op,
   input  wire [1:0]    io_i_br_type,
@@ -2012,6 +2075,9 @@ module EXE (
   output reg  [31:0]   io_o_alu_y,
   output reg           io_br_br,
   output wire [31:0]   io_br_pc,
+  input  wire          io_forward_we,
+  input  wire [4:0]    io_forward_addr,
+  input  wire [31:0]   io_forward_data,
   input  wire          io_stall,
   output wire          io_flush_req,
   output wire [31:0]   io_alu_a,
@@ -2043,6 +2109,11 @@ module EXE (
 
   wire       [31:0]   _zz_io_br_pc;
   wire       [0:0]    _zz_io_br_pc_1;
+  reg        [31:0]   reg_a;
+  reg        [31:0]   reg_b;
+  wire                when_EXE_l38;
+  wire                when_EXE_l39;
+  wire                when_EXE_l42;
   `ifndef SYNTHESIS
   reg [39:0] io_i_alu_op_string;
   reg [15:0] io_i_br_type_string;
@@ -2116,8 +2187,29 @@ module EXE (
   end
   `endif
 
-  assign io_alu_a = (io_i_use_pc ? io_i_pc : io_i_reg_data_a);
-  assign io_alu_b = (io_i_use_rs2 ? io_i_reg_data_b : io_i_imm);
+  always @(*) begin
+    reg_a = io_i_reg_data_a;
+    if(when_EXE_l38) begin
+      if(when_EXE_l39) begin
+        reg_a = io_forward_data;
+      end
+    end
+  end
+
+  always @(*) begin
+    reg_b = io_i_reg_data_b;
+    if(when_EXE_l38) begin
+      if(when_EXE_l42) begin
+        reg_b = io_forward_data;
+      end
+    end
+  end
+
+  assign when_EXE_l38 = (io_forward_we && (io_forward_addr != 5'h00));
+  assign when_EXE_l39 = (io_forward_addr == io_i_reg_addr_a);
+  assign when_EXE_l42 = (io_forward_addr == io_i_reg_addr_b);
+  assign io_alu_a = (io_i_use_pc ? io_i_pc : reg_a);
+  assign io_alu_b = (io_i_use_rs2 ? reg_b : io_i_imm);
   assign io_alu_op = io_i_alu_op;
   assign io_br_pc = (io_alu_y ^ _zz_io_br_pc);
   always @(*) begin
@@ -2129,10 +2221,10 @@ module EXE (
         io_br_br = 1'b1;
       end
       BrType_EQ : begin
-        io_br_br = (io_i_reg_data_a == io_i_reg_data_b);
+        io_br_br = (reg_a == reg_b);
       end
       default : begin
-        io_br_br = (io_i_reg_data_a != io_i_reg_data_b);
+        io_br_br = (reg_a != reg_b);
       end
     endcase
   end
@@ -2153,7 +2245,7 @@ module EXE (
       if(!io_stall) begin
         io_o_alu_y <= io_alu_y;
         io_o_pc <= io_i_pc;
-        io_o_reg_data_b <= io_i_reg_data_b;
+        io_o_reg_data_b <= reg_b;
         io_o_reg_addr_d <= io_i_reg_addr_d;
         io_o_mem_en <= io_i_mem_en;
         io_o_mem_we <= io_i_mem_we;
@@ -2173,6 +2265,8 @@ module ID (
   output reg  [31:0]   io_o_pc,
   output reg  [31:0]   io_o_reg_data_a,
   output reg  [31:0]   io_o_reg_data_b,
+  output reg  [4:0]    io_o_reg_addr_a,
+  output reg  [4:0]    io_o_reg_addr_b,
   output reg  [4:0]    io_o_reg_addr_d,
   output reg  [3:0]    io_o_alu_op,
   output reg  [1:0]    io_o_br_type,
@@ -2184,12 +2278,8 @@ module ID (
   output reg  [3:0]    io_o_mem_sel,
   output reg           io_o_reg_we,
   output reg  [1:0]    io_o_reg_sel,
-  input  wire [4:0]    io_reg_addr_d_0,
-  input  wire [4:0]    io_reg_addr_d_1,
-  input  wire [4:0]    io_reg_addr_d_2,
   input  wire          io_stall,
   input  wire          io_bubble,
-  output reg           io_stall_req,
   output wire [4:0]    io_reg_addr_a,
   input  wire [31:0]   io_reg_data_a,
   output wire [4:0]    io_reg_addr_b,
@@ -2254,108 +2344,104 @@ module ID (
   wire       [31:0]   _zz__zz_io_o_imm_8;
   wire       [20:0]   _zz__zz_io_o_imm_9;
   reg        [3:0]    _zz_io_o_alu_op;
-  reg        [4:0]    switch_ID_l212;
-  wire       [6:0]    switch_ID_l36;
-  wire       [2:0]    switch_ID_l50;
-  wire       [2:0]    switch_ID_l60;
-  wire       [2:0]    switch_ID_l70;
-  wire       [2:0]    switch_ID_l83;
-  wire       [2:0]    switch_ID_l102;
+  reg        [4:0]    switch_ID_l209;
+  wire       [6:0]    switch_ID_l33;
+  wire       [2:0]    switch_ID_l47;
+  wire       [2:0]    switch_ID_l57;
+  wire       [2:0]    switch_ID_l67;
+  wire       [2:0]    switch_ID_l80;
+  wire       [2:0]    switch_ID_l99;
   reg        [1:0]    _zz_io_o_br_type;
-  reg        [4:0]    switch_ID_l266;
-  wire       [6:0]    switch_ID_l36_1;
-  wire       [2:0]    switch_ID_l50_1;
-  wire       [2:0]    switch_ID_l60_1;
-  wire       [2:0]    switch_ID_l70_1;
-  wire       [2:0]    switch_ID_l83_1;
-  wire       [2:0]    switch_ID_l102_1;
+  reg        [4:0]    switch_ID_l263;
+  wire       [6:0]    switch_ID_l33_1;
+  wire       [2:0]    switch_ID_l47_1;
+  wire       [2:0]    switch_ID_l57_1;
+  wire       [2:0]    switch_ID_l67_1;
+  wire       [2:0]    switch_ID_l80_1;
+  wire       [2:0]    switch_ID_l99_1;
   reg        [31:0]   _zz_io_o_imm;
-  reg        [2:0]    switch_ID_l175;
-  reg        [4:0]    switch_ID_l124;
-  wire       [6:0]    switch_ID_l36_2;
-  wire       [2:0]    switch_ID_l50_2;
-  wire       [2:0]    switch_ID_l60_2;
-  wire       [2:0]    switch_ID_l70_2;
-  wire       [2:0]    switch_ID_l83_2;
-  wire       [2:0]    switch_ID_l102_2;
+  reg        [2:0]    switch_ID_l172;
+  reg        [4:0]    switch_ID_l121;
+  wire       [6:0]    switch_ID_l33_2;
+  wire       [2:0]    switch_ID_l47_2;
+  wire       [2:0]    switch_ID_l57_2;
+  wire       [2:0]    switch_ID_l67_2;
+  wire       [2:0]    switch_ID_l80_2;
+  wire       [2:0]    switch_ID_l99_2;
   reg                 _zz_io_o_use_pc;
-  reg        [4:0]    switch_ID_l289;
-  wire       [6:0]    switch_ID_l36_3;
-  wire       [2:0]    switch_ID_l50_3;
-  wire       [2:0]    switch_ID_l60_3;
-  wire       [2:0]    switch_ID_l70_3;
-  wire       [2:0]    switch_ID_l83_3;
-  wire       [2:0]    switch_ID_l102_3;
+  reg        [4:0]    switch_ID_l286;
+  wire       [6:0]    switch_ID_l33_3;
+  wire       [2:0]    switch_ID_l47_3;
+  wire       [2:0]    switch_ID_l57_3;
+  wire       [2:0]    switch_ID_l67_3;
+  wire       [2:0]    switch_ID_l80_3;
+  wire       [2:0]    switch_ID_l99_3;
   reg                 _zz_io_o_use_rs2;
-  reg        [4:0]    switch_ID_l304;
-  wire       [6:0]    switch_ID_l36_4;
-  wire       [2:0]    switch_ID_l50_4;
-  wire       [2:0]    switch_ID_l60_4;
-  wire       [2:0]    switch_ID_l70_4;
-  wire       [2:0]    switch_ID_l83_4;
-  wire       [2:0]    switch_ID_l102_4;
+  reg        [4:0]    switch_ID_l301;
+  wire       [6:0]    switch_ID_l33_4;
+  wire       [2:0]    switch_ID_l47_4;
+  wire       [2:0]    switch_ID_l57_4;
+  wire       [2:0]    switch_ID_l67_4;
+  wire       [2:0]    switch_ID_l80_4;
+  wire       [2:0]    switch_ID_l99_4;
   reg                 _zz_io_o_mem_en;
-  reg        [4:0]    switch_ID_l319;
-  wire       [6:0]    switch_ID_l36_5;
-  wire       [2:0]    switch_ID_l50_5;
-  wire       [2:0]    switch_ID_l60_5;
-  wire       [2:0]    switch_ID_l70_5;
-  wire       [2:0]    switch_ID_l83_5;
-  wire       [2:0]    switch_ID_l102_5;
+  reg        [4:0]    switch_ID_l316;
+  wire       [6:0]    switch_ID_l33_5;
+  wire       [2:0]    switch_ID_l47_5;
+  wire       [2:0]    switch_ID_l57_5;
+  wire       [2:0]    switch_ID_l67_5;
+  wire       [2:0]    switch_ID_l80_5;
+  wire       [2:0]    switch_ID_l99_5;
   reg                 _zz_io_o_mem_we;
-  reg        [4:0]    switch_ID_l334;
-  wire       [6:0]    switch_ID_l36_6;
-  wire       [2:0]    switch_ID_l50_6;
-  wire       [2:0]    switch_ID_l60_6;
-  wire       [2:0]    switch_ID_l70_6;
-  wire       [2:0]    switch_ID_l83_6;
-  wire       [2:0]    switch_ID_l102_6;
+  reg        [4:0]    switch_ID_l331;
+  wire       [6:0]    switch_ID_l33_6;
+  wire       [2:0]    switch_ID_l47_6;
+  wire       [2:0]    switch_ID_l57_6;
+  wire       [2:0]    switch_ID_l67_6;
+  wire       [2:0]    switch_ID_l80_6;
+  wire       [2:0]    switch_ID_l99_6;
   reg        [3:0]    _zz_io_o_mem_sel;
-  reg        [4:0]    switch_ID_l347;
-  wire       [6:0]    switch_ID_l36_7;
-  wire       [2:0]    switch_ID_l50_7;
-  wire       [2:0]    switch_ID_l60_7;
-  wire       [2:0]    switch_ID_l70_7;
-  wire       [2:0]    switch_ID_l83_7;
-  wire       [2:0]    switch_ID_l102_7;
+  reg        [4:0]    switch_ID_l344;
+  wire       [6:0]    switch_ID_l33_7;
+  wire       [2:0]    switch_ID_l47_7;
+  wire       [2:0]    switch_ID_l57_7;
+  wire       [2:0]    switch_ID_l67_7;
+  wire       [2:0]    switch_ID_l80_7;
+  wire       [2:0]    switch_ID_l99_7;
   reg                 _zz_io_o_reg_we;
-  reg        [4:0]    switch_ID_l366;
-  wire       [6:0]    switch_ID_l36_8;
-  wire       [2:0]    switch_ID_l50_8;
-  wire       [2:0]    switch_ID_l60_8;
-  wire       [2:0]    switch_ID_l70_8;
-  wire       [2:0]    switch_ID_l83_8;
-  wire       [2:0]    switch_ID_l102_8;
+  reg        [4:0]    switch_ID_l363;
+  wire       [6:0]    switch_ID_l33_8;
+  wire       [2:0]    switch_ID_l47_8;
+  wire       [2:0]    switch_ID_l57_8;
+  wire       [2:0]    switch_ID_l67_8;
+  wire       [2:0]    switch_ID_l80_8;
+  wire       [2:0]    switch_ID_l99_8;
   reg        [1:0]    _zz_io_o_reg_sel;
-  reg        [4:0]    switch_ID_l392;
-  wire       [6:0]    switch_ID_l36_9;
-  wire       [2:0]    switch_ID_l50_9;
-  wire       [2:0]    switch_ID_l60_9;
-  wire       [2:0]    switch_ID_l70_9;
-  wire       [2:0]    switch_ID_l83_9;
-  wire       [2:0]    switch_ID_l102_9;
-  wire                when_ID_l435;
-  wire                when_ID_l458;
-  wire                when_ID_l458_1;
-  wire                when_ID_l458_2;
+  reg        [4:0]    switch_ID_l389;
+  wire       [6:0]    switch_ID_l33_9;
+  wire       [2:0]    switch_ID_l47_9;
+  wire       [2:0]    switch_ID_l57_9;
+  wire       [2:0]    switch_ID_l67_9;
+  wire       [2:0]    switch_ID_l80_9;
+  wire       [2:0]    switch_ID_l99_9;
   `ifndef SYNTHESIS
   reg [39:0] io_o_alu_op_string;
   reg [15:0] io_o_br_type_string;
   reg [23:0] io_o_reg_sel_string;
   reg [39:0] _zz_io_o_alu_op_string;
-  reg [39:0] switch_ID_l212_string;
+  reg [39:0] switch_ID_l209_string;
   reg [15:0] _zz_io_o_br_type_string;
-  reg [39:0] switch_ID_l266_string;
-  reg [7:0] switch_ID_l175_string;
-  reg [39:0] switch_ID_l124_string;
-  reg [39:0] switch_ID_l289_string;
-  reg [39:0] switch_ID_l304_string;
-  reg [39:0] switch_ID_l319_string;
-  reg [39:0] switch_ID_l334_string;
-  reg [39:0] switch_ID_l347_string;
-  reg [39:0] switch_ID_l366_string;
+  reg [39:0] switch_ID_l263_string;
+  reg [7:0] switch_ID_l172_string;
+  reg [39:0] switch_ID_l121_string;
+  reg [39:0] switch_ID_l286_string;
+  reg [39:0] switch_ID_l301_string;
+  reg [39:0] switch_ID_l316_string;
+  reg [39:0] switch_ID_l331_string;
+  reg [39:0] switch_ID_l344_string;
+  reg [39:0] switch_ID_l363_string;
   reg [23:0] _zz_io_o_reg_sel_string;
-  reg [39:0] switch_ID_l392_string;
+  reg [39:0] switch_ID_l389_string;
   `endif
 
 
@@ -2422,28 +2508,28 @@ module ID (
     endcase
   end
   always @(*) begin
-    case(switch_ID_l212)
-      Instr_UNK : switch_ID_l212_string = "UNK  ";
-      Instr_LUI : switch_ID_l212_string = "LUI  ";
-      Instr_AUIPC : switch_ID_l212_string = "AUIPC";
-      Instr_JAL : switch_ID_l212_string = "JAL  ";
-      Instr_JALR : switch_ID_l212_string = "JALR ";
-      Instr_BEQ : switch_ID_l212_string = "BEQ  ";
-      Instr_BNE : switch_ID_l212_string = "BNE  ";
-      Instr_LB : switch_ID_l212_string = "LB   ";
-      Instr_LW : switch_ID_l212_string = "LW   ";
-      Instr_SB : switch_ID_l212_string = "SB   ";
-      Instr_SW : switch_ID_l212_string = "SW   ";
-      Instr_ADDI : switch_ID_l212_string = "ADDI ";
-      Instr_ORI : switch_ID_l212_string = "ORI  ";
-      Instr_ANDI : switch_ID_l212_string = "ANDI ";
-      Instr_SLLI : switch_ID_l212_string = "SLLI ";
-      Instr_SRLI : switch_ID_l212_string = "SRLI ";
-      Instr_ADD : switch_ID_l212_string = "ADD  ";
-      Instr_XOR_1 : switch_ID_l212_string = "XOR_1";
-      Instr_OR_1 : switch_ID_l212_string = "OR_1 ";
-      Instr_AND_1 : switch_ID_l212_string = "AND_1";
-      default : switch_ID_l212_string = "?????";
+    case(switch_ID_l209)
+      Instr_UNK : switch_ID_l209_string = "UNK  ";
+      Instr_LUI : switch_ID_l209_string = "LUI  ";
+      Instr_AUIPC : switch_ID_l209_string = "AUIPC";
+      Instr_JAL : switch_ID_l209_string = "JAL  ";
+      Instr_JALR : switch_ID_l209_string = "JALR ";
+      Instr_BEQ : switch_ID_l209_string = "BEQ  ";
+      Instr_BNE : switch_ID_l209_string = "BNE  ";
+      Instr_LB : switch_ID_l209_string = "LB   ";
+      Instr_LW : switch_ID_l209_string = "LW   ";
+      Instr_SB : switch_ID_l209_string = "SB   ";
+      Instr_SW : switch_ID_l209_string = "SW   ";
+      Instr_ADDI : switch_ID_l209_string = "ADDI ";
+      Instr_ORI : switch_ID_l209_string = "ORI  ";
+      Instr_ANDI : switch_ID_l209_string = "ANDI ";
+      Instr_SLLI : switch_ID_l209_string = "SLLI ";
+      Instr_SRLI : switch_ID_l209_string = "SRLI ";
+      Instr_ADD : switch_ID_l209_string = "ADD  ";
+      Instr_XOR_1 : switch_ID_l209_string = "XOR_1";
+      Instr_OR_1 : switch_ID_l209_string = "OR_1 ";
+      Instr_AND_1 : switch_ID_l209_string = "AND_1";
+      default : switch_ID_l209_string = "?????";
     endcase
   end
   always @(*) begin
@@ -2456,214 +2542,214 @@ module ID (
     endcase
   end
   always @(*) begin
-    case(switch_ID_l266)
-      Instr_UNK : switch_ID_l266_string = "UNK  ";
-      Instr_LUI : switch_ID_l266_string = "LUI  ";
-      Instr_AUIPC : switch_ID_l266_string = "AUIPC";
-      Instr_JAL : switch_ID_l266_string = "JAL  ";
-      Instr_JALR : switch_ID_l266_string = "JALR ";
-      Instr_BEQ : switch_ID_l266_string = "BEQ  ";
-      Instr_BNE : switch_ID_l266_string = "BNE  ";
-      Instr_LB : switch_ID_l266_string = "LB   ";
-      Instr_LW : switch_ID_l266_string = "LW   ";
-      Instr_SB : switch_ID_l266_string = "SB   ";
-      Instr_SW : switch_ID_l266_string = "SW   ";
-      Instr_ADDI : switch_ID_l266_string = "ADDI ";
-      Instr_ORI : switch_ID_l266_string = "ORI  ";
-      Instr_ANDI : switch_ID_l266_string = "ANDI ";
-      Instr_SLLI : switch_ID_l266_string = "SLLI ";
-      Instr_SRLI : switch_ID_l266_string = "SRLI ";
-      Instr_ADD : switch_ID_l266_string = "ADD  ";
-      Instr_XOR_1 : switch_ID_l266_string = "XOR_1";
-      Instr_OR_1 : switch_ID_l266_string = "OR_1 ";
-      Instr_AND_1 : switch_ID_l266_string = "AND_1";
-      default : switch_ID_l266_string = "?????";
+    case(switch_ID_l263)
+      Instr_UNK : switch_ID_l263_string = "UNK  ";
+      Instr_LUI : switch_ID_l263_string = "LUI  ";
+      Instr_AUIPC : switch_ID_l263_string = "AUIPC";
+      Instr_JAL : switch_ID_l263_string = "JAL  ";
+      Instr_JALR : switch_ID_l263_string = "JALR ";
+      Instr_BEQ : switch_ID_l263_string = "BEQ  ";
+      Instr_BNE : switch_ID_l263_string = "BNE  ";
+      Instr_LB : switch_ID_l263_string = "LB   ";
+      Instr_LW : switch_ID_l263_string = "LW   ";
+      Instr_SB : switch_ID_l263_string = "SB   ";
+      Instr_SW : switch_ID_l263_string = "SW   ";
+      Instr_ADDI : switch_ID_l263_string = "ADDI ";
+      Instr_ORI : switch_ID_l263_string = "ORI  ";
+      Instr_ANDI : switch_ID_l263_string = "ANDI ";
+      Instr_SLLI : switch_ID_l263_string = "SLLI ";
+      Instr_SRLI : switch_ID_l263_string = "SRLI ";
+      Instr_ADD : switch_ID_l263_string = "ADD  ";
+      Instr_XOR_1 : switch_ID_l263_string = "XOR_1";
+      Instr_OR_1 : switch_ID_l263_string = "OR_1 ";
+      Instr_AND_1 : switch_ID_l263_string = "AND_1";
+      default : switch_ID_l263_string = "?????";
     endcase
   end
   always @(*) begin
-    case(switch_ID_l175)
-      InstrType_R : switch_ID_l175_string = "R";
-      InstrType_I : switch_ID_l175_string = "I";
-      InstrType_S : switch_ID_l175_string = "S";
-      InstrType_B : switch_ID_l175_string = "B";
-      InstrType_U : switch_ID_l175_string = "U";
-      InstrType_J : switch_ID_l175_string = "J";
-      default : switch_ID_l175_string = "?";
+    case(switch_ID_l172)
+      InstrType_R : switch_ID_l172_string = "R";
+      InstrType_I : switch_ID_l172_string = "I";
+      InstrType_S : switch_ID_l172_string = "S";
+      InstrType_B : switch_ID_l172_string = "B";
+      InstrType_U : switch_ID_l172_string = "U";
+      InstrType_J : switch_ID_l172_string = "J";
+      default : switch_ID_l172_string = "?";
     endcase
   end
   always @(*) begin
-    case(switch_ID_l124)
-      Instr_UNK : switch_ID_l124_string = "UNK  ";
-      Instr_LUI : switch_ID_l124_string = "LUI  ";
-      Instr_AUIPC : switch_ID_l124_string = "AUIPC";
-      Instr_JAL : switch_ID_l124_string = "JAL  ";
-      Instr_JALR : switch_ID_l124_string = "JALR ";
-      Instr_BEQ : switch_ID_l124_string = "BEQ  ";
-      Instr_BNE : switch_ID_l124_string = "BNE  ";
-      Instr_LB : switch_ID_l124_string = "LB   ";
-      Instr_LW : switch_ID_l124_string = "LW   ";
-      Instr_SB : switch_ID_l124_string = "SB   ";
-      Instr_SW : switch_ID_l124_string = "SW   ";
-      Instr_ADDI : switch_ID_l124_string = "ADDI ";
-      Instr_ORI : switch_ID_l124_string = "ORI  ";
-      Instr_ANDI : switch_ID_l124_string = "ANDI ";
-      Instr_SLLI : switch_ID_l124_string = "SLLI ";
-      Instr_SRLI : switch_ID_l124_string = "SRLI ";
-      Instr_ADD : switch_ID_l124_string = "ADD  ";
-      Instr_XOR_1 : switch_ID_l124_string = "XOR_1";
-      Instr_OR_1 : switch_ID_l124_string = "OR_1 ";
-      Instr_AND_1 : switch_ID_l124_string = "AND_1";
-      default : switch_ID_l124_string = "?????";
+    case(switch_ID_l121)
+      Instr_UNK : switch_ID_l121_string = "UNK  ";
+      Instr_LUI : switch_ID_l121_string = "LUI  ";
+      Instr_AUIPC : switch_ID_l121_string = "AUIPC";
+      Instr_JAL : switch_ID_l121_string = "JAL  ";
+      Instr_JALR : switch_ID_l121_string = "JALR ";
+      Instr_BEQ : switch_ID_l121_string = "BEQ  ";
+      Instr_BNE : switch_ID_l121_string = "BNE  ";
+      Instr_LB : switch_ID_l121_string = "LB   ";
+      Instr_LW : switch_ID_l121_string = "LW   ";
+      Instr_SB : switch_ID_l121_string = "SB   ";
+      Instr_SW : switch_ID_l121_string = "SW   ";
+      Instr_ADDI : switch_ID_l121_string = "ADDI ";
+      Instr_ORI : switch_ID_l121_string = "ORI  ";
+      Instr_ANDI : switch_ID_l121_string = "ANDI ";
+      Instr_SLLI : switch_ID_l121_string = "SLLI ";
+      Instr_SRLI : switch_ID_l121_string = "SRLI ";
+      Instr_ADD : switch_ID_l121_string = "ADD  ";
+      Instr_XOR_1 : switch_ID_l121_string = "XOR_1";
+      Instr_OR_1 : switch_ID_l121_string = "OR_1 ";
+      Instr_AND_1 : switch_ID_l121_string = "AND_1";
+      default : switch_ID_l121_string = "?????";
     endcase
   end
   always @(*) begin
-    case(switch_ID_l289)
-      Instr_UNK : switch_ID_l289_string = "UNK  ";
-      Instr_LUI : switch_ID_l289_string = "LUI  ";
-      Instr_AUIPC : switch_ID_l289_string = "AUIPC";
-      Instr_JAL : switch_ID_l289_string = "JAL  ";
-      Instr_JALR : switch_ID_l289_string = "JALR ";
-      Instr_BEQ : switch_ID_l289_string = "BEQ  ";
-      Instr_BNE : switch_ID_l289_string = "BNE  ";
-      Instr_LB : switch_ID_l289_string = "LB   ";
-      Instr_LW : switch_ID_l289_string = "LW   ";
-      Instr_SB : switch_ID_l289_string = "SB   ";
-      Instr_SW : switch_ID_l289_string = "SW   ";
-      Instr_ADDI : switch_ID_l289_string = "ADDI ";
-      Instr_ORI : switch_ID_l289_string = "ORI  ";
-      Instr_ANDI : switch_ID_l289_string = "ANDI ";
-      Instr_SLLI : switch_ID_l289_string = "SLLI ";
-      Instr_SRLI : switch_ID_l289_string = "SRLI ";
-      Instr_ADD : switch_ID_l289_string = "ADD  ";
-      Instr_XOR_1 : switch_ID_l289_string = "XOR_1";
-      Instr_OR_1 : switch_ID_l289_string = "OR_1 ";
-      Instr_AND_1 : switch_ID_l289_string = "AND_1";
-      default : switch_ID_l289_string = "?????";
+    case(switch_ID_l286)
+      Instr_UNK : switch_ID_l286_string = "UNK  ";
+      Instr_LUI : switch_ID_l286_string = "LUI  ";
+      Instr_AUIPC : switch_ID_l286_string = "AUIPC";
+      Instr_JAL : switch_ID_l286_string = "JAL  ";
+      Instr_JALR : switch_ID_l286_string = "JALR ";
+      Instr_BEQ : switch_ID_l286_string = "BEQ  ";
+      Instr_BNE : switch_ID_l286_string = "BNE  ";
+      Instr_LB : switch_ID_l286_string = "LB   ";
+      Instr_LW : switch_ID_l286_string = "LW   ";
+      Instr_SB : switch_ID_l286_string = "SB   ";
+      Instr_SW : switch_ID_l286_string = "SW   ";
+      Instr_ADDI : switch_ID_l286_string = "ADDI ";
+      Instr_ORI : switch_ID_l286_string = "ORI  ";
+      Instr_ANDI : switch_ID_l286_string = "ANDI ";
+      Instr_SLLI : switch_ID_l286_string = "SLLI ";
+      Instr_SRLI : switch_ID_l286_string = "SRLI ";
+      Instr_ADD : switch_ID_l286_string = "ADD  ";
+      Instr_XOR_1 : switch_ID_l286_string = "XOR_1";
+      Instr_OR_1 : switch_ID_l286_string = "OR_1 ";
+      Instr_AND_1 : switch_ID_l286_string = "AND_1";
+      default : switch_ID_l286_string = "?????";
     endcase
   end
   always @(*) begin
-    case(switch_ID_l304)
-      Instr_UNK : switch_ID_l304_string = "UNK  ";
-      Instr_LUI : switch_ID_l304_string = "LUI  ";
-      Instr_AUIPC : switch_ID_l304_string = "AUIPC";
-      Instr_JAL : switch_ID_l304_string = "JAL  ";
-      Instr_JALR : switch_ID_l304_string = "JALR ";
-      Instr_BEQ : switch_ID_l304_string = "BEQ  ";
-      Instr_BNE : switch_ID_l304_string = "BNE  ";
-      Instr_LB : switch_ID_l304_string = "LB   ";
-      Instr_LW : switch_ID_l304_string = "LW   ";
-      Instr_SB : switch_ID_l304_string = "SB   ";
-      Instr_SW : switch_ID_l304_string = "SW   ";
-      Instr_ADDI : switch_ID_l304_string = "ADDI ";
-      Instr_ORI : switch_ID_l304_string = "ORI  ";
-      Instr_ANDI : switch_ID_l304_string = "ANDI ";
-      Instr_SLLI : switch_ID_l304_string = "SLLI ";
-      Instr_SRLI : switch_ID_l304_string = "SRLI ";
-      Instr_ADD : switch_ID_l304_string = "ADD  ";
-      Instr_XOR_1 : switch_ID_l304_string = "XOR_1";
-      Instr_OR_1 : switch_ID_l304_string = "OR_1 ";
-      Instr_AND_1 : switch_ID_l304_string = "AND_1";
-      default : switch_ID_l304_string = "?????";
+    case(switch_ID_l301)
+      Instr_UNK : switch_ID_l301_string = "UNK  ";
+      Instr_LUI : switch_ID_l301_string = "LUI  ";
+      Instr_AUIPC : switch_ID_l301_string = "AUIPC";
+      Instr_JAL : switch_ID_l301_string = "JAL  ";
+      Instr_JALR : switch_ID_l301_string = "JALR ";
+      Instr_BEQ : switch_ID_l301_string = "BEQ  ";
+      Instr_BNE : switch_ID_l301_string = "BNE  ";
+      Instr_LB : switch_ID_l301_string = "LB   ";
+      Instr_LW : switch_ID_l301_string = "LW   ";
+      Instr_SB : switch_ID_l301_string = "SB   ";
+      Instr_SW : switch_ID_l301_string = "SW   ";
+      Instr_ADDI : switch_ID_l301_string = "ADDI ";
+      Instr_ORI : switch_ID_l301_string = "ORI  ";
+      Instr_ANDI : switch_ID_l301_string = "ANDI ";
+      Instr_SLLI : switch_ID_l301_string = "SLLI ";
+      Instr_SRLI : switch_ID_l301_string = "SRLI ";
+      Instr_ADD : switch_ID_l301_string = "ADD  ";
+      Instr_XOR_1 : switch_ID_l301_string = "XOR_1";
+      Instr_OR_1 : switch_ID_l301_string = "OR_1 ";
+      Instr_AND_1 : switch_ID_l301_string = "AND_1";
+      default : switch_ID_l301_string = "?????";
     endcase
   end
   always @(*) begin
-    case(switch_ID_l319)
-      Instr_UNK : switch_ID_l319_string = "UNK  ";
-      Instr_LUI : switch_ID_l319_string = "LUI  ";
-      Instr_AUIPC : switch_ID_l319_string = "AUIPC";
-      Instr_JAL : switch_ID_l319_string = "JAL  ";
-      Instr_JALR : switch_ID_l319_string = "JALR ";
-      Instr_BEQ : switch_ID_l319_string = "BEQ  ";
-      Instr_BNE : switch_ID_l319_string = "BNE  ";
-      Instr_LB : switch_ID_l319_string = "LB   ";
-      Instr_LW : switch_ID_l319_string = "LW   ";
-      Instr_SB : switch_ID_l319_string = "SB   ";
-      Instr_SW : switch_ID_l319_string = "SW   ";
-      Instr_ADDI : switch_ID_l319_string = "ADDI ";
-      Instr_ORI : switch_ID_l319_string = "ORI  ";
-      Instr_ANDI : switch_ID_l319_string = "ANDI ";
-      Instr_SLLI : switch_ID_l319_string = "SLLI ";
-      Instr_SRLI : switch_ID_l319_string = "SRLI ";
-      Instr_ADD : switch_ID_l319_string = "ADD  ";
-      Instr_XOR_1 : switch_ID_l319_string = "XOR_1";
-      Instr_OR_1 : switch_ID_l319_string = "OR_1 ";
-      Instr_AND_1 : switch_ID_l319_string = "AND_1";
-      default : switch_ID_l319_string = "?????";
+    case(switch_ID_l316)
+      Instr_UNK : switch_ID_l316_string = "UNK  ";
+      Instr_LUI : switch_ID_l316_string = "LUI  ";
+      Instr_AUIPC : switch_ID_l316_string = "AUIPC";
+      Instr_JAL : switch_ID_l316_string = "JAL  ";
+      Instr_JALR : switch_ID_l316_string = "JALR ";
+      Instr_BEQ : switch_ID_l316_string = "BEQ  ";
+      Instr_BNE : switch_ID_l316_string = "BNE  ";
+      Instr_LB : switch_ID_l316_string = "LB   ";
+      Instr_LW : switch_ID_l316_string = "LW   ";
+      Instr_SB : switch_ID_l316_string = "SB   ";
+      Instr_SW : switch_ID_l316_string = "SW   ";
+      Instr_ADDI : switch_ID_l316_string = "ADDI ";
+      Instr_ORI : switch_ID_l316_string = "ORI  ";
+      Instr_ANDI : switch_ID_l316_string = "ANDI ";
+      Instr_SLLI : switch_ID_l316_string = "SLLI ";
+      Instr_SRLI : switch_ID_l316_string = "SRLI ";
+      Instr_ADD : switch_ID_l316_string = "ADD  ";
+      Instr_XOR_1 : switch_ID_l316_string = "XOR_1";
+      Instr_OR_1 : switch_ID_l316_string = "OR_1 ";
+      Instr_AND_1 : switch_ID_l316_string = "AND_1";
+      default : switch_ID_l316_string = "?????";
     endcase
   end
   always @(*) begin
-    case(switch_ID_l334)
-      Instr_UNK : switch_ID_l334_string = "UNK  ";
-      Instr_LUI : switch_ID_l334_string = "LUI  ";
-      Instr_AUIPC : switch_ID_l334_string = "AUIPC";
-      Instr_JAL : switch_ID_l334_string = "JAL  ";
-      Instr_JALR : switch_ID_l334_string = "JALR ";
-      Instr_BEQ : switch_ID_l334_string = "BEQ  ";
-      Instr_BNE : switch_ID_l334_string = "BNE  ";
-      Instr_LB : switch_ID_l334_string = "LB   ";
-      Instr_LW : switch_ID_l334_string = "LW   ";
-      Instr_SB : switch_ID_l334_string = "SB   ";
-      Instr_SW : switch_ID_l334_string = "SW   ";
-      Instr_ADDI : switch_ID_l334_string = "ADDI ";
-      Instr_ORI : switch_ID_l334_string = "ORI  ";
-      Instr_ANDI : switch_ID_l334_string = "ANDI ";
-      Instr_SLLI : switch_ID_l334_string = "SLLI ";
-      Instr_SRLI : switch_ID_l334_string = "SRLI ";
-      Instr_ADD : switch_ID_l334_string = "ADD  ";
-      Instr_XOR_1 : switch_ID_l334_string = "XOR_1";
-      Instr_OR_1 : switch_ID_l334_string = "OR_1 ";
-      Instr_AND_1 : switch_ID_l334_string = "AND_1";
-      default : switch_ID_l334_string = "?????";
+    case(switch_ID_l331)
+      Instr_UNK : switch_ID_l331_string = "UNK  ";
+      Instr_LUI : switch_ID_l331_string = "LUI  ";
+      Instr_AUIPC : switch_ID_l331_string = "AUIPC";
+      Instr_JAL : switch_ID_l331_string = "JAL  ";
+      Instr_JALR : switch_ID_l331_string = "JALR ";
+      Instr_BEQ : switch_ID_l331_string = "BEQ  ";
+      Instr_BNE : switch_ID_l331_string = "BNE  ";
+      Instr_LB : switch_ID_l331_string = "LB   ";
+      Instr_LW : switch_ID_l331_string = "LW   ";
+      Instr_SB : switch_ID_l331_string = "SB   ";
+      Instr_SW : switch_ID_l331_string = "SW   ";
+      Instr_ADDI : switch_ID_l331_string = "ADDI ";
+      Instr_ORI : switch_ID_l331_string = "ORI  ";
+      Instr_ANDI : switch_ID_l331_string = "ANDI ";
+      Instr_SLLI : switch_ID_l331_string = "SLLI ";
+      Instr_SRLI : switch_ID_l331_string = "SRLI ";
+      Instr_ADD : switch_ID_l331_string = "ADD  ";
+      Instr_XOR_1 : switch_ID_l331_string = "XOR_1";
+      Instr_OR_1 : switch_ID_l331_string = "OR_1 ";
+      Instr_AND_1 : switch_ID_l331_string = "AND_1";
+      default : switch_ID_l331_string = "?????";
     endcase
   end
   always @(*) begin
-    case(switch_ID_l347)
-      Instr_UNK : switch_ID_l347_string = "UNK  ";
-      Instr_LUI : switch_ID_l347_string = "LUI  ";
-      Instr_AUIPC : switch_ID_l347_string = "AUIPC";
-      Instr_JAL : switch_ID_l347_string = "JAL  ";
-      Instr_JALR : switch_ID_l347_string = "JALR ";
-      Instr_BEQ : switch_ID_l347_string = "BEQ  ";
-      Instr_BNE : switch_ID_l347_string = "BNE  ";
-      Instr_LB : switch_ID_l347_string = "LB   ";
-      Instr_LW : switch_ID_l347_string = "LW   ";
-      Instr_SB : switch_ID_l347_string = "SB   ";
-      Instr_SW : switch_ID_l347_string = "SW   ";
-      Instr_ADDI : switch_ID_l347_string = "ADDI ";
-      Instr_ORI : switch_ID_l347_string = "ORI  ";
-      Instr_ANDI : switch_ID_l347_string = "ANDI ";
-      Instr_SLLI : switch_ID_l347_string = "SLLI ";
-      Instr_SRLI : switch_ID_l347_string = "SRLI ";
-      Instr_ADD : switch_ID_l347_string = "ADD  ";
-      Instr_XOR_1 : switch_ID_l347_string = "XOR_1";
-      Instr_OR_1 : switch_ID_l347_string = "OR_1 ";
-      Instr_AND_1 : switch_ID_l347_string = "AND_1";
-      default : switch_ID_l347_string = "?????";
+    case(switch_ID_l344)
+      Instr_UNK : switch_ID_l344_string = "UNK  ";
+      Instr_LUI : switch_ID_l344_string = "LUI  ";
+      Instr_AUIPC : switch_ID_l344_string = "AUIPC";
+      Instr_JAL : switch_ID_l344_string = "JAL  ";
+      Instr_JALR : switch_ID_l344_string = "JALR ";
+      Instr_BEQ : switch_ID_l344_string = "BEQ  ";
+      Instr_BNE : switch_ID_l344_string = "BNE  ";
+      Instr_LB : switch_ID_l344_string = "LB   ";
+      Instr_LW : switch_ID_l344_string = "LW   ";
+      Instr_SB : switch_ID_l344_string = "SB   ";
+      Instr_SW : switch_ID_l344_string = "SW   ";
+      Instr_ADDI : switch_ID_l344_string = "ADDI ";
+      Instr_ORI : switch_ID_l344_string = "ORI  ";
+      Instr_ANDI : switch_ID_l344_string = "ANDI ";
+      Instr_SLLI : switch_ID_l344_string = "SLLI ";
+      Instr_SRLI : switch_ID_l344_string = "SRLI ";
+      Instr_ADD : switch_ID_l344_string = "ADD  ";
+      Instr_XOR_1 : switch_ID_l344_string = "XOR_1";
+      Instr_OR_1 : switch_ID_l344_string = "OR_1 ";
+      Instr_AND_1 : switch_ID_l344_string = "AND_1";
+      default : switch_ID_l344_string = "?????";
     endcase
   end
   always @(*) begin
-    case(switch_ID_l366)
-      Instr_UNK : switch_ID_l366_string = "UNK  ";
-      Instr_LUI : switch_ID_l366_string = "LUI  ";
-      Instr_AUIPC : switch_ID_l366_string = "AUIPC";
-      Instr_JAL : switch_ID_l366_string = "JAL  ";
-      Instr_JALR : switch_ID_l366_string = "JALR ";
-      Instr_BEQ : switch_ID_l366_string = "BEQ  ";
-      Instr_BNE : switch_ID_l366_string = "BNE  ";
-      Instr_LB : switch_ID_l366_string = "LB   ";
-      Instr_LW : switch_ID_l366_string = "LW   ";
-      Instr_SB : switch_ID_l366_string = "SB   ";
-      Instr_SW : switch_ID_l366_string = "SW   ";
-      Instr_ADDI : switch_ID_l366_string = "ADDI ";
-      Instr_ORI : switch_ID_l366_string = "ORI  ";
-      Instr_ANDI : switch_ID_l366_string = "ANDI ";
-      Instr_SLLI : switch_ID_l366_string = "SLLI ";
-      Instr_SRLI : switch_ID_l366_string = "SRLI ";
-      Instr_ADD : switch_ID_l366_string = "ADD  ";
-      Instr_XOR_1 : switch_ID_l366_string = "XOR_1";
-      Instr_OR_1 : switch_ID_l366_string = "OR_1 ";
-      Instr_AND_1 : switch_ID_l366_string = "AND_1";
-      default : switch_ID_l366_string = "?????";
+    case(switch_ID_l363)
+      Instr_UNK : switch_ID_l363_string = "UNK  ";
+      Instr_LUI : switch_ID_l363_string = "LUI  ";
+      Instr_AUIPC : switch_ID_l363_string = "AUIPC";
+      Instr_JAL : switch_ID_l363_string = "JAL  ";
+      Instr_JALR : switch_ID_l363_string = "JALR ";
+      Instr_BEQ : switch_ID_l363_string = "BEQ  ";
+      Instr_BNE : switch_ID_l363_string = "BNE  ";
+      Instr_LB : switch_ID_l363_string = "LB   ";
+      Instr_LW : switch_ID_l363_string = "LW   ";
+      Instr_SB : switch_ID_l363_string = "SB   ";
+      Instr_SW : switch_ID_l363_string = "SW   ";
+      Instr_ADDI : switch_ID_l363_string = "ADDI ";
+      Instr_ORI : switch_ID_l363_string = "ORI  ";
+      Instr_ANDI : switch_ID_l363_string = "ANDI ";
+      Instr_SLLI : switch_ID_l363_string = "SLLI ";
+      Instr_SRLI : switch_ID_l363_string = "SRLI ";
+      Instr_ADD : switch_ID_l363_string = "ADD  ";
+      Instr_XOR_1 : switch_ID_l363_string = "XOR_1";
+      Instr_OR_1 : switch_ID_l363_string = "OR_1 ";
+      Instr_AND_1 : switch_ID_l363_string = "AND_1";
+      default : switch_ID_l363_string = "?????";
     endcase
   end
   always @(*) begin
@@ -2675,28 +2761,28 @@ module ID (
     endcase
   end
   always @(*) begin
-    case(switch_ID_l392)
-      Instr_UNK : switch_ID_l392_string = "UNK  ";
-      Instr_LUI : switch_ID_l392_string = "LUI  ";
-      Instr_AUIPC : switch_ID_l392_string = "AUIPC";
-      Instr_JAL : switch_ID_l392_string = "JAL  ";
-      Instr_JALR : switch_ID_l392_string = "JALR ";
-      Instr_BEQ : switch_ID_l392_string = "BEQ  ";
-      Instr_BNE : switch_ID_l392_string = "BNE  ";
-      Instr_LB : switch_ID_l392_string = "LB   ";
-      Instr_LW : switch_ID_l392_string = "LW   ";
-      Instr_SB : switch_ID_l392_string = "SB   ";
-      Instr_SW : switch_ID_l392_string = "SW   ";
-      Instr_ADDI : switch_ID_l392_string = "ADDI ";
-      Instr_ORI : switch_ID_l392_string = "ORI  ";
-      Instr_ANDI : switch_ID_l392_string = "ANDI ";
-      Instr_SLLI : switch_ID_l392_string = "SLLI ";
-      Instr_SRLI : switch_ID_l392_string = "SRLI ";
-      Instr_ADD : switch_ID_l392_string = "ADD  ";
-      Instr_XOR_1 : switch_ID_l392_string = "XOR_1";
-      Instr_OR_1 : switch_ID_l392_string = "OR_1 ";
-      Instr_AND_1 : switch_ID_l392_string = "AND_1";
-      default : switch_ID_l392_string = "?????";
+    case(switch_ID_l389)
+      Instr_UNK : switch_ID_l389_string = "UNK  ";
+      Instr_LUI : switch_ID_l389_string = "LUI  ";
+      Instr_AUIPC : switch_ID_l389_string = "AUIPC";
+      Instr_JAL : switch_ID_l389_string = "JAL  ";
+      Instr_JALR : switch_ID_l389_string = "JALR ";
+      Instr_BEQ : switch_ID_l389_string = "BEQ  ";
+      Instr_BNE : switch_ID_l389_string = "BNE  ";
+      Instr_LB : switch_ID_l389_string = "LB   ";
+      Instr_LW : switch_ID_l389_string = "LW   ";
+      Instr_SB : switch_ID_l389_string = "SB   ";
+      Instr_SW : switch_ID_l389_string = "SW   ";
+      Instr_ADDI : switch_ID_l389_string = "ADDI ";
+      Instr_ORI : switch_ID_l389_string = "ORI  ";
+      Instr_ANDI : switch_ID_l389_string = "ANDI ";
+      Instr_SLLI : switch_ID_l389_string = "SLLI ";
+      Instr_SRLI : switch_ID_l389_string = "SRLI ";
+      Instr_ADD : switch_ID_l389_string = "ADD  ";
+      Instr_XOR_1 : switch_ID_l389_string = "XOR_1";
+      Instr_OR_1 : switch_ID_l389_string = "OR_1 ";
+      Instr_AND_1 : switch_ID_l389_string = "AND_1";
+      default : switch_ID_l389_string = "?????";
     endcase
   end
   `endif
@@ -2705,7 +2791,7 @@ module ID (
   assign io_reg_addr_b = io_i_instr[24 : 20];
   always @(*) begin
     _zz_io_o_alu_op = AluOp_ADD;
-    case(switch_ID_l212)
+    case(switch_ID_l209)
       Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_BEQ, Instr_BNE, Instr_LB, Instr_LW, Instr_SB, Instr_SW, Instr_ADDI, Instr_ADD : begin
         _zz_io_o_alu_op = AluOp_ADD;
       end
@@ -2733,91 +2819,91 @@ module ID (
   end
 
   always @(*) begin
-    switch_ID_l212 = Instr_UNK;
-    case(switch_ID_l36)
+    switch_ID_l209 = Instr_UNK;
+    case(switch_ID_l33)
       7'h37 : begin
-        switch_ID_l212 = Instr_LUI;
+        switch_ID_l209 = Instr_LUI;
       end
       7'h17 : begin
-        switch_ID_l212 = Instr_AUIPC;
+        switch_ID_l209 = Instr_AUIPC;
       end
       7'h6f : begin
-        switch_ID_l212 = Instr_JAL;
+        switch_ID_l209 = Instr_JAL;
       end
       7'h67 : begin
-        switch_ID_l212 = Instr_JALR;
+        switch_ID_l209 = Instr_JALR;
       end
       7'h63 : begin
-        case(switch_ID_l50)
+        case(switch_ID_l47)
           3'b000 : begin
-            switch_ID_l212 = Instr_BEQ;
+            switch_ID_l209 = Instr_BEQ;
           end
           3'b001 : begin
-            switch_ID_l212 = Instr_BNE;
+            switch_ID_l209 = Instr_BNE;
           end
           default : begin
           end
         endcase
       end
       7'h03 : begin
-        case(switch_ID_l60)
+        case(switch_ID_l57)
           3'b000 : begin
-            switch_ID_l212 = Instr_LB;
+            switch_ID_l209 = Instr_LB;
           end
           3'b010 : begin
-            switch_ID_l212 = Instr_LW;
+            switch_ID_l209 = Instr_LW;
           end
           default : begin
           end
         endcase
       end
       7'h23 : begin
-        case(switch_ID_l70)
+        case(switch_ID_l67)
           3'b000 : begin
-            switch_ID_l212 = Instr_SB;
+            switch_ID_l209 = Instr_SB;
           end
           3'b010 : begin
-            switch_ID_l212 = Instr_SW;
+            switch_ID_l209 = Instr_SW;
           end
           default : begin
-            switch_ID_l212 = Instr_UNK;
+            switch_ID_l209 = Instr_UNK;
           end
         endcase
       end
       7'h13 : begin
-        case(switch_ID_l83)
+        case(switch_ID_l80)
           3'b000 : begin
-            switch_ID_l212 = Instr_ADDI;
+            switch_ID_l209 = Instr_ADDI;
           end
           3'b110 : begin
-            switch_ID_l212 = Instr_ORI;
+            switch_ID_l209 = Instr_ORI;
           end
           3'b111 : begin
-            switch_ID_l212 = Instr_ANDI;
+            switch_ID_l209 = Instr_ANDI;
           end
           3'b001 : begin
-            switch_ID_l212 = Instr_SLLI;
+            switch_ID_l209 = Instr_SLLI;
           end
           3'b101 : begin
-            switch_ID_l212 = Instr_SRLI;
+            switch_ID_l209 = Instr_SRLI;
           end
           default : begin
           end
         endcase
       end
       7'h33 : begin
-        case(switch_ID_l102)
+        case(switch_ID_l99)
           3'b000 : begin
-            switch_ID_l212 = Instr_ADD;
+            switch_ID_l209 = Instr_ADD;
           end
           3'b100 : begin
-            switch_ID_l212 = Instr_XOR_1;
+            switch_ID_l209 = Instr_XOR_1;
           end
           3'b110 : begin
-            switch_ID_l212 = Instr_OR_1;
+            switch_ID_l209 = Instr_OR_1;
           end
           3'b111 : begin
-            switch_ID_l212 = Instr_AND_1;
+            switch_ID_l209 = Instr_AND_1;
           end
           default : begin
           end
@@ -2828,15 +2914,15 @@ module ID (
     endcase
   end
 
-  assign switch_ID_l36 = io_i_instr[6 : 0];
-  assign switch_ID_l50 = io_i_instr[14 : 12];
-  assign switch_ID_l60 = io_i_instr[14 : 12];
-  assign switch_ID_l70 = io_i_instr[14 : 12];
-  assign switch_ID_l83 = io_i_instr[14 : 12];
-  assign switch_ID_l102 = io_i_instr[14 : 12];
+  assign switch_ID_l33 = io_i_instr[6 : 0];
+  assign switch_ID_l47 = io_i_instr[14 : 12];
+  assign switch_ID_l57 = io_i_instr[14 : 12];
+  assign switch_ID_l67 = io_i_instr[14 : 12];
+  assign switch_ID_l80 = io_i_instr[14 : 12];
+  assign switch_ID_l99 = io_i_instr[14 : 12];
   always @(*) begin
     _zz_io_o_br_type = BrType_F;
-    case(switch_ID_l266)
+    case(switch_ID_l263)
       Instr_JAL, Instr_JALR : begin
         _zz_io_o_br_type = BrType_T;
       end
@@ -2852,91 +2938,91 @@ module ID (
   end
 
   always @(*) begin
-    switch_ID_l266 = Instr_UNK;
-    case(switch_ID_l36_1)
+    switch_ID_l263 = Instr_UNK;
+    case(switch_ID_l33_1)
       7'h37 : begin
-        switch_ID_l266 = Instr_LUI;
+        switch_ID_l263 = Instr_LUI;
       end
       7'h17 : begin
-        switch_ID_l266 = Instr_AUIPC;
+        switch_ID_l263 = Instr_AUIPC;
       end
       7'h6f : begin
-        switch_ID_l266 = Instr_JAL;
+        switch_ID_l263 = Instr_JAL;
       end
       7'h67 : begin
-        switch_ID_l266 = Instr_JALR;
+        switch_ID_l263 = Instr_JALR;
       end
       7'h63 : begin
-        case(switch_ID_l50_1)
+        case(switch_ID_l47_1)
           3'b000 : begin
-            switch_ID_l266 = Instr_BEQ;
+            switch_ID_l263 = Instr_BEQ;
           end
           3'b001 : begin
-            switch_ID_l266 = Instr_BNE;
+            switch_ID_l263 = Instr_BNE;
           end
           default : begin
           end
         endcase
       end
       7'h03 : begin
-        case(switch_ID_l60_1)
+        case(switch_ID_l57_1)
           3'b000 : begin
-            switch_ID_l266 = Instr_LB;
+            switch_ID_l263 = Instr_LB;
           end
           3'b010 : begin
-            switch_ID_l266 = Instr_LW;
+            switch_ID_l263 = Instr_LW;
           end
           default : begin
           end
         endcase
       end
       7'h23 : begin
-        case(switch_ID_l70_1)
+        case(switch_ID_l67_1)
           3'b000 : begin
-            switch_ID_l266 = Instr_SB;
+            switch_ID_l263 = Instr_SB;
           end
           3'b010 : begin
-            switch_ID_l266 = Instr_SW;
+            switch_ID_l263 = Instr_SW;
           end
           default : begin
-            switch_ID_l266 = Instr_UNK;
+            switch_ID_l263 = Instr_UNK;
           end
         endcase
       end
       7'h13 : begin
-        case(switch_ID_l83_1)
+        case(switch_ID_l80_1)
           3'b000 : begin
-            switch_ID_l266 = Instr_ADDI;
+            switch_ID_l263 = Instr_ADDI;
           end
           3'b110 : begin
-            switch_ID_l266 = Instr_ORI;
+            switch_ID_l263 = Instr_ORI;
           end
           3'b111 : begin
-            switch_ID_l266 = Instr_ANDI;
+            switch_ID_l263 = Instr_ANDI;
           end
           3'b001 : begin
-            switch_ID_l266 = Instr_SLLI;
+            switch_ID_l263 = Instr_SLLI;
           end
           3'b101 : begin
-            switch_ID_l266 = Instr_SRLI;
+            switch_ID_l263 = Instr_SRLI;
           end
           default : begin
           end
         endcase
       end
       7'h33 : begin
-        case(switch_ID_l102_1)
+        case(switch_ID_l99_1)
           3'b000 : begin
-            switch_ID_l266 = Instr_ADD;
+            switch_ID_l263 = Instr_ADD;
           end
           3'b100 : begin
-            switch_ID_l266 = Instr_XOR_1;
+            switch_ID_l263 = Instr_XOR_1;
           end
           3'b110 : begin
-            switch_ID_l266 = Instr_OR_1;
+            switch_ID_l263 = Instr_OR_1;
           end
           3'b111 : begin
-            switch_ID_l266 = Instr_AND_1;
+            switch_ID_l263 = Instr_AND_1;
           end
           default : begin
           end
@@ -2947,32 +3033,32 @@ module ID (
     endcase
   end
 
-  assign switch_ID_l36_1 = io_i_instr[6 : 0];
-  assign switch_ID_l50_1 = io_i_instr[14 : 12];
-  assign switch_ID_l60_1 = io_i_instr[14 : 12];
-  assign switch_ID_l70_1 = io_i_instr[14 : 12];
-  assign switch_ID_l83_1 = io_i_instr[14 : 12];
-  assign switch_ID_l102_1 = io_i_instr[14 : 12];
+  assign switch_ID_l33_1 = io_i_instr[6 : 0];
+  assign switch_ID_l47_1 = io_i_instr[14 : 12];
+  assign switch_ID_l57_1 = io_i_instr[14 : 12];
+  assign switch_ID_l67_1 = io_i_instr[14 : 12];
+  assign switch_ID_l80_1 = io_i_instr[14 : 12];
+  assign switch_ID_l99_1 = io_i_instr[14 : 12];
   always @(*) begin
-    switch_ID_l175 = InstrType_I;
-    case(switch_ID_l124)
+    switch_ID_l172 = InstrType_I;
+    case(switch_ID_l121)
       Instr_ADD, Instr_XOR_1, Instr_OR_1, Instr_AND_1 : begin
-        switch_ID_l175 = InstrType_R;
+        switch_ID_l172 = InstrType_R;
       end
       Instr_JALR, Instr_ADDI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_LB, Instr_LW : begin
-        switch_ID_l175 = InstrType_I;
+        switch_ID_l172 = InstrType_I;
       end
       Instr_SB, Instr_SW : begin
-        switch_ID_l175 = InstrType_S;
+        switch_ID_l172 = InstrType_S;
       end
       Instr_BEQ, Instr_BNE : begin
-        switch_ID_l175 = InstrType_B;
+        switch_ID_l172 = InstrType_B;
       end
       Instr_LUI, Instr_AUIPC : begin
-        switch_ID_l175 = InstrType_U;
+        switch_ID_l172 = InstrType_U;
       end
       Instr_JAL : begin
-        switch_ID_l175 = InstrType_J;
+        switch_ID_l172 = InstrType_J;
       end
       default : begin
       end
@@ -2980,91 +3066,91 @@ module ID (
   end
 
   always @(*) begin
-    switch_ID_l124 = Instr_UNK;
-    case(switch_ID_l36_2)
+    switch_ID_l121 = Instr_UNK;
+    case(switch_ID_l33_2)
       7'h37 : begin
-        switch_ID_l124 = Instr_LUI;
+        switch_ID_l121 = Instr_LUI;
       end
       7'h17 : begin
-        switch_ID_l124 = Instr_AUIPC;
+        switch_ID_l121 = Instr_AUIPC;
       end
       7'h6f : begin
-        switch_ID_l124 = Instr_JAL;
+        switch_ID_l121 = Instr_JAL;
       end
       7'h67 : begin
-        switch_ID_l124 = Instr_JALR;
+        switch_ID_l121 = Instr_JALR;
       end
       7'h63 : begin
-        case(switch_ID_l50_2)
+        case(switch_ID_l47_2)
           3'b000 : begin
-            switch_ID_l124 = Instr_BEQ;
+            switch_ID_l121 = Instr_BEQ;
           end
           3'b001 : begin
-            switch_ID_l124 = Instr_BNE;
+            switch_ID_l121 = Instr_BNE;
           end
           default : begin
           end
         endcase
       end
       7'h03 : begin
-        case(switch_ID_l60_2)
+        case(switch_ID_l57_2)
           3'b000 : begin
-            switch_ID_l124 = Instr_LB;
+            switch_ID_l121 = Instr_LB;
           end
           3'b010 : begin
-            switch_ID_l124 = Instr_LW;
+            switch_ID_l121 = Instr_LW;
           end
           default : begin
           end
         endcase
       end
       7'h23 : begin
-        case(switch_ID_l70_2)
+        case(switch_ID_l67_2)
           3'b000 : begin
-            switch_ID_l124 = Instr_SB;
+            switch_ID_l121 = Instr_SB;
           end
           3'b010 : begin
-            switch_ID_l124 = Instr_SW;
+            switch_ID_l121 = Instr_SW;
           end
           default : begin
-            switch_ID_l124 = Instr_UNK;
+            switch_ID_l121 = Instr_UNK;
           end
         endcase
       end
       7'h13 : begin
-        case(switch_ID_l83_2)
+        case(switch_ID_l80_2)
           3'b000 : begin
-            switch_ID_l124 = Instr_ADDI;
+            switch_ID_l121 = Instr_ADDI;
           end
           3'b110 : begin
-            switch_ID_l124 = Instr_ORI;
+            switch_ID_l121 = Instr_ORI;
           end
           3'b111 : begin
-            switch_ID_l124 = Instr_ANDI;
+            switch_ID_l121 = Instr_ANDI;
           end
           3'b001 : begin
-            switch_ID_l124 = Instr_SLLI;
+            switch_ID_l121 = Instr_SLLI;
           end
           3'b101 : begin
-            switch_ID_l124 = Instr_SRLI;
+            switch_ID_l121 = Instr_SRLI;
           end
           default : begin
           end
         endcase
       end
       7'h33 : begin
-        case(switch_ID_l102_2)
+        case(switch_ID_l99_2)
           3'b000 : begin
-            switch_ID_l124 = Instr_ADD;
+            switch_ID_l121 = Instr_ADD;
           end
           3'b100 : begin
-            switch_ID_l124 = Instr_XOR_1;
+            switch_ID_l121 = Instr_XOR_1;
           end
           3'b110 : begin
-            switch_ID_l124 = Instr_OR_1;
+            switch_ID_l121 = Instr_OR_1;
           end
           3'b111 : begin
-            switch_ID_l124 = Instr_AND_1;
+            switch_ID_l121 = Instr_AND_1;
           end
           default : begin
           end
@@ -3075,14 +3161,14 @@ module ID (
     endcase
   end
 
-  assign switch_ID_l36_2 = io_i_instr[6 : 0];
-  assign switch_ID_l50_2 = io_i_instr[14 : 12];
-  assign switch_ID_l60_2 = io_i_instr[14 : 12];
-  assign switch_ID_l70_2 = io_i_instr[14 : 12];
-  assign switch_ID_l83_2 = io_i_instr[14 : 12];
-  assign switch_ID_l102_2 = io_i_instr[14 : 12];
+  assign switch_ID_l33_2 = io_i_instr[6 : 0];
+  assign switch_ID_l47_2 = io_i_instr[14 : 12];
+  assign switch_ID_l57_2 = io_i_instr[14 : 12];
+  assign switch_ID_l67_2 = io_i_instr[14 : 12];
+  assign switch_ID_l80_2 = io_i_instr[14 : 12];
+  assign switch_ID_l99_2 = io_i_instr[14 : 12];
   always @(*) begin
-    case(switch_ID_l175)
+    case(switch_ID_l172)
       InstrType_R : begin
         _zz_io_o_imm = 32'h00000000;
       end
@@ -3106,7 +3192,7 @@ module ID (
 
   always @(*) begin
     _zz_io_o_use_pc = 1'b0;
-    case(switch_ID_l289)
+    case(switch_ID_l286)
       Instr_AUIPC, Instr_JAL, Instr_BEQ, Instr_BNE : begin
         _zz_io_o_use_pc = 1'b1;
       end
@@ -3116,91 +3202,91 @@ module ID (
   end
 
   always @(*) begin
-    switch_ID_l289 = Instr_UNK;
-    case(switch_ID_l36_3)
+    switch_ID_l286 = Instr_UNK;
+    case(switch_ID_l33_3)
       7'h37 : begin
-        switch_ID_l289 = Instr_LUI;
+        switch_ID_l286 = Instr_LUI;
       end
       7'h17 : begin
-        switch_ID_l289 = Instr_AUIPC;
+        switch_ID_l286 = Instr_AUIPC;
       end
       7'h6f : begin
-        switch_ID_l289 = Instr_JAL;
+        switch_ID_l286 = Instr_JAL;
       end
       7'h67 : begin
-        switch_ID_l289 = Instr_JALR;
+        switch_ID_l286 = Instr_JALR;
       end
       7'h63 : begin
-        case(switch_ID_l50_3)
+        case(switch_ID_l47_3)
           3'b000 : begin
-            switch_ID_l289 = Instr_BEQ;
+            switch_ID_l286 = Instr_BEQ;
           end
           3'b001 : begin
-            switch_ID_l289 = Instr_BNE;
+            switch_ID_l286 = Instr_BNE;
           end
           default : begin
           end
         endcase
       end
       7'h03 : begin
-        case(switch_ID_l60_3)
+        case(switch_ID_l57_3)
           3'b000 : begin
-            switch_ID_l289 = Instr_LB;
+            switch_ID_l286 = Instr_LB;
           end
           3'b010 : begin
-            switch_ID_l289 = Instr_LW;
+            switch_ID_l286 = Instr_LW;
           end
           default : begin
           end
         endcase
       end
       7'h23 : begin
-        case(switch_ID_l70_3)
+        case(switch_ID_l67_3)
           3'b000 : begin
-            switch_ID_l289 = Instr_SB;
+            switch_ID_l286 = Instr_SB;
           end
           3'b010 : begin
-            switch_ID_l289 = Instr_SW;
+            switch_ID_l286 = Instr_SW;
           end
           default : begin
-            switch_ID_l289 = Instr_UNK;
+            switch_ID_l286 = Instr_UNK;
           end
         endcase
       end
       7'h13 : begin
-        case(switch_ID_l83_3)
+        case(switch_ID_l80_3)
           3'b000 : begin
-            switch_ID_l289 = Instr_ADDI;
+            switch_ID_l286 = Instr_ADDI;
           end
           3'b110 : begin
-            switch_ID_l289 = Instr_ORI;
+            switch_ID_l286 = Instr_ORI;
           end
           3'b111 : begin
-            switch_ID_l289 = Instr_ANDI;
+            switch_ID_l286 = Instr_ANDI;
           end
           3'b001 : begin
-            switch_ID_l289 = Instr_SLLI;
+            switch_ID_l286 = Instr_SLLI;
           end
           3'b101 : begin
-            switch_ID_l289 = Instr_SRLI;
+            switch_ID_l286 = Instr_SRLI;
           end
           default : begin
           end
         endcase
       end
       7'h33 : begin
-        case(switch_ID_l102_3)
+        case(switch_ID_l99_3)
           3'b000 : begin
-            switch_ID_l289 = Instr_ADD;
+            switch_ID_l286 = Instr_ADD;
           end
           3'b100 : begin
-            switch_ID_l289 = Instr_XOR_1;
+            switch_ID_l286 = Instr_XOR_1;
           end
           3'b110 : begin
-            switch_ID_l289 = Instr_OR_1;
+            switch_ID_l286 = Instr_OR_1;
           end
           3'b111 : begin
-            switch_ID_l289 = Instr_AND_1;
+            switch_ID_l286 = Instr_AND_1;
           end
           default : begin
           end
@@ -3211,15 +3297,15 @@ module ID (
     endcase
   end
 
-  assign switch_ID_l36_3 = io_i_instr[6 : 0];
-  assign switch_ID_l50_3 = io_i_instr[14 : 12];
-  assign switch_ID_l60_3 = io_i_instr[14 : 12];
-  assign switch_ID_l70_3 = io_i_instr[14 : 12];
-  assign switch_ID_l83_3 = io_i_instr[14 : 12];
-  assign switch_ID_l102_3 = io_i_instr[14 : 12];
+  assign switch_ID_l33_3 = io_i_instr[6 : 0];
+  assign switch_ID_l47_3 = io_i_instr[14 : 12];
+  assign switch_ID_l57_3 = io_i_instr[14 : 12];
+  assign switch_ID_l67_3 = io_i_instr[14 : 12];
+  assign switch_ID_l80_3 = io_i_instr[14 : 12];
+  assign switch_ID_l99_3 = io_i_instr[14 : 12];
   always @(*) begin
     _zz_io_o_use_rs2 = 1'b0;
-    case(switch_ID_l304)
+    case(switch_ID_l301)
       Instr_ADD, Instr_XOR_1, Instr_OR_1, Instr_AND_1 : begin
         _zz_io_o_use_rs2 = 1'b1;
       end
@@ -3229,91 +3315,91 @@ module ID (
   end
 
   always @(*) begin
-    switch_ID_l304 = Instr_UNK;
-    case(switch_ID_l36_4)
+    switch_ID_l301 = Instr_UNK;
+    case(switch_ID_l33_4)
       7'h37 : begin
-        switch_ID_l304 = Instr_LUI;
+        switch_ID_l301 = Instr_LUI;
       end
       7'h17 : begin
-        switch_ID_l304 = Instr_AUIPC;
+        switch_ID_l301 = Instr_AUIPC;
       end
       7'h6f : begin
-        switch_ID_l304 = Instr_JAL;
+        switch_ID_l301 = Instr_JAL;
       end
       7'h67 : begin
-        switch_ID_l304 = Instr_JALR;
+        switch_ID_l301 = Instr_JALR;
       end
       7'h63 : begin
-        case(switch_ID_l50_4)
+        case(switch_ID_l47_4)
           3'b000 : begin
-            switch_ID_l304 = Instr_BEQ;
+            switch_ID_l301 = Instr_BEQ;
           end
           3'b001 : begin
-            switch_ID_l304 = Instr_BNE;
+            switch_ID_l301 = Instr_BNE;
           end
           default : begin
           end
         endcase
       end
       7'h03 : begin
-        case(switch_ID_l60_4)
+        case(switch_ID_l57_4)
           3'b000 : begin
-            switch_ID_l304 = Instr_LB;
+            switch_ID_l301 = Instr_LB;
           end
           3'b010 : begin
-            switch_ID_l304 = Instr_LW;
+            switch_ID_l301 = Instr_LW;
           end
           default : begin
           end
         endcase
       end
       7'h23 : begin
-        case(switch_ID_l70_4)
+        case(switch_ID_l67_4)
           3'b000 : begin
-            switch_ID_l304 = Instr_SB;
+            switch_ID_l301 = Instr_SB;
           end
           3'b010 : begin
-            switch_ID_l304 = Instr_SW;
+            switch_ID_l301 = Instr_SW;
           end
           default : begin
-            switch_ID_l304 = Instr_UNK;
+            switch_ID_l301 = Instr_UNK;
           end
         endcase
       end
       7'h13 : begin
-        case(switch_ID_l83_4)
+        case(switch_ID_l80_4)
           3'b000 : begin
-            switch_ID_l304 = Instr_ADDI;
+            switch_ID_l301 = Instr_ADDI;
           end
           3'b110 : begin
-            switch_ID_l304 = Instr_ORI;
+            switch_ID_l301 = Instr_ORI;
           end
           3'b111 : begin
-            switch_ID_l304 = Instr_ANDI;
+            switch_ID_l301 = Instr_ANDI;
           end
           3'b001 : begin
-            switch_ID_l304 = Instr_SLLI;
+            switch_ID_l301 = Instr_SLLI;
           end
           3'b101 : begin
-            switch_ID_l304 = Instr_SRLI;
+            switch_ID_l301 = Instr_SRLI;
           end
           default : begin
           end
         endcase
       end
       7'h33 : begin
-        case(switch_ID_l102_4)
+        case(switch_ID_l99_4)
           3'b000 : begin
-            switch_ID_l304 = Instr_ADD;
+            switch_ID_l301 = Instr_ADD;
           end
           3'b100 : begin
-            switch_ID_l304 = Instr_XOR_1;
+            switch_ID_l301 = Instr_XOR_1;
           end
           3'b110 : begin
-            switch_ID_l304 = Instr_OR_1;
+            switch_ID_l301 = Instr_OR_1;
           end
           3'b111 : begin
-            switch_ID_l304 = Instr_AND_1;
+            switch_ID_l301 = Instr_AND_1;
           end
           default : begin
           end
@@ -3324,15 +3410,15 @@ module ID (
     endcase
   end
 
-  assign switch_ID_l36_4 = io_i_instr[6 : 0];
-  assign switch_ID_l50_4 = io_i_instr[14 : 12];
-  assign switch_ID_l60_4 = io_i_instr[14 : 12];
-  assign switch_ID_l70_4 = io_i_instr[14 : 12];
-  assign switch_ID_l83_4 = io_i_instr[14 : 12];
-  assign switch_ID_l102_4 = io_i_instr[14 : 12];
+  assign switch_ID_l33_4 = io_i_instr[6 : 0];
+  assign switch_ID_l47_4 = io_i_instr[14 : 12];
+  assign switch_ID_l57_4 = io_i_instr[14 : 12];
+  assign switch_ID_l67_4 = io_i_instr[14 : 12];
+  assign switch_ID_l80_4 = io_i_instr[14 : 12];
+  assign switch_ID_l99_4 = io_i_instr[14 : 12];
   always @(*) begin
     _zz_io_o_mem_en = 1'b0;
-    case(switch_ID_l319)
+    case(switch_ID_l316)
       Instr_LB, Instr_LW, Instr_SB, Instr_SW : begin
         _zz_io_o_mem_en = 1'b1;
       end
@@ -3342,91 +3428,91 @@ module ID (
   end
 
   always @(*) begin
-    switch_ID_l319 = Instr_UNK;
-    case(switch_ID_l36_5)
+    switch_ID_l316 = Instr_UNK;
+    case(switch_ID_l33_5)
       7'h37 : begin
-        switch_ID_l319 = Instr_LUI;
+        switch_ID_l316 = Instr_LUI;
       end
       7'h17 : begin
-        switch_ID_l319 = Instr_AUIPC;
+        switch_ID_l316 = Instr_AUIPC;
       end
       7'h6f : begin
-        switch_ID_l319 = Instr_JAL;
+        switch_ID_l316 = Instr_JAL;
       end
       7'h67 : begin
-        switch_ID_l319 = Instr_JALR;
+        switch_ID_l316 = Instr_JALR;
       end
       7'h63 : begin
-        case(switch_ID_l50_5)
+        case(switch_ID_l47_5)
           3'b000 : begin
-            switch_ID_l319 = Instr_BEQ;
+            switch_ID_l316 = Instr_BEQ;
           end
           3'b001 : begin
-            switch_ID_l319 = Instr_BNE;
+            switch_ID_l316 = Instr_BNE;
           end
           default : begin
           end
         endcase
       end
       7'h03 : begin
-        case(switch_ID_l60_5)
+        case(switch_ID_l57_5)
           3'b000 : begin
-            switch_ID_l319 = Instr_LB;
+            switch_ID_l316 = Instr_LB;
           end
           3'b010 : begin
-            switch_ID_l319 = Instr_LW;
+            switch_ID_l316 = Instr_LW;
           end
           default : begin
           end
         endcase
       end
       7'h23 : begin
-        case(switch_ID_l70_5)
+        case(switch_ID_l67_5)
           3'b000 : begin
-            switch_ID_l319 = Instr_SB;
+            switch_ID_l316 = Instr_SB;
           end
           3'b010 : begin
-            switch_ID_l319 = Instr_SW;
+            switch_ID_l316 = Instr_SW;
           end
           default : begin
-            switch_ID_l319 = Instr_UNK;
+            switch_ID_l316 = Instr_UNK;
           end
         endcase
       end
       7'h13 : begin
-        case(switch_ID_l83_5)
+        case(switch_ID_l80_5)
           3'b000 : begin
-            switch_ID_l319 = Instr_ADDI;
+            switch_ID_l316 = Instr_ADDI;
           end
           3'b110 : begin
-            switch_ID_l319 = Instr_ORI;
+            switch_ID_l316 = Instr_ORI;
           end
           3'b111 : begin
-            switch_ID_l319 = Instr_ANDI;
+            switch_ID_l316 = Instr_ANDI;
           end
           3'b001 : begin
-            switch_ID_l319 = Instr_SLLI;
+            switch_ID_l316 = Instr_SLLI;
           end
           3'b101 : begin
-            switch_ID_l319 = Instr_SRLI;
+            switch_ID_l316 = Instr_SRLI;
           end
           default : begin
           end
         endcase
       end
       7'h33 : begin
-        case(switch_ID_l102_5)
+        case(switch_ID_l99_5)
           3'b000 : begin
-            switch_ID_l319 = Instr_ADD;
+            switch_ID_l316 = Instr_ADD;
           end
           3'b100 : begin
-            switch_ID_l319 = Instr_XOR_1;
+            switch_ID_l316 = Instr_XOR_1;
           end
           3'b110 : begin
-            switch_ID_l319 = Instr_OR_1;
+            switch_ID_l316 = Instr_OR_1;
           end
           3'b111 : begin
-            switch_ID_l319 = Instr_AND_1;
+            switch_ID_l316 = Instr_AND_1;
           end
           default : begin
           end
@@ -3437,15 +3523,15 @@ module ID (
     endcase
   end
 
-  assign switch_ID_l36_5 = io_i_instr[6 : 0];
-  assign switch_ID_l50_5 = io_i_instr[14 : 12];
-  assign switch_ID_l60_5 = io_i_instr[14 : 12];
-  assign switch_ID_l70_5 = io_i_instr[14 : 12];
-  assign switch_ID_l83_5 = io_i_instr[14 : 12];
-  assign switch_ID_l102_5 = io_i_instr[14 : 12];
+  assign switch_ID_l33_5 = io_i_instr[6 : 0];
+  assign switch_ID_l47_5 = io_i_instr[14 : 12];
+  assign switch_ID_l57_5 = io_i_instr[14 : 12];
+  assign switch_ID_l67_5 = io_i_instr[14 : 12];
+  assign switch_ID_l80_5 = io_i_instr[14 : 12];
+  assign switch_ID_l99_5 = io_i_instr[14 : 12];
   always @(*) begin
     _zz_io_o_mem_we = 1'b0;
-    case(switch_ID_l334)
+    case(switch_ID_l331)
       Instr_SB, Instr_SW : begin
         _zz_io_o_mem_we = 1'b1;
       end
@@ -3455,91 +3541,91 @@ module ID (
   end
 
   always @(*) begin
-    switch_ID_l334 = Instr_UNK;
-    case(switch_ID_l36_6)
+    switch_ID_l331 = Instr_UNK;
+    case(switch_ID_l33_6)
       7'h37 : begin
-        switch_ID_l334 = Instr_LUI;
+        switch_ID_l331 = Instr_LUI;
       end
       7'h17 : begin
-        switch_ID_l334 = Instr_AUIPC;
+        switch_ID_l331 = Instr_AUIPC;
       end
       7'h6f : begin
-        switch_ID_l334 = Instr_JAL;
+        switch_ID_l331 = Instr_JAL;
       end
       7'h67 : begin
-        switch_ID_l334 = Instr_JALR;
+        switch_ID_l331 = Instr_JALR;
       end
       7'h63 : begin
-        case(switch_ID_l50_6)
+        case(switch_ID_l47_6)
           3'b000 : begin
-            switch_ID_l334 = Instr_BEQ;
+            switch_ID_l331 = Instr_BEQ;
           end
           3'b001 : begin
-            switch_ID_l334 = Instr_BNE;
+            switch_ID_l331 = Instr_BNE;
           end
           default : begin
           end
         endcase
       end
       7'h03 : begin
-        case(switch_ID_l60_6)
+        case(switch_ID_l57_6)
           3'b000 : begin
-            switch_ID_l334 = Instr_LB;
+            switch_ID_l331 = Instr_LB;
           end
           3'b010 : begin
-            switch_ID_l334 = Instr_LW;
+            switch_ID_l331 = Instr_LW;
           end
           default : begin
           end
         endcase
       end
       7'h23 : begin
-        case(switch_ID_l70_6)
+        case(switch_ID_l67_6)
           3'b000 : begin
-            switch_ID_l334 = Instr_SB;
+            switch_ID_l331 = Instr_SB;
           end
           3'b010 : begin
-            switch_ID_l334 = Instr_SW;
+            switch_ID_l331 = Instr_SW;
           end
           default : begin
-            switch_ID_l334 = Instr_UNK;
+            switch_ID_l331 = Instr_UNK;
           end
         endcase
       end
       7'h13 : begin
-        case(switch_ID_l83_6)
+        case(switch_ID_l80_6)
           3'b000 : begin
-            switch_ID_l334 = Instr_ADDI;
+            switch_ID_l331 = Instr_ADDI;
           end
           3'b110 : begin
-            switch_ID_l334 = Instr_ORI;
+            switch_ID_l331 = Instr_ORI;
           end
           3'b111 : begin
-            switch_ID_l334 = Instr_ANDI;
+            switch_ID_l331 = Instr_ANDI;
           end
           3'b001 : begin
-            switch_ID_l334 = Instr_SLLI;
+            switch_ID_l331 = Instr_SLLI;
           end
           3'b101 : begin
-            switch_ID_l334 = Instr_SRLI;
+            switch_ID_l331 = Instr_SRLI;
           end
           default : begin
           end
         endcase
       end
       7'h33 : begin
-        case(switch_ID_l102_6)
+        case(switch_ID_l99_6)
           3'b000 : begin
-            switch_ID_l334 = Instr_ADD;
+            switch_ID_l331 = Instr_ADD;
           end
           3'b100 : begin
-            switch_ID_l334 = Instr_XOR_1;
+            switch_ID_l331 = Instr_XOR_1;
           end
           3'b110 : begin
-            switch_ID_l334 = Instr_OR_1;
+            switch_ID_l331 = Instr_OR_1;
           end
           3'b111 : begin
-            switch_ID_l334 = Instr_AND_1;
+            switch_ID_l331 = Instr_AND_1;
           end
           default : begin
           end
@@ -3550,15 +3636,15 @@ module ID (
     endcase
   end
 
-  assign switch_ID_l36_6 = io_i_instr[6 : 0];
-  assign switch_ID_l50_6 = io_i_instr[14 : 12];
-  assign switch_ID_l60_6 = io_i_instr[14 : 12];
-  assign switch_ID_l70_6 = io_i_instr[14 : 12];
-  assign switch_ID_l83_6 = io_i_instr[14 : 12];
-  assign switch_ID_l102_6 = io_i_instr[14 : 12];
+  assign switch_ID_l33_6 = io_i_instr[6 : 0];
+  assign switch_ID_l47_6 = io_i_instr[14 : 12];
+  assign switch_ID_l57_6 = io_i_instr[14 : 12];
+  assign switch_ID_l67_6 = io_i_instr[14 : 12];
+  assign switch_ID_l80_6 = io_i_instr[14 : 12];
+  assign switch_ID_l99_6 = io_i_instr[14 : 12];
   always @(*) begin
     _zz_io_o_mem_sel = 4'b0000;
-    case(switch_ID_l347)
+    case(switch_ID_l344)
       Instr_LB, Instr_SB : begin
         _zz_io_o_mem_sel = 4'b0001;
       end
@@ -3571,91 +3657,91 @@ module ID (
   end
 
   always @(*) begin
-    switch_ID_l347 = Instr_UNK;
-    case(switch_ID_l36_7)
+    switch_ID_l344 = Instr_UNK;
+    case(switch_ID_l33_7)
       7'h37 : begin
-        switch_ID_l347 = Instr_LUI;
+        switch_ID_l344 = Instr_LUI;
       end
       7'h17 : begin
-        switch_ID_l347 = Instr_AUIPC;
+        switch_ID_l344 = Instr_AUIPC;
       end
       7'h6f : begin
-        switch_ID_l347 = Instr_JAL;
+        switch_ID_l344 = Instr_JAL;
       end
       7'h67 : begin
-        switch_ID_l347 = Instr_JALR;
+        switch_ID_l344 = Instr_JALR;
       end
       7'h63 : begin
-        case(switch_ID_l50_7)
+        case(switch_ID_l47_7)
           3'b000 : begin
-            switch_ID_l347 = Instr_BEQ;
+            switch_ID_l344 = Instr_BEQ;
           end
           3'b001 : begin
-            switch_ID_l347 = Instr_BNE;
+            switch_ID_l344 = Instr_BNE;
           end
           default : begin
           end
         endcase
       end
       7'h03 : begin
-        case(switch_ID_l60_7)
+        case(switch_ID_l57_7)
           3'b000 : begin
-            switch_ID_l347 = Instr_LB;
+            switch_ID_l344 = Instr_LB;
           end
           3'b010 : begin
-            switch_ID_l347 = Instr_LW;
+            switch_ID_l344 = Instr_LW;
           end
           default : begin
           end
         endcase
       end
       7'h23 : begin
-        case(switch_ID_l70_7)
+        case(switch_ID_l67_7)
           3'b000 : begin
-            switch_ID_l347 = Instr_SB;
+            switch_ID_l344 = Instr_SB;
           end
           3'b010 : begin
-            switch_ID_l347 = Instr_SW;
+            switch_ID_l344 = Instr_SW;
           end
           default : begin
-            switch_ID_l347 = Instr_UNK;
+            switch_ID_l344 = Instr_UNK;
           end
         endcase
       end
       7'h13 : begin
-        case(switch_ID_l83_7)
+        case(switch_ID_l80_7)
           3'b000 : begin
-            switch_ID_l347 = Instr_ADDI;
+            switch_ID_l344 = Instr_ADDI;
           end
           3'b110 : begin
-            switch_ID_l347 = Instr_ORI;
+            switch_ID_l344 = Instr_ORI;
           end
           3'b111 : begin
-            switch_ID_l347 = Instr_ANDI;
+            switch_ID_l344 = Instr_ANDI;
           end
           3'b001 : begin
-            switch_ID_l347 = Instr_SLLI;
+            switch_ID_l344 = Instr_SLLI;
           end
           3'b101 : begin
-            switch_ID_l347 = Instr_SRLI;
+            switch_ID_l344 = Instr_SRLI;
           end
           default : begin
           end
         endcase
       end
       7'h33 : begin
-        case(switch_ID_l102_7)
+        case(switch_ID_l99_7)
           3'b000 : begin
-            switch_ID_l347 = Instr_ADD;
+            switch_ID_l344 = Instr_ADD;
           end
           3'b100 : begin
-            switch_ID_l347 = Instr_XOR_1;
+            switch_ID_l344 = Instr_XOR_1;
           end
           3'b110 : begin
-            switch_ID_l347 = Instr_OR_1;
+            switch_ID_l344 = Instr_OR_1;
           end
           3'b111 : begin
-            switch_ID_l347 = Instr_AND_1;
+            switch_ID_l344 = Instr_AND_1;
           end
           default : begin
           end
@@ -3666,15 +3752,15 @@ module ID (
     endcase
   end
 
-  assign switch_ID_l36_7 = io_i_instr[6 : 0];
-  assign switch_ID_l50_7 = io_i_instr[14 : 12];
-  assign switch_ID_l60_7 = io_i_instr[14 : 12];
-  assign switch_ID_l70_7 = io_i_instr[14 : 12];
-  assign switch_ID_l83_7 = io_i_instr[14 : 12];
-  assign switch_ID_l102_7 = io_i_instr[14 : 12];
+  assign switch_ID_l33_7 = io_i_instr[6 : 0];
+  assign switch_ID_l47_7 = io_i_instr[14 : 12];
+  assign switch_ID_l57_7 = io_i_instr[14 : 12];
+  assign switch_ID_l67_7 = io_i_instr[14 : 12];
+  assign switch_ID_l80_7 = io_i_instr[14 : 12];
+  assign switch_ID_l99_7 = io_i_instr[14 : 12];
   always @(*) begin
     _zz_io_o_reg_we = 1'b0;
-    case(switch_ID_l366)
+    case(switch_ID_l363)
       Instr_LUI, Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_LB, Instr_LW, Instr_ADDI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_ADD, Instr_XOR_1, Instr_OR_1, Instr_AND_1 : begin
         _zz_io_o_reg_we = 1'b1;
       end
@@ -3684,91 +3770,91 @@ module ID (
   end
 
   always @(*) begin
-    switch_ID_l366 = Instr_UNK;
-    case(switch_ID_l36_8)
+    switch_ID_l363 = Instr_UNK;
+    case(switch_ID_l33_8)
       7'h37 : begin
-        switch_ID_l366 = Instr_LUI;
+        switch_ID_l363 = Instr_LUI;
       end
       7'h17 : begin
-        switch_ID_l366 = Instr_AUIPC;
+        switch_ID_l363 = Instr_AUIPC;
       end
       7'h6f : begin
-        switch_ID_l366 = Instr_JAL;
+        switch_ID_l363 = Instr_JAL;
       end
       7'h67 : begin
-        switch_ID_l366 = Instr_JALR;
+        switch_ID_l363 = Instr_JALR;
       end
       7'h63 : begin
-        case(switch_ID_l50_8)
+        case(switch_ID_l47_8)
           3'b000 : begin
-            switch_ID_l366 = Instr_BEQ;
+            switch_ID_l363 = Instr_BEQ;
           end
           3'b001 : begin
-            switch_ID_l366 = Instr_BNE;
+            switch_ID_l363 = Instr_BNE;
           end
           default : begin
           end
         endcase
       end
       7'h03 : begin
-        case(switch_ID_l60_8)
+        case(switch_ID_l57_8)
           3'b000 : begin
-            switch_ID_l366 = Instr_LB;
+            switch_ID_l363 = Instr_LB;
           end
           3'b010 : begin
-            switch_ID_l366 = Instr_LW;
+            switch_ID_l363 = Instr_LW;
           end
           default : begin
           end
         endcase
       end
       7'h23 : begin
-        case(switch_ID_l70_8)
+        case(switch_ID_l67_8)
           3'b000 : begin
-            switch_ID_l366 = Instr_SB;
+            switch_ID_l363 = Instr_SB;
           end
           3'b010 : begin
-            switch_ID_l366 = Instr_SW;
+            switch_ID_l363 = Instr_SW;
           end
           default : begin
-            switch_ID_l366 = Instr_UNK;
+            switch_ID_l363 = Instr_UNK;
           end
         endcase
       end
       7'h13 : begin
-        case(switch_ID_l83_8)
+        case(switch_ID_l80_8)
           3'b000 : begin
-            switch_ID_l366 = Instr_ADDI;
+            switch_ID_l363 = Instr_ADDI;
           end
           3'b110 : begin
-            switch_ID_l366 = Instr_ORI;
+            switch_ID_l363 = Instr_ORI;
           end
           3'b111 : begin
-            switch_ID_l366 = Instr_ANDI;
+            switch_ID_l363 = Instr_ANDI;
           end
           3'b001 : begin
-            switch_ID_l366 = Instr_SLLI;
+            switch_ID_l363 = Instr_SLLI;
           end
           3'b101 : begin
-            switch_ID_l366 = Instr_SRLI;
+            switch_ID_l363 = Instr_SRLI;
           end
           default : begin
           end
         endcase
       end
       7'h33 : begin
-        case(switch_ID_l102_8)
+        case(switch_ID_l99_8)
           3'b000 : begin
-            switch_ID_l366 = Instr_ADD;
+            switch_ID_l363 = Instr_ADD;
           end
           3'b100 : begin
-            switch_ID_l366 = Instr_XOR_1;
+            switch_ID_l363 = Instr_XOR_1;
           end
           3'b110 : begin
-            switch_ID_l366 = Instr_OR_1;
+            switch_ID_l363 = Instr_OR_1;
           end
           3'b111 : begin
-            switch_ID_l366 = Instr_AND_1;
+            switch_ID_l363 = Instr_AND_1;
           end
           default : begin
           end
@@ -3779,15 +3865,15 @@ module ID (
     endcase
   end
 
-  assign switch_ID_l36_8 = io_i_instr[6 : 0];
-  assign switch_ID_l50_8 = io_i_instr[14 : 12];
-  assign switch_ID_l60_8 = io_i_instr[14 : 12];
-  assign switch_ID_l70_8 = io_i_instr[14 : 12];
-  assign switch_ID_l83_8 = io_i_instr[14 : 12];
-  assign switch_ID_l102_8 = io_i_instr[14 : 12];
+  assign switch_ID_l33_8 = io_i_instr[6 : 0];
+  assign switch_ID_l47_8 = io_i_instr[14 : 12];
+  assign switch_ID_l57_8 = io_i_instr[14 : 12];
+  assign switch_ID_l67_8 = io_i_instr[14 : 12];
+  assign switch_ID_l80_8 = io_i_instr[14 : 12];
+  assign switch_ID_l99_8 = io_i_instr[14 : 12];
   always @(*) begin
     _zz_io_o_reg_sel = RegSel_ALU;
-    case(switch_ID_l392)
+    case(switch_ID_l389)
       Instr_LB, Instr_LW : begin
         _zz_io_o_reg_sel = RegSel_MEM;
       end
@@ -3800,91 +3886,91 @@ module ID (
   end
 
   always @(*) begin
-    switch_ID_l392 = Instr_UNK;
-    case(switch_ID_l36_9)
+    switch_ID_l389 = Instr_UNK;
+    case(switch_ID_l33_9)
       7'h37 : begin
-        switch_ID_l392 = Instr_LUI;
+        switch_ID_l389 = Instr_LUI;
       end
       7'h17 : begin
-        switch_ID_l392 = Instr_AUIPC;
+        switch_ID_l389 = Instr_AUIPC;
       end
       7'h6f : begin
-        switch_ID_l392 = Instr_JAL;
+        switch_ID_l389 = Instr_JAL;
       end
       7'h67 : begin
-        switch_ID_l392 = Instr_JALR;
+        switch_ID_l389 = Instr_JALR;
       end
       7'h63 : begin
-        case(switch_ID_l50_9)
+        case(switch_ID_l47_9)
           3'b000 : begin
-            switch_ID_l392 = Instr_BEQ;
+            switch_ID_l389 = Instr_BEQ;
           end
           3'b001 : begin
-            switch_ID_l392 = Instr_BNE;
+            switch_ID_l389 = Instr_BNE;
           end
           default : begin
           end
         endcase
       end
       7'h03 : begin
-        case(switch_ID_l60_9)
+        case(switch_ID_l57_9)
           3'b000 : begin
-            switch_ID_l392 = Instr_LB;
+            switch_ID_l389 = Instr_LB;
           end
           3'b010 : begin
-            switch_ID_l392 = Instr_LW;
+            switch_ID_l389 = Instr_LW;
           end
           default : begin
           end
         endcase
       end
       7'h23 : begin
-        case(switch_ID_l70_9)
+        case(switch_ID_l67_9)
           3'b000 : begin
-            switch_ID_l392 = Instr_SB;
+            switch_ID_l389 = Instr_SB;
           end
           3'b010 : begin
-            switch_ID_l392 = Instr_SW;
+            switch_ID_l389 = Instr_SW;
           end
           default : begin
-            switch_ID_l392 = Instr_UNK;
+            switch_ID_l389 = Instr_UNK;
           end
         endcase
       end
       7'h13 : begin
-        case(switch_ID_l83_9)
+        case(switch_ID_l80_9)
           3'b000 : begin
-            switch_ID_l392 = Instr_ADDI;
+            switch_ID_l389 = Instr_ADDI;
           end
           3'b110 : begin
-            switch_ID_l392 = Instr_ORI;
+            switch_ID_l389 = Instr_ORI;
           end
           3'b111 : begin
-            switch_ID_l392 = Instr_ANDI;
+            switch_ID_l389 = Instr_ANDI;
           end
           3'b001 : begin
-            switch_ID_l392 = Instr_SLLI;
+            switch_ID_l389 = Instr_SLLI;
           end
           3'b101 : begin
-            switch_ID_l392 = Instr_SRLI;
+            switch_ID_l389 = Instr_SRLI;
           end
           default : begin
           end
         endcase
       end
       7'h33 : begin
-        case(switch_ID_l102_9)
+        case(switch_ID_l99_9)
           3'b000 : begin
-            switch_ID_l392 = Instr_ADD;
+            switch_ID_l389 = Instr_ADD;
           end
           3'b100 : begin
-            switch_ID_l392 = Instr_XOR_1;
+            switch_ID_l389 = Instr_XOR_1;
           end
           3'b110 : begin
-            switch_ID_l392 = Instr_OR_1;
+            switch_ID_l389 = Instr_OR_1;
           end
           3'b111 : begin
-            switch_ID_l392 = Instr_AND_1;
+            switch_ID_l389 = Instr_AND_1;
           end
           default : begin
           end
@@ -3895,34 +3981,19 @@ module ID (
     endcase
   end
 
-  assign switch_ID_l36_9 = io_i_instr[6 : 0];
-  assign switch_ID_l50_9 = io_i_instr[14 : 12];
-  assign switch_ID_l60_9 = io_i_instr[14 : 12];
-  assign switch_ID_l70_9 = io_i_instr[14 : 12];
-  assign switch_ID_l83_9 = io_i_instr[14 : 12];
-  assign switch_ID_l102_9 = io_i_instr[14 : 12];
-  assign when_ID_l435 = (io_bubble || io_stall_req);
-  always @(*) begin
-    io_stall_req = 1'b0;
-    if(when_ID_l458) begin
-      io_stall_req = 1'b1;
-    end
-    if(when_ID_l458_1) begin
-      io_stall_req = 1'b1;
-    end
-    if(when_ID_l458_2) begin
-      io_stall_req = 1'b1;
-    end
-  end
-
-  assign when_ID_l458 = ((io_reg_addr_d_0 != 5'h00) && ((io_reg_addr_d_0 == io_i_instr[19 : 15]) || (io_reg_addr_d_0 == io_i_instr[24 : 20])));
-  assign when_ID_l458_1 = ((io_reg_addr_d_1 != 5'h00) && ((io_reg_addr_d_1 == io_i_instr[19 : 15]) || (io_reg_addr_d_1 == io_i_instr[24 : 20])));
-  assign when_ID_l458_2 = ((io_reg_addr_d_2 != 5'h00) && ((io_reg_addr_d_2 == io_i_instr[19 : 15]) || (io_reg_addr_d_2 == io_i_instr[24 : 20])));
+  assign switch_ID_l33_9 = io_i_instr[6 : 0];
+  assign switch_ID_l47_9 = io_i_instr[14 : 12];
+  assign switch_ID_l57_9 = io_i_instr[14 : 12];
+  assign switch_ID_l67_9 = io_i_instr[14 : 12];
+  assign switch_ID_l80_9 = io_i_instr[14 : 12];
+  assign switch_ID_l99_9 = io_i_instr[14 : 12];
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       io_o_pc <= 32'h00000000;
       io_o_reg_data_a <= 32'h00000000;
       io_o_reg_data_b <= 32'h00000000;
+      io_o_reg_addr_a <= 5'h00;
+      io_o_reg_addr_b <= 5'h00;
       io_o_reg_addr_d <= 5'h00;
       io_o_alu_op <= AluOp_ADD;
       io_o_br_type <= BrType_F;
@@ -3936,7 +4007,7 @@ module ID (
       io_o_reg_sel <= RegSel_ALU;
     end else begin
       if(!io_stall) begin
-        if(when_ID_l435) begin
+        if(io_bubble) begin
           io_o_br_type <= BrType_F;
           io_o_mem_en <= 1'b0;
           io_o_reg_we <= 1'b0;
@@ -3944,6 +4015,8 @@ module ID (
           io_o_pc <= io_i_pc;
           io_o_reg_data_a <= io_reg_data_a;
           io_o_reg_data_b <= io_reg_data_b;
+          io_o_reg_addr_a <= io_i_instr[19 : 15];
+          io_o_reg_addr_b <= io_i_instr[24 : 20];
           io_o_reg_addr_d <= io_i_instr[11 : 7];
           io_o_alu_op <= _zz_io_o_alu_op;
           io_o_br_type <= _zz_io_o_br_type;
@@ -4318,9 +4391,9 @@ endmodule
 
 module RegFile (
   input  wire [4:0]    io_r_addr_a,
-  output wire [31:0]   io_r_data_a,
+  output reg  [31:0]   io_r_data_a,
   input  wire [4:0]    io_r_addr_b,
-  output wire [31:0]   io_r_data_b,
+  output reg  [31:0]   io_r_data_b,
   input  wire [4:0]    io_w_addr,
   input  wire [31:0]   io_w_data,
   input  wire          io_w_we,
@@ -4364,6 +4437,8 @@ module RegFile (
   reg        [31:0]   mem_31;
   wire                when_RegFile_l48;
   wire       [31:0]   _zz_1;
+  wire                when_RegFile_l52;
+  wire                when_RegFile_l55;
 
   always @(*) begin
     case(io_r_addr_a)
@@ -4439,10 +4514,28 @@ module RegFile (
     endcase
   end
 
-  assign io_r_data_a = _zz_io_r_data_a;
-  assign io_r_data_b = _zz_io_r_data_b;
+  always @(*) begin
+    io_r_data_a = _zz_io_r_data_a;
+    if(when_RegFile_l48) begin
+      if(when_RegFile_l52) begin
+        io_r_data_a = io_w_data;
+      end
+    end
+  end
+
+  always @(*) begin
+    io_r_data_b = _zz_io_r_data_b;
+    if(when_RegFile_l48) begin
+      if(when_RegFile_l55) begin
+        io_r_data_b = io_w_data;
+      end
+    end
+  end
+
   assign when_RegFile_l48 = (io_w_we && (io_w_addr != 5'h00));
   assign _zz_1 = ({31'd0,1'b1} <<< io_w_addr);
+  assign when_RegFile_l52 = (io_w_addr == io_r_addr_a);
+  assign when_RegFile_l55 = (io_w_addr == io_r_addr_b);
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       mem_0 <= 32'h00000000;

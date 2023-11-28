@@ -9,6 +9,9 @@ class MEM extends Component {
         val i = slave port EXE_MEM()
         val o = master port MEM_WB()
 
+        // Forwarding
+        val forward = master port ForwardPorts()
+
         // Hazard handling
         val stall_req = out Bool()
 
@@ -60,6 +63,10 @@ class MEM extends Component {
     io.o.reg_we.setAsReg() init(False)
     io.o.reg_addr_d.setAsReg() init(0)
     io.o.reg_data_d.setAsReg() init(0)
+
+    io.forward.we := io.i.mem_en
+    io.forward.addr := io.i.reg_addr_d
+    io.forward.data := reg_data
 
     io.stall_req := io.i.mem_en && !io.wb.ack
 

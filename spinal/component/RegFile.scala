@@ -47,5 +47,13 @@ class RegFile(
 
     when (io.w.we && io.w.addr =/= 0) {
         mem(io.w.addr) := io.w.data
+
+        // Forwarding
+        when (io.w.addr === io.r.addr_a) {
+            io.r.data_a := io.w.data
+        }
+        when (io.w.addr === io.r.addr_b) {
+            io.r.data_b := io.w.data
+        }
     }
 }
