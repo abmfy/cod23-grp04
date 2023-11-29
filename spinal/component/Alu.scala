@@ -61,5 +61,14 @@ class Alu(width: Int = 32) extends Component {
         is (AluOp.OP2) {
             io.y := io.b
         }
+        is (AluOp.ANDN) {
+            io.y := io.a & ~io.b
+        }
+        is (AluOp.CLZ) {
+            io.y := (io.a =/= 0) ? PriorityMux(io.a.reversed, (0 until width).map(B(_, width bits))) | width
+        }
+        is (AluOp.PACK) {
+            io.y := io.b(width / 2, width / 2 bits) ## io.a(0, width / 2 bits)
+        }
     }
 }

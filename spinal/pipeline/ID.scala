@@ -88,7 +88,14 @@ class ID extends Component {
                         res := ANDI
                     }
                     is (B"001") {
-                        res := SLLI
+                        switch (funct7) {
+                            is (M"00000--") {
+                                res := SLLI
+                            }
+                            is (B"0110000") {
+                                res := CLZ
+                            }
+                        }
                     }
                     is (B"101") {
                         res := SRLI
@@ -101,13 +108,28 @@ class ID extends Component {
                         res := ADD
                     }
                     is (B"100") {
-                        res := XOR
+                        switch (funct7) {
+                            is (B"0000000") {
+                                res := XOR
+                            }
+                            is (B"0000100") {
+                                res := PACK
+                            }
+                        }
                     }
                     is (B"110") {
                         res := OR
                     }
                     is (B"111") {
-                        res := AND
+                        switch (funct7) {
+                            is (B"0000000") {
+                                res := AND
+                            }
+                            is (B"0100000") {
+                                res := ANDN
+                            }
+                        
+                        }
                     }
                 }
             }
@@ -124,6 +146,9 @@ class ID extends Component {
                 XOR,
                 OR,
                 AND,
+                ANDN,
+                CLZ,
+                PACK,
             ) {
                 res := R
             }
@@ -253,6 +278,21 @@ class ID extends Component {
                 LUI,
             ) {
                 res := AluOp.OP2
+            }
+            is (
+                ANDN,
+            ) {
+                res := AluOp.ANDN
+            }
+            is (
+                CLZ,
+            ) {
+                res := AluOp.CLZ
+            }
+            is (
+                PACK,
+            ) {
+                res := AluOp.PACK
             }
         }
         res
