@@ -68,7 +68,7 @@ class Alu(width: Int = 32) extends Component {
             io.y := (io.a =/= 0) ? PriorityMux(io.a.reversed, (0 until width).map(B(_, width bits))) | width
         }
         is (AluOp.PACK) {
-            io.y := io.b(width / 2, width / 2 bits) ## io.a(0, width / 2 bits)
+            io.y := io.b(0, width / 2 bits) ## io.a(0, width / 2 bits)
         }
     }
 }

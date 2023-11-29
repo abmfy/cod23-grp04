@@ -21,14 +21,14 @@ class ID extends Component {
 
     val instr = io.i.instr
 
-    def opcode = instr(6 downto 0)
-    def funct3 = instr(14 downto 12)
-    def funct7 = instr(31 downto 25)
-    def rs1 = instr(19 downto 15).asUInt
-    def rs2 = instr(24 downto 20).asUInt
-    def rd = instr(11 downto 7).asUInt
+    val opcode = instr(6 downto 0)
+    val funct3 = instr(14 downto 12)
+    val funct7 = instr(31 downto 25)
+    val rs1 = instr(19 downto 15).asUInt
+    val rs2 = instr(24 downto 20).asUInt
+    val rd = instr(11 downto 7).asUInt
 
-    def instr_kind: Instr.C = {
+    val instr_kind: Instr.C = {
         val res = Instr.UNK.craft()
         switch (opcode) {
             is (B"0110111") {
@@ -70,9 +70,6 @@ class ID extends Component {
                     }
                     is (B"010") {
                         res := SW
-                    }
-                    default {
-                        res := UNK
                     }
                 }
             }
@@ -137,7 +134,7 @@ class ID extends Component {
         res
     }
 
-    def instr_type: InstrType.C = {
+    val instr_type: InstrType.C = {
         import InstrType._
         val res = InstrType.I.craft()
         switch (instr_kind) {
@@ -191,7 +188,7 @@ class ID extends Component {
         res
     }
 
-    def imm: Bits = {
+    val imm: Bits = {
         import InstrType._
         val res = Types.data
         switch (instr_type) {
@@ -229,7 +226,7 @@ class ID extends Component {
         res
     }
 
-    def alu_op: AluOp.C = {
+    val alu_op: AluOp.C = {
         val res = AluOp.ADD.craft()
         switch (instr_kind) {
             is (
@@ -298,7 +295,7 @@ class ID extends Component {
         res
     }
 
-    def br_type: BrType.C = {
+    val br_type: BrType.C = {
         val res = BrType.F.craft()
         switch (instr_kind) {
             is (
@@ -321,7 +318,7 @@ class ID extends Component {
         res
     }
 
-    def use_pc: Bool = {
+    val use_pc: Bool = {
         val res = False
         switch (instr_kind) {
             is (
@@ -336,7 +333,7 @@ class ID extends Component {
         res
     }
 
-    def use_rs2: Bool = {
+    val use_rs2: Bool = {
         val res = False
         switch (instr_kind) {
             is (
@@ -344,6 +341,8 @@ class ID extends Component {
                 XOR,
                 OR,
                 AND,
+                ANDN,
+                PACK,
             ) {
                 res := True
             }
@@ -351,7 +350,7 @@ class ID extends Component {
         res
     }
 
-    def mem_en: Bool = {
+    val mem_en: Bool = {
         val res = False
         switch (instr_kind) {
             is (
@@ -366,7 +365,7 @@ class ID extends Component {
         res
     }
 
-    def mem_we: Bool = {
+    val mem_we: Bool = {
         val res = False
         switch (instr_kind) {
             is (
@@ -379,7 +378,7 @@ class ID extends Component {
         res
     }
 
-    def mem_sel: Bits = {
+    val mem_sel: Bits = {
         val res = Sel.NONE
         switch (instr_kind) {
             is (
@@ -398,7 +397,7 @@ class ID extends Component {
         res
     }
 
-    def reg_we: Bool = {
+    val reg_we: Bool = {
         val res = False
         switch (instr_kind) {
             is (
@@ -417,6 +416,9 @@ class ID extends Component {
                 XOR,
                 OR,
                 AND,
+                ANDN,
+                CLZ,
+                PACK,
             ) {
                 res := True
             }
@@ -424,7 +426,7 @@ class ID extends Component {
         res
     }
 
-    def reg_sel: RegSel.C = {
+    val reg_sel: RegSel.C = {
         val res = RegSel.ALU.craft()
         switch (instr_kind) {
             is (
