@@ -49,7 +49,8 @@ class Top (
     // EXE
     Exe.io.alu <> alu.io
 
-    Exe.io.forward <> Mem.io.forward
+    Exe.io.forward(0) <> Mem.io.forward
+    Exe.io.forward(1) <> Wb.io.forward
 
     Exe.io.stall := Mem.io.stall_req
 

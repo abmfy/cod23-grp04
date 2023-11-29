@@ -11,7 +11,7 @@ class EXE extends Component {
         val br = master port BranchPorts()
 
         // Forwarding
-        val forward = slave port ForwardPorts()
+        val forward = Vec(slave port ForwardPorts(), 2)
 
         // Hazard handling
         val stall = in Bool()
@@ -35,12 +35,14 @@ class EXE extends Component {
     val reg_b = CombInit(io.i.reg_data_b)
 
     // Forwarding
-    when (io.forward.we && io.forward.addr =/= 0) {
-        when (io.forward.addr === io.i.reg_addr_a) {
-            reg_a := io.forward.data
-        }
-        when (io.forward.addr === io.i.reg_addr_b) {
-            reg_b := io.forward.data
+    io.forward.reverse.foreach { forward => 
+        when (forward.we && forward.addr =/= 0) {
+            when (forward.addr === io.i.reg_addr_a) {
+                reg_a := forward.data
+            }
+            when (forward.addr === io.i.reg_addr_b) {
+                reg_b := forward.data
+            }
         }
     }
 

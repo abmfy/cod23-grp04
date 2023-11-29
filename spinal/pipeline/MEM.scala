@@ -64,7 +64,8 @@ class MEM extends Component {
     io.o.reg_addr_d.setAsReg() init(0)
     io.o.reg_data_d.setAsReg() init(0)
 
-    io.forward.we := io.i.mem_en
+    // Forwarding
+    io.forward.we := io.i.reg_we
     io.forward.addr := io.i.reg_addr_d
     io.forward.data := reg_data
 
