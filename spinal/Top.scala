@@ -58,8 +58,7 @@ class Top (
     Wb.io.reg <> reg_file.io.w
 
     // Wishbone IO
-    val arbiter = new WbArbiter(WbArbiterConfig(master_count = 2))
-    val mux = new WbMux(WbMuxConfig(
+    val muxes = List.fill(2)(new WbMux(WbMuxConfig(
         slave_count = 3,
         slave_addr = List(
             0x80000000L,
@@ -71,38 +70,44 @@ class Top (
             0xffc00000L,
             0xffff0000L,
         ),
-    ))
-    arbiter.io.wb <> mux.io.wb
+    )))
+    val arbiters = List.fill(3)(new WbArbiter(WbArbiterConfig(
+        master_count = 2
+    )))
+    for ((mux, i) <- muxes.zipWithIndex;
+         (arbiter, j) <- arbiters.zipWithIndex) {
+        mux.io.slaves(j) <> arbiter.io.masters(i)
+    }
 
     // Masters
-    arbiter.io.masters(0) <> Mem.io.wb
-    arbiter.io.masters(1) <> If.io.wb
+    muxes(0).io.wb <> Mem.io.wb
+    muxes(1).io.wb <> If.io.wb
 
     // Slaves
     val (base_ram, ext_ram) = if (simulation) {
         val base = new SramModel(SramModelConfig(init_file = base_sram_init))
         base.io.sram <> io.base_ram
-        base.io.wb <> mux.io.slaves(0)
+        base.io.wb <> arbiters(0).io.wb
 
         val ext = new SramModel(SramModelConfig(init_file = ext_sram_init))
         ext.io.sram <> io.ext_ram
-        ext.io.wb <> mux.io.slaves(1)
+        ext.io.wb <> arbiters(1).io.wb
 
         (base, ext)
     } else {
         val base = new SramController
         base.io.sram <> io.base_ram
-        base.io.wb <> mux.io.slaves(0)
+        base.io.wb <> arbiters(0).io.wb
 
         val ext = new SramController
         ext.io.sram <> io.ext_ram
-        ext.io.wb <> mux.io.slaves(1)
+        ext.io.wb <> arbiters(1).io.wb
 
         (base, ext)
     }
     val uart = new UartController
     uart.io.uart <> io.uart0
-    uart.io.wb <> mux.io.slaves(2)
+    uart.io.wb <> arbiters(2).io.wb
 }
 
 object Generate extends App {

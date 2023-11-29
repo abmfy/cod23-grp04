@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : 7052a75b4aa654b8401979b4de7e15ff5d3cfc0e
+// Git hash  : a16f112d1f1a79cd655bbcb07a5f63c5148457aa
 
 `timescale 1ns/1ps
 
@@ -115,41 +115,84 @@ module Top (
   wire       [31:0]   Mem_1_io_wb_adr;
   wire       [31:0]   Mem_1_io_wb_dat_w;
   wire       [3:0]    Mem_1_io_wb_sel;
+  wire                Wb_1_io_forward_we;
+  wire       [4:0]    Wb_1_io_forward_addr;
+  wire       [31:0]   Wb_1_io_forward_data;
   wire       [4:0]    Wb_1_io_reg_addr;
   wire       [31:0]   Wb_1_io_reg_data;
   wire                Wb_1_io_reg_we;
   wire       [7:0]    seg_l_oSEG1;
   wire       [7:0]    seg_h_oSEG1;
-  wire                arbiter_1_io_masters_0_ack;
-  wire       [31:0]   arbiter_1_io_masters_0_dat_r;
-  wire                arbiter_1_io_masters_1_ack;
-  wire       [31:0]   arbiter_1_io_masters_1_dat_r;
-  wire                arbiter_1_io_wb_cyc;
-  wire                arbiter_1_io_wb_stb;
-  wire                arbiter_1_io_wb_we;
-  wire       [31:0]   arbiter_1_io_wb_adr;
-  wire       [31:0]   arbiter_1_io_wb_dat_w;
-  wire       [3:0]    arbiter_1_io_wb_sel;
-  wire                mux_io_wb_ack;
-  wire       [31:0]   mux_io_wb_dat_r;
-  wire                mux_io_slaves_0_cyc;
-  wire                mux_io_slaves_0_stb;
-  wire                mux_io_slaves_0_we;
-  wire       [31:0]   mux_io_slaves_0_adr;
-  wire       [31:0]   mux_io_slaves_0_dat_w;
-  wire       [3:0]    mux_io_slaves_0_sel;
-  wire                mux_io_slaves_1_cyc;
-  wire                mux_io_slaves_1_stb;
-  wire                mux_io_slaves_1_we;
-  wire       [31:0]   mux_io_slaves_1_adr;
-  wire       [31:0]   mux_io_slaves_1_dat_w;
-  wire       [3:0]    mux_io_slaves_1_sel;
-  wire                mux_io_slaves_2_cyc;
-  wire                mux_io_slaves_2_stb;
-  wire                mux_io_slaves_2_we;
-  wire       [31:0]   mux_io_slaves_2_adr;
-  wire       [31:0]   mux_io_slaves_2_dat_w;
-  wire       [3:0]    mux_io_slaves_2_sel;
+  wire                muxes_0_io_wb_ack;
+  wire       [31:0]   muxes_0_io_wb_dat_r;
+  wire                muxes_0_io_slaves_0_cyc;
+  wire                muxes_0_io_slaves_0_stb;
+  wire                muxes_0_io_slaves_0_we;
+  wire       [31:0]   muxes_0_io_slaves_0_adr;
+  wire       [31:0]   muxes_0_io_slaves_0_dat_w;
+  wire       [3:0]    muxes_0_io_slaves_0_sel;
+  wire                muxes_0_io_slaves_1_cyc;
+  wire                muxes_0_io_slaves_1_stb;
+  wire                muxes_0_io_slaves_1_we;
+  wire       [31:0]   muxes_0_io_slaves_1_adr;
+  wire       [31:0]   muxes_0_io_slaves_1_dat_w;
+  wire       [3:0]    muxes_0_io_slaves_1_sel;
+  wire                muxes_0_io_slaves_2_cyc;
+  wire                muxes_0_io_slaves_2_stb;
+  wire                muxes_0_io_slaves_2_we;
+  wire       [31:0]   muxes_0_io_slaves_2_adr;
+  wire       [31:0]   muxes_0_io_slaves_2_dat_w;
+  wire       [3:0]    muxes_0_io_slaves_2_sel;
+  wire                muxes_1_io_wb_ack;
+  wire       [31:0]   muxes_1_io_wb_dat_r;
+  wire                muxes_1_io_slaves_0_cyc;
+  wire                muxes_1_io_slaves_0_stb;
+  wire                muxes_1_io_slaves_0_we;
+  wire       [31:0]   muxes_1_io_slaves_0_adr;
+  wire       [31:0]   muxes_1_io_slaves_0_dat_w;
+  wire       [3:0]    muxes_1_io_slaves_0_sel;
+  wire                muxes_1_io_slaves_1_cyc;
+  wire                muxes_1_io_slaves_1_stb;
+  wire                muxes_1_io_slaves_1_we;
+  wire       [31:0]   muxes_1_io_slaves_1_adr;
+  wire       [31:0]   muxes_1_io_slaves_1_dat_w;
+  wire       [3:0]    muxes_1_io_slaves_1_sel;
+  wire                muxes_1_io_slaves_2_cyc;
+  wire                muxes_1_io_slaves_2_stb;
+  wire                muxes_1_io_slaves_2_we;
+  wire       [31:0]   muxes_1_io_slaves_2_adr;
+  wire       [31:0]   muxes_1_io_slaves_2_dat_w;
+  wire       [3:0]    muxes_1_io_slaves_2_sel;
+  wire                arbiters_0_io_masters_0_ack;
+  wire       [31:0]   arbiters_0_io_masters_0_dat_r;
+  wire                arbiters_0_io_masters_1_ack;
+  wire       [31:0]   arbiters_0_io_masters_1_dat_r;
+  wire                arbiters_0_io_wb_cyc;
+  wire                arbiters_0_io_wb_stb;
+  wire                arbiters_0_io_wb_we;
+  wire       [31:0]   arbiters_0_io_wb_adr;
+  wire       [31:0]   arbiters_0_io_wb_dat_w;
+  wire       [3:0]    arbiters_0_io_wb_sel;
+  wire                arbiters_1_io_masters_0_ack;
+  wire       [31:0]   arbiters_1_io_masters_0_dat_r;
+  wire                arbiters_1_io_masters_1_ack;
+  wire       [31:0]   arbiters_1_io_masters_1_dat_r;
+  wire                arbiters_1_io_wb_cyc;
+  wire                arbiters_1_io_wb_stb;
+  wire                arbiters_1_io_wb_we;
+  wire       [31:0]   arbiters_1_io_wb_adr;
+  wire       [31:0]   arbiters_1_io_wb_dat_w;
+  wire       [3:0]    arbiters_1_io_wb_sel;
+  wire                arbiters_2_io_masters_0_ack;
+  wire       [31:0]   arbiters_2_io_masters_0_dat_r;
+  wire                arbiters_2_io_masters_1_ack;
+  wire       [31:0]   arbiters_2_io_masters_1_dat_r;
+  wire                arbiters_2_io_wb_cyc;
+  wire                arbiters_2_io_wb_stb;
+  wire                arbiters_2_io_wb_we;
+  wire       [31:0]   arbiters_2_io_wb_adr;
+  wire       [31:0]   arbiters_2_io_wb_dat_w;
+  wire       [3:0]    arbiters_2_io_wb_sel;
   wire                base_ram_io_wb_ack;
   wire       [31:0]   base_ram_io_wb_dat_r;
   wire       [19:0]   base_ram_io_sram_addr;
@@ -345,22 +388,22 @@ module Top (
     .io_y  (alu_1_io_y[31:0]    )  //o
   );
   IF_1 If_2 (
-    .io_o_pc     (If_2_io_o_pc[31:0]                ), //o
-    .io_o_instr  (If_2_io_o_instr[31:0]             ), //o
-    .io_br_br    (Exe_1_io_br_br                    ), //i
-    .io_br_pc    (Exe_1_io_br_pc[31:0]              ), //i
-    .io_stall    (If_2_io_stall                     ), //i
-    .io_bubble   (Exe_1_io_flush_req                ), //i
-    .io_wb_cyc   (If_2_io_wb_cyc                    ), //o
-    .io_wb_stb   (If_2_io_wb_stb                    ), //o
-    .io_wb_ack   (arbiter_1_io_masters_1_ack        ), //i
-    .io_wb_we    (If_2_io_wb_we                     ), //o
-    .io_wb_adr   (If_2_io_wb_adr[31:0]              ), //o
-    .io_wb_dat_r (arbiter_1_io_masters_1_dat_r[31:0]), //i
-    .io_wb_dat_w (If_2_io_wb_dat_w[31:0]            ), //o
-    .io_wb_sel   (If_2_io_wb_sel[3:0]               ), //o
-    .sys_clk     (sys_clk                           ), //i
-    .sys_reset   (sys_reset                         )  //i
+    .io_o_pc     (If_2_io_o_pc[31:0]       ), //o
+    .io_o_instr  (If_2_io_o_instr[31:0]    ), //o
+    .io_br_br    (Exe_1_io_br_br           ), //i
+    .io_br_pc    (Exe_1_io_br_pc[31:0]     ), //i
+    .io_stall    (If_2_io_stall            ), //i
+    .io_bubble   (Exe_1_io_flush_req       ), //i
+    .io_wb_cyc   (If_2_io_wb_cyc           ), //o
+    .io_wb_stb   (If_2_io_wb_stb           ), //o
+    .io_wb_ack   (muxes_1_io_wb_ack        ), //i
+    .io_wb_we    (If_2_io_wb_we            ), //o
+    .io_wb_adr   (If_2_io_wb_adr[31:0]     ), //o
+    .io_wb_dat_r (muxes_1_io_wb_dat_r[31:0]), //i
+    .io_wb_dat_w (If_2_io_wb_dat_w[31:0]   ), //o
+    .io_wb_sel   (If_2_io_wb_sel[3:0]      ), //o
+    .sys_clk     (sys_clk                  ), //i
+    .sys_reset   (sys_reset                )  //i
   );
   ID Id_1 (
     .io_i_pc         (If_2_io_o_pc[31:0]        ), //i
@@ -391,77 +434,83 @@ module Top (
     .sys_reset       (sys_reset                 )  //i
   );
   EXE Exe_1 (
-    .io_i_pc         (Id_1_io_o_pc[31:0]         ), //i
-    .io_i_reg_data_a (Id_1_io_o_reg_data_a[31:0] ), //i
-    .io_i_reg_data_b (Id_1_io_o_reg_data_b[31:0] ), //i
-    .io_i_reg_addr_a (Id_1_io_o_reg_addr_a[4:0]  ), //i
-    .io_i_reg_addr_b (Id_1_io_o_reg_addr_b[4:0]  ), //i
-    .io_i_reg_addr_d (Id_1_io_o_reg_addr_d[4:0]  ), //i
-    .io_i_alu_op     (Id_1_io_o_alu_op[3:0]      ), //i
-    .io_i_br_type    (Id_1_io_o_br_type[1:0]     ), //i
-    .io_i_imm        (Id_1_io_o_imm[31:0]        ), //i
-    .io_i_use_pc     (Id_1_io_o_use_pc           ), //i
-    .io_i_use_rs2    (Id_1_io_o_use_rs2          ), //i
-    .io_i_mem_en     (Id_1_io_o_mem_en           ), //i
-    .io_i_mem_we     (Id_1_io_o_mem_we           ), //i
-    .io_i_mem_sel    (Id_1_io_o_mem_sel[3:0]     ), //i
-    .io_i_reg_we     (Id_1_io_o_reg_we           ), //i
-    .io_i_reg_sel    (Id_1_io_o_reg_sel[1:0]     ), //i
-    .io_o_pc         (Exe_1_io_o_pc[31:0]        ), //o
-    .io_o_reg_data_b (Exe_1_io_o_reg_data_b[31:0]), //o
-    .io_o_reg_addr_d (Exe_1_io_o_reg_addr_d[4:0] ), //o
-    .io_o_mem_en     (Exe_1_io_o_mem_en          ), //o
-    .io_o_mem_we     (Exe_1_io_o_mem_we          ), //o
-    .io_o_mem_sel    (Exe_1_io_o_mem_sel[3:0]    ), //o
-    .io_o_reg_we     (Exe_1_io_o_reg_we          ), //o
-    .io_o_reg_sel    (Exe_1_io_o_reg_sel[1:0]    ), //o
-    .io_o_alu_y      (Exe_1_io_o_alu_y[31:0]     ), //o
-    .io_br_br        (Exe_1_io_br_br             ), //o
-    .io_br_pc        (Exe_1_io_br_pc[31:0]       ), //o
-    .io_forward_we   (Mem_1_io_forward_we        ), //i
-    .io_forward_addr (Mem_1_io_forward_addr[4:0] ), //i
-    .io_forward_data (Mem_1_io_forward_data[31:0]), //i
-    .io_stall        (Mem_1_io_stall_req         ), //i
-    .io_flush_req    (Exe_1_io_flush_req         ), //o
-    .io_alu_a        (Exe_1_io_alu_a[31:0]       ), //o
-    .io_alu_b        (Exe_1_io_alu_b[31:0]       ), //o
-    .io_alu_op       (Exe_1_io_alu_op[3:0]       ), //o
-    .io_alu_y        (alu_1_io_y[31:0]           ), //i
-    .sys_clk         (sys_clk                    ), //i
-    .sys_reset       (sys_reset                  )  //i
+    .io_i_pc           (Id_1_io_o_pc[31:0]         ), //i
+    .io_i_reg_data_a   (Id_1_io_o_reg_data_a[31:0] ), //i
+    .io_i_reg_data_b   (Id_1_io_o_reg_data_b[31:0] ), //i
+    .io_i_reg_addr_a   (Id_1_io_o_reg_addr_a[4:0]  ), //i
+    .io_i_reg_addr_b   (Id_1_io_o_reg_addr_b[4:0]  ), //i
+    .io_i_reg_addr_d   (Id_1_io_o_reg_addr_d[4:0]  ), //i
+    .io_i_alu_op       (Id_1_io_o_alu_op[3:0]      ), //i
+    .io_i_br_type      (Id_1_io_o_br_type[1:0]     ), //i
+    .io_i_imm          (Id_1_io_o_imm[31:0]        ), //i
+    .io_i_use_pc       (Id_1_io_o_use_pc           ), //i
+    .io_i_use_rs2      (Id_1_io_o_use_rs2          ), //i
+    .io_i_mem_en       (Id_1_io_o_mem_en           ), //i
+    .io_i_mem_we       (Id_1_io_o_mem_we           ), //i
+    .io_i_mem_sel      (Id_1_io_o_mem_sel[3:0]     ), //i
+    .io_i_reg_we       (Id_1_io_o_reg_we           ), //i
+    .io_i_reg_sel      (Id_1_io_o_reg_sel[1:0]     ), //i
+    .io_o_pc           (Exe_1_io_o_pc[31:0]        ), //o
+    .io_o_reg_data_b   (Exe_1_io_o_reg_data_b[31:0]), //o
+    .io_o_reg_addr_d   (Exe_1_io_o_reg_addr_d[4:0] ), //o
+    .io_o_mem_en       (Exe_1_io_o_mem_en          ), //o
+    .io_o_mem_we       (Exe_1_io_o_mem_we          ), //o
+    .io_o_mem_sel      (Exe_1_io_o_mem_sel[3:0]    ), //o
+    .io_o_reg_we       (Exe_1_io_o_reg_we          ), //o
+    .io_o_reg_sel      (Exe_1_io_o_reg_sel[1:0]    ), //o
+    .io_o_alu_y        (Exe_1_io_o_alu_y[31:0]     ), //o
+    .io_br_br          (Exe_1_io_br_br             ), //o
+    .io_br_pc          (Exe_1_io_br_pc[31:0]       ), //o
+    .io_forward_0_we   (Mem_1_io_forward_we        ), //i
+    .io_forward_0_addr (Mem_1_io_forward_addr[4:0] ), //i
+    .io_forward_0_data (Mem_1_io_forward_data[31:0]), //i
+    .io_forward_1_we   (Wb_1_io_forward_we         ), //i
+    .io_forward_1_addr (Wb_1_io_forward_addr[4:0]  ), //i
+    .io_forward_1_data (Wb_1_io_forward_data[31:0] ), //i
+    .io_stall          (Mem_1_io_stall_req         ), //i
+    .io_flush_req      (Exe_1_io_flush_req         ), //o
+    .io_alu_a          (Exe_1_io_alu_a[31:0]       ), //o
+    .io_alu_b          (Exe_1_io_alu_b[31:0]       ), //o
+    .io_alu_op         (Exe_1_io_alu_op[3:0]       ), //o
+    .io_alu_y          (alu_1_io_y[31:0]           ), //i
+    .sys_clk           (sys_clk                    ), //i
+    .sys_reset         (sys_reset                  )  //i
   );
   MEM Mem_1 (
-    .io_i_pc         (Exe_1_io_o_pc[31:0]               ), //i
-    .io_i_reg_data_b (Exe_1_io_o_reg_data_b[31:0]       ), //i
-    .io_i_reg_addr_d (Exe_1_io_o_reg_addr_d[4:0]        ), //i
-    .io_i_mem_en     (Exe_1_io_o_mem_en                 ), //i
-    .io_i_mem_we     (Exe_1_io_o_mem_we                 ), //i
-    .io_i_mem_sel    (Exe_1_io_o_mem_sel[3:0]           ), //i
-    .io_i_reg_we     (Exe_1_io_o_reg_we                 ), //i
-    .io_i_reg_sel    (Exe_1_io_o_reg_sel[1:0]           ), //i
-    .io_i_alu_y      (Exe_1_io_o_alu_y[31:0]            ), //i
-    .io_o_reg_we     (Mem_1_io_o_reg_we                 ), //o
-    .io_o_reg_addr_d (Mem_1_io_o_reg_addr_d[4:0]        ), //o
-    .io_o_reg_data_d (Mem_1_io_o_reg_data_d[31:0]       ), //o
-    .io_forward_we   (Mem_1_io_forward_we               ), //o
-    .io_forward_addr (Mem_1_io_forward_addr[4:0]        ), //o
-    .io_forward_data (Mem_1_io_forward_data[31:0]       ), //o
-    .io_stall_req    (Mem_1_io_stall_req                ), //o
-    .io_wb_cyc       (Mem_1_io_wb_cyc                   ), //o
-    .io_wb_stb       (Mem_1_io_wb_stb                   ), //o
-    .io_wb_ack       (arbiter_1_io_masters_0_ack        ), //i
-    .io_wb_we        (Mem_1_io_wb_we                    ), //o
-    .io_wb_adr       (Mem_1_io_wb_adr[31:0]             ), //o
-    .io_wb_dat_r     (arbiter_1_io_masters_0_dat_r[31:0]), //i
-    .io_wb_dat_w     (Mem_1_io_wb_dat_w[31:0]           ), //o
-    .io_wb_sel       (Mem_1_io_wb_sel[3:0]              ), //o
-    .sys_clk         (sys_clk                           ), //i
-    .sys_reset       (sys_reset                         )  //i
+    .io_i_pc         (Exe_1_io_o_pc[31:0]        ), //i
+    .io_i_reg_data_b (Exe_1_io_o_reg_data_b[31:0]), //i
+    .io_i_reg_addr_d (Exe_1_io_o_reg_addr_d[4:0] ), //i
+    .io_i_mem_en     (Exe_1_io_o_mem_en          ), //i
+    .io_i_mem_we     (Exe_1_io_o_mem_we          ), //i
+    .io_i_mem_sel    (Exe_1_io_o_mem_sel[3:0]    ), //i
+    .io_i_reg_we     (Exe_1_io_o_reg_we          ), //i
+    .io_i_reg_sel    (Exe_1_io_o_reg_sel[1:0]    ), //i
+    .io_i_alu_y      (Exe_1_io_o_alu_y[31:0]     ), //i
+    .io_o_reg_we     (Mem_1_io_o_reg_we          ), //o
+    .io_o_reg_addr_d (Mem_1_io_o_reg_addr_d[4:0] ), //o
+    .io_o_reg_data_d (Mem_1_io_o_reg_data_d[31:0]), //o
+    .io_forward_we   (Mem_1_io_forward_we        ), //o
+    .io_forward_addr (Mem_1_io_forward_addr[4:0] ), //o
+    .io_forward_data (Mem_1_io_forward_data[31:0]), //o
+    .io_stall_req    (Mem_1_io_stall_req         ), //o
+    .io_wb_cyc       (Mem_1_io_wb_cyc            ), //o
+    .io_wb_stb       (Mem_1_io_wb_stb            ), //o
+    .io_wb_ack       (muxes_0_io_wb_ack          ), //i
+    .io_wb_we        (Mem_1_io_wb_we             ), //o
+    .io_wb_adr       (Mem_1_io_wb_adr[31:0]      ), //o
+    .io_wb_dat_r     (muxes_0_io_wb_dat_r[31:0]  ), //i
+    .io_wb_dat_w     (Mem_1_io_wb_dat_w[31:0]    ), //o
+    .io_wb_sel       (Mem_1_io_wb_sel[3:0]       ), //o
+    .sys_clk         (sys_clk                    ), //i
+    .sys_reset       (sys_reset                  )  //i
   );
   WB Wb_1 (
     .io_i_reg_we     (Mem_1_io_o_reg_we          ), //i
     .io_i_reg_addr_d (Mem_1_io_o_reg_addr_d[4:0] ), //i
     .io_i_reg_data_d (Mem_1_io_o_reg_data_d[31:0]), //i
+    .io_forward_we   (Wb_1_io_forward_we         ), //o
+    .io_forward_addr (Wb_1_io_forward_addr[4:0]  ), //o
+    .io_forward_data (Wb_1_io_forward_data[31:0] ), //o
     .io_reg_addr     (Wb_1_io_reg_addr[4:0]      ), //o
     .io_reg_data     (Wb_1_io_reg_data[31:0]     ), //o
     .io_reg_we       (Wb_1_io_reg_we             )  //o
@@ -474,77 +523,167 @@ module Top (
     .iDIG  (seg_h_iDIG[3:0] ), //i
     .oSEG1 (seg_h_oSEG1[7:0])  //o
   );
-  WbArbiter arbiter_1 (
-    .io_masters_0_cyc   (Mem_1_io_wb_cyc                   ), //i
-    .io_masters_0_stb   (Mem_1_io_wb_stb                   ), //i
-    .io_masters_0_ack   (arbiter_1_io_masters_0_ack        ), //o
-    .io_masters_0_we    (Mem_1_io_wb_we                    ), //i
-    .io_masters_0_adr   (Mem_1_io_wb_adr[31:0]             ), //i
-    .io_masters_0_dat_r (arbiter_1_io_masters_0_dat_r[31:0]), //o
-    .io_masters_0_dat_w (Mem_1_io_wb_dat_w[31:0]           ), //i
-    .io_masters_0_sel   (Mem_1_io_wb_sel[3:0]              ), //i
-    .io_masters_1_cyc   (If_2_io_wb_cyc                    ), //i
-    .io_masters_1_stb   (If_2_io_wb_stb                    ), //i
-    .io_masters_1_ack   (arbiter_1_io_masters_1_ack        ), //o
-    .io_masters_1_we    (If_2_io_wb_we                     ), //i
-    .io_masters_1_adr   (If_2_io_wb_adr[31:0]              ), //i
-    .io_masters_1_dat_r (arbiter_1_io_masters_1_dat_r[31:0]), //o
-    .io_masters_1_dat_w (If_2_io_wb_dat_w[31:0]            ), //i
-    .io_masters_1_sel   (If_2_io_wb_sel[3:0]               ), //i
-    .io_wb_cyc          (arbiter_1_io_wb_cyc               ), //o
-    .io_wb_stb          (arbiter_1_io_wb_stb               ), //o
-    .io_wb_ack          (mux_io_wb_ack                     ), //i
-    .io_wb_we           (arbiter_1_io_wb_we                ), //o
-    .io_wb_adr          (arbiter_1_io_wb_adr[31:0]         ), //o
-    .io_wb_dat_r        (mux_io_wb_dat_r[31:0]             ), //i
-    .io_wb_dat_w        (arbiter_1_io_wb_dat_w[31:0]       ), //o
-    .io_wb_sel          (arbiter_1_io_wb_sel[3:0]          ), //o
-    .sys_reset          (sys_reset                         ), //i
-    .sys_clk            (sys_clk                           )  //i
+  WbMux muxes_0 (
+    .io_wb_cyc         (Mem_1_io_wb_cyc                    ), //i
+    .io_wb_stb         (Mem_1_io_wb_stb                    ), //i
+    .io_wb_ack         (muxes_0_io_wb_ack                  ), //o
+    .io_wb_we          (Mem_1_io_wb_we                     ), //i
+    .io_wb_adr         (Mem_1_io_wb_adr[31:0]              ), //i
+    .io_wb_dat_r       (muxes_0_io_wb_dat_r[31:0]          ), //o
+    .io_wb_dat_w       (Mem_1_io_wb_dat_w[31:0]            ), //i
+    .io_wb_sel         (Mem_1_io_wb_sel[3:0]               ), //i
+    .io_slaves_0_cyc   (muxes_0_io_slaves_0_cyc            ), //o
+    .io_slaves_0_stb   (muxes_0_io_slaves_0_stb            ), //o
+    .io_slaves_0_ack   (arbiters_0_io_masters_0_ack        ), //i
+    .io_slaves_0_we    (muxes_0_io_slaves_0_we             ), //o
+    .io_slaves_0_adr   (muxes_0_io_slaves_0_adr[31:0]      ), //o
+    .io_slaves_0_dat_r (arbiters_0_io_masters_0_dat_r[31:0]), //i
+    .io_slaves_0_dat_w (muxes_0_io_slaves_0_dat_w[31:0]    ), //o
+    .io_slaves_0_sel   (muxes_0_io_slaves_0_sel[3:0]       ), //o
+    .io_slaves_1_cyc   (muxes_0_io_slaves_1_cyc            ), //o
+    .io_slaves_1_stb   (muxes_0_io_slaves_1_stb            ), //o
+    .io_slaves_1_ack   (arbiters_1_io_masters_0_ack        ), //i
+    .io_slaves_1_we    (muxes_0_io_slaves_1_we             ), //o
+    .io_slaves_1_adr   (muxes_0_io_slaves_1_adr[31:0]      ), //o
+    .io_slaves_1_dat_r (arbiters_1_io_masters_0_dat_r[31:0]), //i
+    .io_slaves_1_dat_w (muxes_0_io_slaves_1_dat_w[31:0]    ), //o
+    .io_slaves_1_sel   (muxes_0_io_slaves_1_sel[3:0]       ), //o
+    .io_slaves_2_cyc   (muxes_0_io_slaves_2_cyc            ), //o
+    .io_slaves_2_stb   (muxes_0_io_slaves_2_stb            ), //o
+    .io_slaves_2_ack   (arbiters_2_io_masters_0_ack        ), //i
+    .io_slaves_2_we    (muxes_0_io_slaves_2_we             ), //o
+    .io_slaves_2_adr   (muxes_0_io_slaves_2_adr[31:0]      ), //o
+    .io_slaves_2_dat_r (arbiters_2_io_masters_0_dat_r[31:0]), //i
+    .io_slaves_2_dat_w (muxes_0_io_slaves_2_dat_w[31:0]    ), //o
+    .io_slaves_2_sel   (muxes_0_io_slaves_2_sel[3:0]       )  //o
   );
-  WbMux mux (
-    .io_wb_cyc         (arbiter_1_io_wb_cyc        ), //i
-    .io_wb_stb         (arbiter_1_io_wb_stb        ), //i
-    .io_wb_ack         (mux_io_wb_ack              ), //o
-    .io_wb_we          (arbiter_1_io_wb_we         ), //i
-    .io_wb_adr         (arbiter_1_io_wb_adr[31:0]  ), //i
-    .io_wb_dat_r       (mux_io_wb_dat_r[31:0]      ), //o
-    .io_wb_dat_w       (arbiter_1_io_wb_dat_w[31:0]), //i
-    .io_wb_sel         (arbiter_1_io_wb_sel[3:0]   ), //i
-    .io_slaves_0_cyc   (mux_io_slaves_0_cyc        ), //o
-    .io_slaves_0_stb   (mux_io_slaves_0_stb        ), //o
-    .io_slaves_0_ack   (base_ram_io_wb_ack         ), //i
-    .io_slaves_0_we    (mux_io_slaves_0_we         ), //o
-    .io_slaves_0_adr   (mux_io_slaves_0_adr[31:0]  ), //o
-    .io_slaves_0_dat_r (base_ram_io_wb_dat_r[31:0] ), //i
-    .io_slaves_0_dat_w (mux_io_slaves_0_dat_w[31:0]), //o
-    .io_slaves_0_sel   (mux_io_slaves_0_sel[3:0]   ), //o
-    .io_slaves_1_cyc   (mux_io_slaves_1_cyc        ), //o
-    .io_slaves_1_stb   (mux_io_slaves_1_stb        ), //o
-    .io_slaves_1_ack   (ext_ram_io_wb_ack          ), //i
-    .io_slaves_1_we    (mux_io_slaves_1_we         ), //o
-    .io_slaves_1_adr   (mux_io_slaves_1_adr[31:0]  ), //o
-    .io_slaves_1_dat_r (ext_ram_io_wb_dat_r[31:0]  ), //i
-    .io_slaves_1_dat_w (mux_io_slaves_1_dat_w[31:0]), //o
-    .io_slaves_1_sel   (mux_io_slaves_1_sel[3:0]   ), //o
-    .io_slaves_2_cyc   (mux_io_slaves_2_cyc        ), //o
-    .io_slaves_2_stb   (mux_io_slaves_2_stb        ), //o
-    .io_slaves_2_ack   (uart_wb_ack_o              ), //i
-    .io_slaves_2_we    (mux_io_slaves_2_we         ), //o
-    .io_slaves_2_adr   (mux_io_slaves_2_adr[31:0]  ), //o
-    .io_slaves_2_dat_r (uart_wb_dat_o[31:0]        ), //i
-    .io_slaves_2_dat_w (mux_io_slaves_2_dat_w[31:0]), //o
-    .io_slaves_2_sel   (mux_io_slaves_2_sel[3:0]   )  //o
+  WbMux muxes_1 (
+    .io_wb_cyc         (If_2_io_wb_cyc                     ), //i
+    .io_wb_stb         (If_2_io_wb_stb                     ), //i
+    .io_wb_ack         (muxes_1_io_wb_ack                  ), //o
+    .io_wb_we          (If_2_io_wb_we                      ), //i
+    .io_wb_adr         (If_2_io_wb_adr[31:0]               ), //i
+    .io_wb_dat_r       (muxes_1_io_wb_dat_r[31:0]          ), //o
+    .io_wb_dat_w       (If_2_io_wb_dat_w[31:0]             ), //i
+    .io_wb_sel         (If_2_io_wb_sel[3:0]                ), //i
+    .io_slaves_0_cyc   (muxes_1_io_slaves_0_cyc            ), //o
+    .io_slaves_0_stb   (muxes_1_io_slaves_0_stb            ), //o
+    .io_slaves_0_ack   (arbiters_0_io_masters_1_ack        ), //i
+    .io_slaves_0_we    (muxes_1_io_slaves_0_we             ), //o
+    .io_slaves_0_adr   (muxes_1_io_slaves_0_adr[31:0]      ), //o
+    .io_slaves_0_dat_r (arbiters_0_io_masters_1_dat_r[31:0]), //i
+    .io_slaves_0_dat_w (muxes_1_io_slaves_0_dat_w[31:0]    ), //o
+    .io_slaves_0_sel   (muxes_1_io_slaves_0_sel[3:0]       ), //o
+    .io_slaves_1_cyc   (muxes_1_io_slaves_1_cyc            ), //o
+    .io_slaves_1_stb   (muxes_1_io_slaves_1_stb            ), //o
+    .io_slaves_1_ack   (arbiters_1_io_masters_1_ack        ), //i
+    .io_slaves_1_we    (muxes_1_io_slaves_1_we             ), //o
+    .io_slaves_1_adr   (muxes_1_io_slaves_1_adr[31:0]      ), //o
+    .io_slaves_1_dat_r (arbiters_1_io_masters_1_dat_r[31:0]), //i
+    .io_slaves_1_dat_w (muxes_1_io_slaves_1_dat_w[31:0]    ), //o
+    .io_slaves_1_sel   (muxes_1_io_slaves_1_sel[3:0]       ), //o
+    .io_slaves_2_cyc   (muxes_1_io_slaves_2_cyc            ), //o
+    .io_slaves_2_stb   (muxes_1_io_slaves_2_stb            ), //o
+    .io_slaves_2_ack   (arbiters_2_io_masters_1_ack        ), //i
+    .io_slaves_2_we    (muxes_1_io_slaves_2_we             ), //o
+    .io_slaves_2_adr   (muxes_1_io_slaves_2_adr[31:0]      ), //o
+    .io_slaves_2_dat_r (arbiters_2_io_masters_1_dat_r[31:0]), //i
+    .io_slaves_2_dat_w (muxes_1_io_slaves_2_dat_w[31:0]    ), //o
+    .io_slaves_2_sel   (muxes_1_io_slaves_2_sel[3:0]       )  //o
+  );
+  WbArbiter arbiters_0 (
+    .io_masters_0_cyc   (muxes_0_io_slaves_0_cyc            ), //i
+    .io_masters_0_stb   (muxes_0_io_slaves_0_stb            ), //i
+    .io_masters_0_ack   (arbiters_0_io_masters_0_ack        ), //o
+    .io_masters_0_we    (muxes_0_io_slaves_0_we             ), //i
+    .io_masters_0_adr   (muxes_0_io_slaves_0_adr[31:0]      ), //i
+    .io_masters_0_dat_r (arbiters_0_io_masters_0_dat_r[31:0]), //o
+    .io_masters_0_dat_w (muxes_0_io_slaves_0_dat_w[31:0]    ), //i
+    .io_masters_0_sel   (muxes_0_io_slaves_0_sel[3:0]       ), //i
+    .io_masters_1_cyc   (muxes_1_io_slaves_0_cyc            ), //i
+    .io_masters_1_stb   (muxes_1_io_slaves_0_stb            ), //i
+    .io_masters_1_ack   (arbiters_0_io_masters_1_ack        ), //o
+    .io_masters_1_we    (muxes_1_io_slaves_0_we             ), //i
+    .io_masters_1_adr   (muxes_1_io_slaves_0_adr[31:0]      ), //i
+    .io_masters_1_dat_r (arbiters_0_io_masters_1_dat_r[31:0]), //o
+    .io_masters_1_dat_w (muxes_1_io_slaves_0_dat_w[31:0]    ), //i
+    .io_masters_1_sel   (muxes_1_io_slaves_0_sel[3:0]       ), //i
+    .io_wb_cyc          (arbiters_0_io_wb_cyc               ), //o
+    .io_wb_stb          (arbiters_0_io_wb_stb               ), //o
+    .io_wb_ack          (base_ram_io_wb_ack                 ), //i
+    .io_wb_we           (arbiters_0_io_wb_we                ), //o
+    .io_wb_adr          (arbiters_0_io_wb_adr[31:0]         ), //o
+    .io_wb_dat_r        (base_ram_io_wb_dat_r[31:0]         ), //i
+    .io_wb_dat_w        (arbiters_0_io_wb_dat_w[31:0]       ), //o
+    .io_wb_sel          (arbiters_0_io_wb_sel[3:0]          ), //o
+    .sys_reset          (sys_reset                          ), //i
+    .sys_clk            (sys_clk                            )  //i
+  );
+  WbArbiter arbiters_1 (
+    .io_masters_0_cyc   (muxes_0_io_slaves_1_cyc            ), //i
+    .io_masters_0_stb   (muxes_0_io_slaves_1_stb            ), //i
+    .io_masters_0_ack   (arbiters_1_io_masters_0_ack        ), //o
+    .io_masters_0_we    (muxes_0_io_slaves_1_we             ), //i
+    .io_masters_0_adr   (muxes_0_io_slaves_1_adr[31:0]      ), //i
+    .io_masters_0_dat_r (arbiters_1_io_masters_0_dat_r[31:0]), //o
+    .io_masters_0_dat_w (muxes_0_io_slaves_1_dat_w[31:0]    ), //i
+    .io_masters_0_sel   (muxes_0_io_slaves_1_sel[3:0]       ), //i
+    .io_masters_1_cyc   (muxes_1_io_slaves_1_cyc            ), //i
+    .io_masters_1_stb   (muxes_1_io_slaves_1_stb            ), //i
+    .io_masters_1_ack   (arbiters_1_io_masters_1_ack        ), //o
+    .io_masters_1_we    (muxes_1_io_slaves_1_we             ), //i
+    .io_masters_1_adr   (muxes_1_io_slaves_1_adr[31:0]      ), //i
+    .io_masters_1_dat_r (arbiters_1_io_masters_1_dat_r[31:0]), //o
+    .io_masters_1_dat_w (muxes_1_io_slaves_1_dat_w[31:0]    ), //i
+    .io_masters_1_sel   (muxes_1_io_slaves_1_sel[3:0]       ), //i
+    .io_wb_cyc          (arbiters_1_io_wb_cyc               ), //o
+    .io_wb_stb          (arbiters_1_io_wb_stb               ), //o
+    .io_wb_ack          (ext_ram_io_wb_ack                  ), //i
+    .io_wb_we           (arbiters_1_io_wb_we                ), //o
+    .io_wb_adr          (arbiters_1_io_wb_adr[31:0]         ), //o
+    .io_wb_dat_r        (ext_ram_io_wb_dat_r[31:0]          ), //i
+    .io_wb_dat_w        (arbiters_1_io_wb_dat_w[31:0]       ), //o
+    .io_wb_sel          (arbiters_1_io_wb_sel[3:0]          ), //o
+    .sys_reset          (sys_reset                          ), //i
+    .sys_clk            (sys_clk                            )  //i
+  );
+  WbArbiter arbiters_2 (
+    .io_masters_0_cyc   (muxes_0_io_slaves_2_cyc            ), //i
+    .io_masters_0_stb   (muxes_0_io_slaves_2_stb            ), //i
+    .io_masters_0_ack   (arbiters_2_io_masters_0_ack        ), //o
+    .io_masters_0_we    (muxes_0_io_slaves_2_we             ), //i
+    .io_masters_0_adr   (muxes_0_io_slaves_2_adr[31:0]      ), //i
+    .io_masters_0_dat_r (arbiters_2_io_masters_0_dat_r[31:0]), //o
+    .io_masters_0_dat_w (muxes_0_io_slaves_2_dat_w[31:0]    ), //i
+    .io_masters_0_sel   (muxes_0_io_slaves_2_sel[3:0]       ), //i
+    .io_masters_1_cyc   (muxes_1_io_slaves_2_cyc            ), //i
+    .io_masters_1_stb   (muxes_1_io_slaves_2_stb            ), //i
+    .io_masters_1_ack   (arbiters_2_io_masters_1_ack        ), //o
+    .io_masters_1_we    (muxes_1_io_slaves_2_we             ), //i
+    .io_masters_1_adr   (muxes_1_io_slaves_2_adr[31:0]      ), //i
+    .io_masters_1_dat_r (arbiters_2_io_masters_1_dat_r[31:0]), //o
+    .io_masters_1_dat_w (muxes_1_io_slaves_2_dat_w[31:0]    ), //i
+    .io_masters_1_sel   (muxes_1_io_slaves_2_sel[3:0]       ), //i
+    .io_wb_cyc          (arbiters_2_io_wb_cyc               ), //o
+    .io_wb_stb          (arbiters_2_io_wb_stb               ), //o
+    .io_wb_ack          (uart_wb_ack_o                      ), //i
+    .io_wb_we           (arbiters_2_io_wb_we                ), //o
+    .io_wb_adr          (arbiters_2_io_wb_adr[31:0]         ), //o
+    .io_wb_dat_r        (uart_wb_dat_o[31:0]                ), //i
+    .io_wb_dat_w        (arbiters_2_io_wb_dat_w[31:0]       ), //o
+    .io_wb_sel          (arbiters_2_io_wb_sel[3:0]          ), //o
+    .sys_reset          (sys_reset                          ), //i
+    .sys_clk            (sys_clk                            )  //i
   );
   SramController base_ram (
-    .io_wb_cyc                (mux_io_slaves_0_cyc              ), //i
-    .io_wb_stb                (mux_io_slaves_0_stb              ), //i
+    .io_wb_cyc                (arbiters_0_io_wb_cyc             ), //i
+    .io_wb_stb                (arbiters_0_io_wb_stb             ), //i
     .io_wb_ack                (base_ram_io_wb_ack               ), //o
-    .io_wb_we                 (mux_io_slaves_0_we               ), //i
-    .io_wb_adr                (mux_io_slaves_0_adr[31:0]        ), //i
+    .io_wb_we                 (arbiters_0_io_wb_we              ), //i
+    .io_wb_adr                (arbiters_0_io_wb_adr[31:0]       ), //i
     .io_wb_dat_r              (base_ram_io_wb_dat_r[31:0]       ), //o
-    .io_wb_dat_w              (mux_io_slaves_0_dat_w[31:0]      ), //i
-    .io_wb_sel                (mux_io_slaves_0_sel[3:0]         ), //i
+    .io_wb_dat_w              (arbiters_0_io_wb_dat_w[31:0]     ), //i
+    .io_wb_sel                (arbiters_0_io_wb_sel[3:0]        ), //i
     .io_sram_data_read        (_zz_io_sram_data_read[31:0]      ), //i
     .io_sram_data_write       (base_ram_io_sram_data_write[31:0]), //o
     .io_sram_data_writeEnable (base_ram_io_sram_data_writeEnable), //o
@@ -557,14 +696,14 @@ module Top (
     .sys_reset                (sys_reset                        )  //i
   );
   SramController ext_ram (
-    .io_wb_cyc                (mux_io_slaves_1_cyc             ), //i
-    .io_wb_stb                (mux_io_slaves_1_stb             ), //i
+    .io_wb_cyc                (arbiters_1_io_wb_cyc            ), //i
+    .io_wb_stb                (arbiters_1_io_wb_stb            ), //i
     .io_wb_ack                (ext_ram_io_wb_ack               ), //o
-    .io_wb_we                 (mux_io_slaves_1_we              ), //i
-    .io_wb_adr                (mux_io_slaves_1_adr[31:0]       ), //i
+    .io_wb_we                 (arbiters_1_io_wb_we             ), //i
+    .io_wb_adr                (arbiters_1_io_wb_adr[31:0]      ), //i
     .io_wb_dat_r              (ext_ram_io_wb_dat_r[31:0]       ), //o
-    .io_wb_dat_w              (mux_io_slaves_1_dat_w[31:0]     ), //i
-    .io_wb_sel                (mux_io_slaves_1_sel[3:0]        ), //i
+    .io_wb_dat_w              (arbiters_1_io_wb_dat_w[31:0]    ), //i
+    .io_wb_sel                (arbiters_1_io_wb_sel[3:0]       ), //i
     .io_sram_data_read        (_zz_io_sram_data_read_1[31:0]   ), //i
     .io_sram_data_write       (ext_ram_io_sram_data_write[31:0]), //o
     .io_sram_data_writeEnable (ext_ram_io_sram_data_writeEnable), //o
@@ -582,18 +721,18 @@ module Top (
     .CLK_FREQ(10000000),
     .BAUD(115200)
   ) uart (
-    .clk_i      (sys_clk                    ), //i
-    .rst_i      (sys_reset                  ), //i
-    .wb_cyc_i   (mux_io_slaves_2_cyc        ), //i
-    .wb_stb_i   (mux_io_slaves_2_stb        ), //i
-    .wb_ack_o   (uart_wb_ack_o              ), //o
-    .wb_we_i    (mux_io_slaves_2_we         ), //i
-    .wb_adr_i   (mux_io_slaves_2_adr[31:0]  ), //i
-    .wb_dat_o   (uart_wb_dat_o[31:0]        ), //o
-    .wb_dat_i   (mux_io_slaves_2_dat_w[31:0]), //i
-    .wb_sel_i   (mux_io_slaves_2_sel[3:0]   ), //i
-    .uart_txd_o (uart_uart_txd_o            ), //o
-    .uart_rxd_i (rxd                        )  //i
+    .clk_i      (sys_clk                     ), //i
+    .rst_i      (sys_reset                   ), //i
+    .wb_cyc_i   (arbiters_2_io_wb_cyc        ), //i
+    .wb_stb_i   (arbiters_2_io_wb_stb        ), //i
+    .wb_ack_o   (uart_wb_ack_o               ), //o
+    .wb_we_i    (arbiters_2_io_wb_we         ), //i
+    .wb_adr_i   (arbiters_2_io_wb_adr[31:0]  ), //i
+    .wb_dat_o   (uart_wb_dat_o[31:0]         ), //o
+    .wb_dat_i   (arbiters_2_io_wb_dat_w[31:0]), //i
+    .wb_sel_i   (arbiters_2_io_wb_sel[3:0]   ), //i
+    .uart_txd_o (uart_uart_txd_o             ), //o
+    .uart_rxd_i (rxd                         )  //i
   );
   assign base_ram_data[0] = _zz_base_ram_data_31 ? _zz_base_ram_data_33[0] : 1'bz;
   assign base_ram_data[1] = _zz_base_ram_data_30 ? _zz_base_ram_data_33[1] : 1'bz;
@@ -1493,76 +1632,9 @@ module SramController (
 
 endmodule
 
-module WbMux (
-  input  wire          io_wb_cyc,
-  input  wire          io_wb_stb,
-  output wire          io_wb_ack,
-  input  wire          io_wb_we,
-  input  wire [31:0]   io_wb_adr,
-  output wire [31:0]   io_wb_dat_r,
-  input  wire [31:0]   io_wb_dat_w,
-  input  wire [3:0]    io_wb_sel,
-  output wire          io_slaves_0_cyc,
-  output wire          io_slaves_0_stb,
-  input  wire          io_slaves_0_ack,
-  output wire          io_slaves_0_we,
-  output wire [31:0]   io_slaves_0_adr,
-  input  wire [31:0]   io_slaves_0_dat_r,
-  output wire [31:0]   io_slaves_0_dat_w,
-  output wire [3:0]    io_slaves_0_sel,
-  output wire          io_slaves_1_cyc,
-  output wire          io_slaves_1_stb,
-  input  wire          io_slaves_1_ack,
-  output wire          io_slaves_1_we,
-  output wire [31:0]   io_slaves_1_adr,
-  input  wire [31:0]   io_slaves_1_dat_r,
-  output wire [31:0]   io_slaves_1_dat_w,
-  output wire [3:0]    io_slaves_1_sel,
-  output wire          io_slaves_2_cyc,
-  output wire          io_slaves_2_stb,
-  input  wire          io_slaves_2_ack,
-  output wire          io_slaves_2_we,
-  output wire [31:0]   io_slaves_2_adr,
-  input  wire [31:0]   io_slaves_2_dat_r,
-  output wire [31:0]   io_slaves_2_dat_w,
-  output wire [3:0]    io_slaves_2_sel
-);
+//WbArbiter_2 replaced by WbArbiter
 
-  wire                slave_match_0;
-  wire                slave_match_1;
-  wire                slave_match_2;
-  wire                slave_sel_0;
-  wire                slave_sel_1;
-  wire                slave_sel_2;
-
-  assign slave_match_0 = (((io_wb_adr ^ 32'h80000000) & 32'hffc00000) == 32'h00000000);
-  assign slave_match_1 = (((io_wb_adr ^ 32'h80400000) & 32'hffc00000) == 32'h00000000);
-  assign slave_match_2 = (((io_wb_adr ^ 32'h10000000) & 32'hffff0000) == 32'h00000000);
-  assign slave_sel_0 = (slave_match_0 && (1'b0 == 1'b0));
-  assign slave_sel_1 = (slave_match_1 && ((1'b0 || slave_match_0) == 1'b0));
-  assign slave_sel_2 = (slave_match_2 && (((1'b0 || slave_match_0) || slave_match_1) == 1'b0));
-  assign io_wb_dat_r = (slave_sel_0 ? io_slaves_0_dat_r : (slave_sel_1 ? io_slaves_1_dat_r : io_slaves_2_dat_r));
-  assign io_wb_ack = ((io_slaves_0_ack || io_slaves_1_ack) || io_slaves_2_ack);
-  assign io_slaves_0_cyc = (io_wb_cyc && slave_sel_0);
-  assign io_slaves_0_stb = (io_wb_stb && slave_sel_0);
-  assign io_slaves_0_we = (io_wb_we && slave_sel_0);
-  assign io_slaves_0_adr = io_wb_adr;
-  assign io_slaves_0_dat_w = io_wb_dat_w;
-  assign io_slaves_0_sel = io_wb_sel;
-  assign io_slaves_1_cyc = (io_wb_cyc && slave_sel_1);
-  assign io_slaves_1_stb = (io_wb_stb && slave_sel_1);
-  assign io_slaves_1_we = (io_wb_we && slave_sel_1);
-  assign io_slaves_1_adr = io_wb_adr;
-  assign io_slaves_1_dat_w = io_wb_dat_w;
-  assign io_slaves_1_sel = io_wb_sel;
-  assign io_slaves_2_cyc = (io_wb_cyc && slave_sel_2);
-  assign io_slaves_2_stb = (io_wb_stb && slave_sel_2);
-  assign io_slaves_2_we = (io_wb_we && slave_sel_2);
-  assign io_slaves_2_adr = io_wb_adr;
-  assign io_slaves_2_dat_w = io_wb_dat_w;
-  assign io_slaves_2_sel = io_wb_sel;
-
-endmodule
+//WbArbiter_1 replaced by WbArbiter
 
 module WbArbiter (
   input  wire          io_masters_0_cyc,
@@ -1637,16 +1709,95 @@ module WbArbiter (
 
 endmodule
 
+//WbMux_1 replaced by WbMux
+
+module WbMux (
+  input  wire          io_wb_cyc,
+  input  wire          io_wb_stb,
+  output wire          io_wb_ack,
+  input  wire          io_wb_we,
+  input  wire [31:0]   io_wb_adr,
+  output wire [31:0]   io_wb_dat_r,
+  input  wire [31:0]   io_wb_dat_w,
+  input  wire [3:0]    io_wb_sel,
+  output wire          io_slaves_0_cyc,
+  output wire          io_slaves_0_stb,
+  input  wire          io_slaves_0_ack,
+  output wire          io_slaves_0_we,
+  output wire [31:0]   io_slaves_0_adr,
+  input  wire [31:0]   io_slaves_0_dat_r,
+  output wire [31:0]   io_slaves_0_dat_w,
+  output wire [3:0]    io_slaves_0_sel,
+  output wire          io_slaves_1_cyc,
+  output wire          io_slaves_1_stb,
+  input  wire          io_slaves_1_ack,
+  output wire          io_slaves_1_we,
+  output wire [31:0]   io_slaves_1_adr,
+  input  wire [31:0]   io_slaves_1_dat_r,
+  output wire [31:0]   io_slaves_1_dat_w,
+  output wire [3:0]    io_slaves_1_sel,
+  output wire          io_slaves_2_cyc,
+  output wire          io_slaves_2_stb,
+  input  wire          io_slaves_2_ack,
+  output wire          io_slaves_2_we,
+  output wire [31:0]   io_slaves_2_adr,
+  input  wire [31:0]   io_slaves_2_dat_r,
+  output wire [31:0]   io_slaves_2_dat_w,
+  output wire [3:0]    io_slaves_2_sel
+);
+
+  wire                slave_match_0;
+  wire                slave_match_1;
+  wire                slave_match_2;
+  wire                slave_sel_0;
+  wire                slave_sel_1;
+  wire                slave_sel_2;
+
+  assign slave_match_0 = (((io_wb_adr ^ 32'h80000000) & 32'hffc00000) == 32'h00000000);
+  assign slave_match_1 = (((io_wb_adr ^ 32'h80400000) & 32'hffc00000) == 32'h00000000);
+  assign slave_match_2 = (((io_wb_adr ^ 32'h10000000) & 32'hffff0000) == 32'h00000000);
+  assign slave_sel_0 = (slave_match_0 && (1'b0 == 1'b0));
+  assign slave_sel_1 = (slave_match_1 && ((1'b0 || slave_match_0) == 1'b0));
+  assign slave_sel_2 = (slave_match_2 && (((1'b0 || slave_match_0) || slave_match_1) == 1'b0));
+  assign io_wb_dat_r = (slave_sel_0 ? io_slaves_0_dat_r : (slave_sel_1 ? io_slaves_1_dat_r : io_slaves_2_dat_r));
+  assign io_wb_ack = ((io_slaves_0_ack || io_slaves_1_ack) || io_slaves_2_ack);
+  assign io_slaves_0_cyc = (io_wb_cyc && slave_sel_0);
+  assign io_slaves_0_stb = (io_wb_stb && slave_sel_0);
+  assign io_slaves_0_we = (io_wb_we && slave_sel_0);
+  assign io_slaves_0_adr = io_wb_adr;
+  assign io_slaves_0_dat_w = io_wb_dat_w;
+  assign io_slaves_0_sel = io_wb_sel;
+  assign io_slaves_1_cyc = (io_wb_cyc && slave_sel_1);
+  assign io_slaves_1_stb = (io_wb_stb && slave_sel_1);
+  assign io_slaves_1_we = (io_wb_we && slave_sel_1);
+  assign io_slaves_1_adr = io_wb_adr;
+  assign io_slaves_1_dat_w = io_wb_dat_w;
+  assign io_slaves_1_sel = io_wb_sel;
+  assign io_slaves_2_cyc = (io_wb_cyc && slave_sel_2);
+  assign io_slaves_2_stb = (io_wb_stb && slave_sel_2);
+  assign io_slaves_2_we = (io_wb_we && slave_sel_2);
+  assign io_slaves_2_adr = io_wb_adr;
+  assign io_slaves_2_dat_w = io_wb_dat_w;
+  assign io_slaves_2_sel = io_wb_sel;
+
+endmodule
+
 module WB (
   input  wire          io_i_reg_we,
   input  wire [4:0]    io_i_reg_addr_d,
   input  wire [31:0]   io_i_reg_data_d,
+  output wire          io_forward_we,
+  output wire [4:0]    io_forward_addr,
+  output wire [31:0]   io_forward_data,
   output wire [4:0]    io_reg_addr,
   output wire [31:0]   io_reg_data,
   output wire          io_reg_we
 );
 
 
+  assign io_forward_we = io_i_reg_we;
+  assign io_forward_addr = io_i_reg_addr_d;
+  assign io_forward_data = io_i_reg_data_d;
   assign io_reg_we = io_i_reg_we;
   assign io_reg_addr = io_i_reg_addr_d;
   assign io_reg_data = io_i_reg_data_d;
@@ -1792,7 +1943,7 @@ module MEM (
 
   assign mem_adr = io_i_alu_y;
   assign offset = mem_adr[1 : 0];
-  assign io_forward_we = io_i_mem_en;
+  assign io_forward_we = io_i_reg_we;
   assign io_forward_addr = io_i_reg_addr_d;
   always @(*) begin
     case(io_i_reg_sel)
@@ -2075,9 +2226,12 @@ module EXE (
   output reg  [31:0]   io_o_alu_y,
   output reg           io_br_br,
   output wire [31:0]   io_br_pc,
-  input  wire          io_forward_we,
-  input  wire [4:0]    io_forward_addr,
-  input  wire [31:0]   io_forward_data,
+  input  wire          io_forward_0_we,
+  input  wire [4:0]    io_forward_0_addr,
+  input  wire [31:0]   io_forward_0_data,
+  input  wire          io_forward_1_we,
+  input  wire [4:0]    io_forward_1_addr,
+  input  wire [31:0]   io_forward_1_data,
   input  wire          io_stall,
   output wire          io_flush_req,
   output wire [31:0]   io_alu_a,
@@ -2111,9 +2265,12 @@ module EXE (
   wire       [0:0]    _zz_io_br_pc_1;
   reg        [31:0]   reg_a;
   reg        [31:0]   reg_b;
-  wire                when_EXE_l38;
   wire                when_EXE_l39;
-  wire                when_EXE_l42;
+  wire                when_EXE_l40;
+  wire                when_EXE_l43;
+  wire                when_EXE_l39_1;
+  wire                when_EXE_l40_1;
+  wire                when_EXE_l43_1;
   `ifndef SYNTHESIS
   reg [39:0] io_i_alu_op_string;
   reg [15:0] io_i_br_type_string;
@@ -2189,25 +2346,38 @@ module EXE (
 
   always @(*) begin
     reg_a = io_i_reg_data_a;
-    if(when_EXE_l38) begin
-      if(when_EXE_l39) begin
-        reg_a = io_forward_data;
+    if(when_EXE_l39) begin
+      if(when_EXE_l40) begin
+        reg_a = io_forward_1_data;
+      end
+    end
+    if(when_EXE_l39_1) begin
+      if(when_EXE_l40_1) begin
+        reg_a = io_forward_0_data;
       end
     end
   end
 
   always @(*) begin
     reg_b = io_i_reg_data_b;
-    if(when_EXE_l38) begin
-      if(when_EXE_l42) begin
-        reg_b = io_forward_data;
+    if(when_EXE_l39) begin
+      if(when_EXE_l43) begin
+        reg_b = io_forward_1_data;
+      end
+    end
+    if(when_EXE_l39_1) begin
+      if(when_EXE_l43_1) begin
+        reg_b = io_forward_0_data;
       end
     end
   end
 
-  assign when_EXE_l38 = (io_forward_we && (io_forward_addr != 5'h00));
-  assign when_EXE_l39 = (io_forward_addr == io_i_reg_addr_a);
-  assign when_EXE_l42 = (io_forward_addr == io_i_reg_addr_b);
+  assign when_EXE_l39 = (io_forward_1_we && (io_forward_1_addr != 5'h00));
+  assign when_EXE_l40 = (io_forward_1_addr == io_i_reg_addr_a);
+  assign when_EXE_l43 = (io_forward_1_addr == io_i_reg_addr_b);
+  assign when_EXE_l39_1 = (io_forward_0_we && (io_forward_0_addr != 5'h00));
+  assign when_EXE_l40_1 = (io_forward_0_addr == io_i_reg_addr_a);
+  assign when_EXE_l43_1 = (io_forward_0_addr == io_i_reg_addr_b);
   assign io_alu_a = (io_i_use_pc ? io_i_pc : reg_a);
   assign io_alu_b = (io_i_use_rs2 ? reg_b : io_i_imm);
   assign io_alu_op = io_i_alu_op;
