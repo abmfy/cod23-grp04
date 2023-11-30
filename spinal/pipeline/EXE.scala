@@ -81,6 +81,9 @@ class EXE extends Component {
         is (NE) {
             io.br.br := reg_a =/= reg_b
         }
+        is (LT) {
+            io.br.br := reg_a.asSInt < reg_b.asSInt
+        }
     }
 
     io.flush_req := io.br.br
