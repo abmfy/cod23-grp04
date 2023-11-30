@@ -54,6 +54,9 @@ class ID extends Component {
                     is (B"100") {
                         res := BLT
                     }
+                    is (B"101") {
+                        res := BGE
+                    }
                 }
             }
             is (B"0000011") {
@@ -174,6 +177,7 @@ class ID extends Component {
                 BEQ,
                 BNE,
                 BLT,
+                BGE,
             ) {
                 res := B
             }
@@ -323,6 +327,11 @@ class ID extends Component {
             ) {
                 res := BrType.LT
             }
+            is (
+                BGE,
+            ) {
+                res := BrType.GE
+            }
         }
         res
     }
@@ -336,6 +345,7 @@ class ID extends Component {
                 BEQ,
                 BNE,
                 BLT,
+                BGE,
             ) {
                 res := True
             }
