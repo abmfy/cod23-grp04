@@ -32,7 +32,7 @@ object RegSel extends SpinalEnum {
 }
 
 object BrType extends SpinalEnum {
-    val F, T, EQ, NE, LT, GE = newElement()
+    val F, T, EQ, NE, LT, GE, LTU = newElement()
 }
 
 object AluOp extends SpinalEnum {
@@ -49,6 +49,7 @@ object Instr extends SpinalEnum {
         BNE,
         BLT,
         BGE,
+        BLTU,
         LB,
         LW,
         SB,

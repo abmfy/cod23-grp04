@@ -87,6 +87,9 @@ class EXE extends Component {
         is (GE) {
             io.br.br := reg_a.asSInt >= reg_b.asSInt
         }
+        is (LTU) {
+            io.br.br := reg_a.asUInt < reg_b.asUInt
+        }
     }
 
     io.flush_req := io.br.br
