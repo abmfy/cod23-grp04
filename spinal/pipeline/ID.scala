@@ -60,6 +60,9 @@ class ID extends Component {
                     is (B"110") {
                         res := BLTU
                     }
+                    is (B"111") {
+                        res := BGEU
+                    }
                 }
             }
             is (B"0000011") {
@@ -182,6 +185,7 @@ class ID extends Component {
                 BLT,
                 BGE,
                 BLTU,
+                BGEU,
             ) {
                 res := B
             }
@@ -341,6 +345,11 @@ class ID extends Component {
             ) {
                 res := BrType.LTU
             }
+            is (
+                BGEU,
+            ) {
+                res := BrType.GEU
+            }
         }
         res
     }
@@ -356,6 +365,7 @@ class ID extends Component {
                 BLT,
                 BGE,
                 BLTU,
+                BGEU,
             ) {
                 res := True
             }
