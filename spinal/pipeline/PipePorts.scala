@@ -6,9 +6,10 @@ import spinal.lib._
 case class IF_ID() extends Bundle with IMasterSlave {
     val pc = Types.addr
     val instr = Types.data
-
+    val next_taken = Bool()
+    val next_pc = Types.addr
     override def asMaster(): Unit = {
-        out (pc, instr)
+        out (pc, instr, next_taken, next_pc)
     }
 }
 
@@ -24,7 +25,9 @@ case class ID_EXE() extends Bundle with IMasterSlave {
     val mem_sel = Types.sel
     val reg_we = Bool()
     val reg_sel = RegSel()
-
+    val instr = Types.data
+    val next_taken = Bool()
+    val next_pc = Types.addr
     override def asMaster(): Unit = {
         out (
             pc,
@@ -38,6 +41,9 @@ case class ID_EXE() extends Bundle with IMasterSlave {
             mem_sel,
             reg_we,
             reg_sel,
+            instr,
+            next_taken,
+            next_pc,
         )
     }
 }
@@ -51,7 +57,7 @@ case class EXE_MEM() extends Bundle with IMasterSlave {
     val reg_we = Bool()
     val reg_sel = RegSel()
     val alu_y = Types.data
-
+    val instr = Types.data
     override def asMaster(): Unit = {
         out (
             pc,
@@ -62,6 +68,7 @@ case class EXE_MEM() extends Bundle with IMasterSlave {
             reg_we,
             reg_sel,
             alu_y,
+            instr,
         )
     }
 }
@@ -88,6 +95,7 @@ case class BranchPorts() extends Bundle with IMasterSlave {
         out (br, pc)
     }
 }
+
 
 case class ForwardPorts() extends Bundle with IMasterSlave {
     val we = Bool()

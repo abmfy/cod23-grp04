@@ -13,7 +13,8 @@ class Top (
     // Components
     val reg_file = new RegFile
     val alu = new Alu
-    
+    val branchPredict = new BranchPredict
+
     // Pipelines
     val If = new IF
     val Id = new ID
@@ -40,12 +41,20 @@ class Top (
     If.io.stall := !Exe.io.flush_req && Mem.io.stall_req
     If.io.bubble := Exe.io.flush_req
 
+    branchPredict.io.if_instr := If.io.instr
+    branchPredict.io.IF_pc := If.io.pc
+
+    If.io.next_pc := branchPredict.io.next_pc
+    If.io.next_taken := branchPredict.io.next_taken
     // ID
     Id.io.reg <> reg_file.io.r
 
     Id.io.stall := Exe.io.flush_req && Mem.io.stall_req
     Id.io.bubble := Exe.io.flush_req
 
+    
+    branchPredict.io.exe_instr := Id.io.o.instr
+    branchPredict.io.exe_pc := Id.io.o.pc
     // EXE
     Exe.io.alu <> alu.io
 
@@ -53,7 +62,8 @@ class Top (
     Exe.io.forward(1) <> Wb.io.forward
 
     Exe.io.stall := Mem.io.stall_req
-
+    branchPredict.io.br_we := Exe.io.br.br
+    branchPredict.io.br_addr := Exe.io.br.pc
     // WB
     Wb.io.reg <> reg_file.io.w
 

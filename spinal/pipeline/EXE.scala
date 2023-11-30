@@ -9,7 +9,6 @@ class EXE extends Component {
         val o = master port EXE_MEM()
 
         val br = master port BranchPorts()
-
         // Forwarding
         val forward = Vec(slave port ForwardPorts(), 2)
 
@@ -30,6 +29,7 @@ class EXE extends Component {
     io.o.reg_we.setAsReg() init(False)
     io.o.reg_sel.setAsReg() init(RegSel.ALU)
     io.o.alu_y.setAsReg() init(0)
+    io.o.instr.setAsReg() init(0)
 
     val reg_a = CombInit(io.i.reg_data_a)
     val reg_b = CombInit(io.i.reg_data_b)
@@ -54,6 +54,7 @@ class EXE extends Component {
         // Pass
     } otherwise {
         io.o.alu_y := io.alu.y
+        io.o.instr := io.i.instr
 
         io.o.pc := io.i.pc
         io.o.reg_data_b := reg_b
@@ -65,23 +66,29 @@ class EXE extends Component {
         io.o.reg_sel := io.i.reg_sel
     }
 
-    io.br.pc := (io.alu.y ^ io.alu.y(0).asBits.resized).asUInt
+    val fail = Bool()
+
+    io.br.pc := fail ? (io.i.pc + 4) | (io.alu.y ^ io.alu.y(0).asBits.resized).asUInt
 
     import BrType._
     switch (io.i.br_type) {
         is (F) {
             io.br.br := False
+            fail := False
         }
         is (T) {
             io.br.br := True
+            fail := False
         }
         is (EQ) {
-            io.br.br := reg_a === reg_b
+            io.br.br := reg_a === reg_b || fail
+            fail := (reg_a =/= reg_b) && io.i.next_taken
         }
         is (NE) {
-            io.br.br := reg_a =/= reg_b
+            io.br.br := reg_a =/= reg_b || fail
+            fail := (reg_a === reg_b) && io.i.next_taken
         }
     }
 
-    io.flush_req := io.br.br
+    io.flush_req := io.br.br && (!io.i.next_taken || (io.i.next_pc =/= io.br.pc) || fail) 
 }

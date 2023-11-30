@@ -11,19 +11,25 @@ case class IFConfig (
 class IF(config: IFConfig = IFConfig()) extends Component {
     val io = new Bundle {
         val o = master port IF_ID()
-
+        
         // Branching
         val br = slave port BranchPorts()
         
         // Hazard handling
         val stall = in Bool()
         val bubble = in Bool()
-
         // Wishbone master
         val wb = master port WishbonePorts()
+        
+        // branchPredict
+        val instr = out port Types.data
+        val pc = out port Types.addr
+        val next_taken = in Bool()
+        val next_pc = in port Types.addr
     }
 
     val pc = Reg(Types.addr) init(config.start)
+    io.pc := pc
 
     // Delayed branch signal
     val delay_br = Reg(Bool()) init(False)
@@ -34,19 +40,31 @@ class IF(config: IFConfig = IFConfig()) extends Component {
 
     io.o.pc.setAsReg() init(config.start)
     io.o.instr.setAsReg() init(Instr.NOP)
+    io.o.next_pc.setAsReg() init(0)
+    io.o.next_taken.setAsReg() init(False)
+
+    io.instr := 0
 
     // To break combinatorial loop
     io.wb.stb.setAsReg() init(False)
     io.wb.cyc := io.wb.stb
 
     def bubble(): Unit = {
+        io.o.pc := 0
         io.o.instr := Instr.NOP
     }
 
     def output(instr: Bits): Unit = {
         io.o.pc := pc
         io.o.instr := instr
-        pc := pc + 4
+        io.o.next_pc := io.next_pc
+        io.o.next_taken := io.next_taken
+        io.instr := instr
+        when (io.next_taken) {
+            pc := io.next_pc
+        } otherwise {
+            pc := pc + 4
+        }
     }
 
     val fsm = new StateMachine {
@@ -56,7 +74,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         io.wb.sel := 0
 
         // Delayed branching
-        when (io.br.br) {
+        when (io.br.br && io.br.pc =/= pc) {
             delay_br := True
             pc := io.br.pc
         }
@@ -72,7 +90,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                     // Branch immediately when idle
                     when (io.br.br) {
                         delay_br := False
-                    }
+                    } 
                     goto(fetch)
                 }
             }

@@ -452,6 +452,8 @@ class ID extends Component {
     }
 
     io.o.pc.setAsReg() init(0)
+    io.o.next_pc setAsReg() init(0)
+    io.o.next_taken setAsReg() init(False)
     io.o.reg_data_a.setAsReg() init(0)
     io.o.reg_data_b.setAsReg() init(0)
     io.o.reg_addr_a.setAsReg() init(0)
@@ -467,6 +469,7 @@ class ID extends Component {
     io.o.mem_sel.setAsReg() init(Sel.NONE)
     io.o.reg_we.setAsReg() init(False)
     io.o.reg_sel.setAsReg() init(RegSel.ALU)
+    io.o.instr.setAsReg() init(0)
 
     io.reg.addr_a := rs1
     io.reg.addr_b := rs2
@@ -476,8 +479,10 @@ class ID extends Component {
     } elsewhen (io.bubble) {
         bubble()
     } otherwise {
-        io.o.pc := io.i.pc
-        
+        io.o.pc := io.i.pc        
+        io.o.instr := io.i.instr
+        io.o.next_pc := io.i.next_pc
+        io.o.next_taken := io.i.next_taken
         io.o.reg_data_a := io.reg.data_a
         io.o.reg_data_b := io.reg.data_b
         io.o.reg_addr_a := rs1
