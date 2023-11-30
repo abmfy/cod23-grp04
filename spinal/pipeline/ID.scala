@@ -79,6 +79,9 @@ class ID extends Component {
                     is (B"100") {
                         res := LBU
                     }
+                    is (B"101") {
+                        res := LHU
+                    }
                 }
             }
             is (B"0100011") {
@@ -178,6 +181,7 @@ class ID extends Component {
                 LH,
                 LW,
                 LBU,
+                LHU,
             ) {
                 res := I
             }
@@ -263,6 +267,7 @@ class ID extends Component {
                 LH,
                 LW,
                 LBU,
+                LHU,
                 SB,
                 SW,
                 ADDI,
@@ -408,6 +413,7 @@ class ID extends Component {
                 LH,
                 LW,
                 LBU,
+                LHU,
                 SB,
                 SW,
             ) {
@@ -442,6 +448,7 @@ class ID extends Component {
             }
             is (
                 LH,
+                LHU,
             ) {
                 res := Sel.HALF
             }
@@ -460,6 +467,7 @@ class ID extends Component {
         switch (instr_kind) {
             is (
                 LBU,
+                LHU,
             ) {
                 res := True
             }
@@ -479,6 +487,7 @@ class ID extends Component {
                 LH,
                 LW,
                 LBU,
+                LHU,
                 ADDI,
                 ORI,
                 ANDI,
@@ -506,6 +515,7 @@ class ID extends Component {
                 LH,
                 LW,
                 LBU,
+                LHU,
             ) {
                 res := RegSel.MEM
             }

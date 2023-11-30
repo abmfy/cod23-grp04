@@ -55,6 +55,7 @@ object Instr extends SpinalEnum {
         LH,
         LW,
         LBU,
+        LHU,
         SB,
         SW,
         ADDI,
