@@ -70,6 +70,9 @@ class ID extends Component {
                     is (B"000") {
                         res := LB
                     }
+                    is (B"001") {
+                        res := LH
+                    }
                     is (B"010") {
                         res := LW
                     }
@@ -169,6 +172,7 @@ class ID extends Component {
                 SLLI,
                 SRLI,
                 LB,
+                LH,
                 LW,
             ) {
                 res := I
@@ -252,6 +256,7 @@ class ID extends Component {
                 BEQ,
                 BNE,
                 LB,
+                LH,
                 LW,
                 SB,
                 SW,
@@ -395,6 +400,7 @@ class ID extends Component {
         switch (instr_kind) {
             is (
                 LB,
+                LH,
                 LW,
                 SB,
                 SW,
@@ -428,6 +434,11 @@ class ID extends Component {
                 res := Sel.BYTE
             }
             is (
+                LH,
+            ) {
+                res := Sel.HALF
+            }
+            is (
                 LW,
                 SW,
             ) {
@@ -446,6 +457,7 @@ class ID extends Component {
                 JAL,
                 JALR,
                 LB,
+                LH,
                 LW,
                 ADDI,
                 ORI,
@@ -471,6 +483,7 @@ class ID extends Component {
         switch (instr_kind) {
             is (
                 LB,
+                LH,
                 LW,
             ) {
                 res := RegSel.MEM

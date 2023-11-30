@@ -52,6 +52,7 @@ object Instr extends SpinalEnum {
         BLTU,
         BGEU,
         LB,
+        LH,
         LW,
         SB,
         SW,
