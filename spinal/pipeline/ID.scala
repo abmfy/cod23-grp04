@@ -89,6 +89,9 @@ class ID extends Component {
                     is (B"000") {
                         res := SB
                     }
+                    is (B"001") {
+                        res := SH
+                    }
                     is (B"010") {
                         res := SW
                     }
@@ -187,6 +190,7 @@ class ID extends Component {
             }
             is (
                 SB,
+                SH,
                 SW,
             ) {
                 res := S
@@ -269,6 +273,7 @@ class ID extends Component {
                 LBU,
                 LHU,
                 SB,
+                SH,
                 SW,
                 ADDI,
                 ADD,
@@ -415,6 +420,7 @@ class ID extends Component {
                 LBU,
                 LHU,
                 SB,
+                SH,
                 SW,
             ) {
                 res := True
@@ -428,6 +434,7 @@ class ID extends Component {
         switch (instr_kind) {
             is (
                 SB,
+                SH,
                 SW,
             ) {
                 res := True
@@ -449,6 +456,7 @@ class ID extends Component {
             is (
                 LH,
                 LHU,
+                SH,
             ) {
                 res := Sel.HALF
             }
