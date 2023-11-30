@@ -22,6 +22,7 @@ case class ID_EXE() extends Bundle with IMasterSlave {
     val use_pc, use_rs2 = Bool()
     val mem_en, mem_we = Bool()
     val mem_sel = Types.sel
+    val mem_unsigned = Bool()
     val reg_we = Bool()
     val reg_sel = RegSel()
 
@@ -36,6 +37,7 @@ case class ID_EXE() extends Bundle with IMasterSlave {
             use_pc, use_rs2,
             mem_en, mem_we,
             mem_sel,
+            mem_unsigned,
             reg_we,
             reg_sel,
         )
@@ -48,6 +50,7 @@ case class EXE_MEM() extends Bundle with IMasterSlave {
     val reg_addr_d = Types.reg
     val mem_en, mem_we = Bool()
     val mem_sel = Types.sel
+    val mem_unsigned = Bool()
     val reg_we = Bool()
     val reg_sel = RegSel()
     val alu_y = Types.data
@@ -59,6 +62,7 @@ case class EXE_MEM() extends Bundle with IMasterSlave {
             reg_addr_d,
             mem_en, mem_we,
             mem_sel,
+            mem_unsigned,
             reg_we,
             reg_sel,
             alu_y,

@@ -27,6 +27,7 @@ class EXE extends Component {
     io.o.mem_en.setAsReg() init(False)
     io.o.mem_we.setAsReg() init(False)
     io.o.mem_sel.setAsReg() init(0)
+    io.o.mem_unsigned.setAsReg() init(False)
     io.o.reg_we.setAsReg() init(False)
     io.o.reg_sel.setAsReg() init(RegSel.ALU)
     io.o.alu_y.setAsReg() init(0)
@@ -61,6 +62,7 @@ class EXE extends Component {
         io.o.mem_en := io.i.mem_en
         io.o.mem_we := io.i.mem_we
         io.o.mem_sel := io.i.mem_sel
+        io.o.mem_unsigned := io.i.mem_unsigned
         io.o.reg_we := io.i.reg_we
         io.o.reg_sel := io.i.reg_sel
     }

@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : 72afa6cd9902b18a43e4b57bcefe487a8a090bdf
+// Git hash  : c630609524e2363bab63aad81cb3c01e0563ed41
 
 `timescale 1ns/1ps
 
@@ -44,10 +44,14 @@ module Top (
   localparam AluOp_ANDN = 4'd12;
   localparam AluOp_CLZ = 4'd13;
   localparam AluOp_PACK = 4'd14;
-  localparam BrType_F = 2'd0;
-  localparam BrType_T = 2'd1;
-  localparam BrType_EQ = 2'd2;
-  localparam BrType_NE = 2'd3;
+  localparam BrType_F = 3'd0;
+  localparam BrType_T = 3'd1;
+  localparam BrType_EQ = 3'd2;
+  localparam BrType_NE = 3'd3;
+  localparam BrType_LT = 3'd4;
+  localparam BrType_GE = 3'd5;
+  localparam BrType_LTU = 3'd6;
+  localparam BrType_GEU = 3'd7;
   localparam RegSel_ALU = 2'd0;
   localparam RegSel_MEM = 2'd1;
   localparam RegSel_PC = 2'd2;
@@ -79,13 +83,14 @@ module Top (
   wire       [4:0]    Id_1_io_o_reg_addr_b;
   wire       [4:0]    Id_1_io_o_reg_addr_d;
   wire       [3:0]    Id_1_io_o_alu_op;
-  wire       [1:0]    Id_1_io_o_br_type;
+  wire       [2:0]    Id_1_io_o_br_type;
   wire       [31:0]   Id_1_io_o_imm;
   wire                Id_1_io_o_use_pc;
   wire                Id_1_io_o_use_rs2;
   wire                Id_1_io_o_mem_en;
   wire                Id_1_io_o_mem_we;
   wire       [3:0]    Id_1_io_o_mem_sel;
+  wire                Id_1_io_o_mem_unsigned;
   wire                Id_1_io_o_reg_we;
   wire       [1:0]    Id_1_io_o_reg_sel;
   wire       [4:0]    Id_1_io_reg_addr_a;
@@ -96,6 +101,7 @@ module Top (
   wire                Exe_1_io_o_mem_en;
   wire                Exe_1_io_o_mem_we;
   wire       [3:0]    Exe_1_io_o_mem_sel;
+  wire                Exe_1_io_o_mem_unsigned;
   wire                Exe_1_io_o_reg_we;
   wire       [1:0]    Exe_1_io_o_reg_sel;
   wire       [31:0]   Exe_1_io_o_alu_y;
@@ -409,32 +415,33 @@ module Top (
     .sys_reset   (sys_reset                )  //i
   );
   ID Id_1 (
-    .io_i_pc         (If_2_io_o_pc[31:0]        ), //i
-    .io_i_instr      (If_2_io_o_instr[31:0]     ), //i
-    .io_o_pc         (Id_1_io_o_pc[31:0]        ), //o
-    .io_o_reg_data_a (Id_1_io_o_reg_data_a[31:0]), //o
-    .io_o_reg_data_b (Id_1_io_o_reg_data_b[31:0]), //o
-    .io_o_reg_addr_a (Id_1_io_o_reg_addr_a[4:0] ), //o
-    .io_o_reg_addr_b (Id_1_io_o_reg_addr_b[4:0] ), //o
-    .io_o_reg_addr_d (Id_1_io_o_reg_addr_d[4:0] ), //o
-    .io_o_alu_op     (Id_1_io_o_alu_op[3:0]     ), //o
-    .io_o_br_type    (Id_1_io_o_br_type[1:0]    ), //o
-    .io_o_imm        (Id_1_io_o_imm[31:0]       ), //o
-    .io_o_use_pc     (Id_1_io_o_use_pc          ), //o
-    .io_o_use_rs2    (Id_1_io_o_use_rs2         ), //o
-    .io_o_mem_en     (Id_1_io_o_mem_en          ), //o
-    .io_o_mem_we     (Id_1_io_o_mem_we          ), //o
-    .io_o_mem_sel    (Id_1_io_o_mem_sel[3:0]    ), //o
-    .io_o_reg_we     (Id_1_io_o_reg_we          ), //o
-    .io_o_reg_sel    (Id_1_io_o_reg_sel[1:0]    ), //o
-    .io_stall        (Id_1_io_stall             ), //i
-    .io_bubble       (Exe_1_io_flush_req        ), //i
-    .io_reg_addr_a   (Id_1_io_reg_addr_a[4:0]   ), //o
-    .io_reg_data_a   (reg_file_io_r_data_a[31:0]), //i
-    .io_reg_addr_b   (Id_1_io_reg_addr_b[4:0]   ), //o
-    .io_reg_data_b   (reg_file_io_r_data_b[31:0]), //i
-    .sys_clk         (sys_clk                   ), //i
-    .sys_reset       (sys_reset                 )  //i
+    .io_i_pc           (If_2_io_o_pc[31:0]        ), //i
+    .io_i_instr        (If_2_io_o_instr[31:0]     ), //i
+    .io_o_pc           (Id_1_io_o_pc[31:0]        ), //o
+    .io_o_reg_data_a   (Id_1_io_o_reg_data_a[31:0]), //o
+    .io_o_reg_data_b   (Id_1_io_o_reg_data_b[31:0]), //o
+    .io_o_reg_addr_a   (Id_1_io_o_reg_addr_a[4:0] ), //o
+    .io_o_reg_addr_b   (Id_1_io_o_reg_addr_b[4:0] ), //o
+    .io_o_reg_addr_d   (Id_1_io_o_reg_addr_d[4:0] ), //o
+    .io_o_alu_op       (Id_1_io_o_alu_op[3:0]     ), //o
+    .io_o_br_type      (Id_1_io_o_br_type[2:0]    ), //o
+    .io_o_imm          (Id_1_io_o_imm[31:0]       ), //o
+    .io_o_use_pc       (Id_1_io_o_use_pc          ), //o
+    .io_o_use_rs2      (Id_1_io_o_use_rs2         ), //o
+    .io_o_mem_en       (Id_1_io_o_mem_en          ), //o
+    .io_o_mem_we       (Id_1_io_o_mem_we          ), //o
+    .io_o_mem_sel      (Id_1_io_o_mem_sel[3:0]    ), //o
+    .io_o_mem_unsigned (Id_1_io_o_mem_unsigned    ), //o
+    .io_o_reg_we       (Id_1_io_o_reg_we          ), //o
+    .io_o_reg_sel      (Id_1_io_o_reg_sel[1:0]    ), //o
+    .io_stall          (Id_1_io_stall             ), //i
+    .io_bubble         (Exe_1_io_flush_req        ), //i
+    .io_reg_addr_a     (Id_1_io_reg_addr_a[4:0]   ), //o
+    .io_reg_data_a     (reg_file_io_r_data_a[31:0]), //i
+    .io_reg_addr_b     (Id_1_io_reg_addr_b[4:0]   ), //o
+    .io_reg_data_b     (reg_file_io_r_data_b[31:0]), //i
+    .sys_clk           (sys_clk                   ), //i
+    .sys_reset         (sys_reset                 )  //i
   );
   EXE Exe_1 (
     .io_i_pc           (Id_1_io_o_pc[31:0]         ), //i
@@ -444,13 +451,14 @@ module Top (
     .io_i_reg_addr_b   (Id_1_io_o_reg_addr_b[4:0]  ), //i
     .io_i_reg_addr_d   (Id_1_io_o_reg_addr_d[4:0]  ), //i
     .io_i_alu_op       (Id_1_io_o_alu_op[3:0]      ), //i
-    .io_i_br_type      (Id_1_io_o_br_type[1:0]     ), //i
+    .io_i_br_type      (Id_1_io_o_br_type[2:0]     ), //i
     .io_i_imm          (Id_1_io_o_imm[31:0]        ), //i
     .io_i_use_pc       (Id_1_io_o_use_pc           ), //i
     .io_i_use_rs2      (Id_1_io_o_use_rs2          ), //i
     .io_i_mem_en       (Id_1_io_o_mem_en           ), //i
     .io_i_mem_we       (Id_1_io_o_mem_we           ), //i
     .io_i_mem_sel      (Id_1_io_o_mem_sel[3:0]     ), //i
+    .io_i_mem_unsigned (Id_1_io_o_mem_unsigned     ), //i
     .io_i_reg_we       (Id_1_io_o_reg_we           ), //i
     .io_i_reg_sel      (Id_1_io_o_reg_sel[1:0]     ), //i
     .io_o_pc           (Exe_1_io_o_pc[31:0]        ), //o
@@ -459,6 +467,7 @@ module Top (
     .io_o_mem_en       (Exe_1_io_o_mem_en          ), //o
     .io_o_mem_we       (Exe_1_io_o_mem_we          ), //o
     .io_o_mem_sel      (Exe_1_io_o_mem_sel[3:0]    ), //o
+    .io_o_mem_unsigned (Exe_1_io_o_mem_unsigned    ), //o
     .io_o_reg_we       (Exe_1_io_o_reg_we          ), //o
     .io_o_reg_sel      (Exe_1_io_o_reg_sel[1:0]    ), //o
     .io_o_alu_y        (Exe_1_io_o_alu_y[31:0]     ), //o
@@ -480,32 +489,33 @@ module Top (
     .sys_reset         (sys_reset                  )  //i
   );
   MEM Mem_1 (
-    .io_i_pc         (Exe_1_io_o_pc[31:0]        ), //i
-    .io_i_reg_data_b (Exe_1_io_o_reg_data_b[31:0]), //i
-    .io_i_reg_addr_d (Exe_1_io_o_reg_addr_d[4:0] ), //i
-    .io_i_mem_en     (Exe_1_io_o_mem_en          ), //i
-    .io_i_mem_we     (Exe_1_io_o_mem_we          ), //i
-    .io_i_mem_sel    (Exe_1_io_o_mem_sel[3:0]    ), //i
-    .io_i_reg_we     (Exe_1_io_o_reg_we          ), //i
-    .io_i_reg_sel    (Exe_1_io_o_reg_sel[1:0]    ), //i
-    .io_i_alu_y      (Exe_1_io_o_alu_y[31:0]     ), //i
-    .io_o_reg_we     (Mem_1_io_o_reg_we          ), //o
-    .io_o_reg_addr_d (Mem_1_io_o_reg_addr_d[4:0] ), //o
-    .io_o_reg_data_d (Mem_1_io_o_reg_data_d[31:0]), //o
-    .io_forward_we   (Mem_1_io_forward_we        ), //o
-    .io_forward_addr (Mem_1_io_forward_addr[4:0] ), //o
-    .io_forward_data (Mem_1_io_forward_data[31:0]), //o
-    .io_stall_req    (Mem_1_io_stall_req         ), //o
-    .io_wb_cyc       (Mem_1_io_wb_cyc            ), //o
-    .io_wb_stb       (Mem_1_io_wb_stb            ), //o
-    .io_wb_ack       (muxes_0_io_wb_ack          ), //i
-    .io_wb_we        (Mem_1_io_wb_we             ), //o
-    .io_wb_adr       (Mem_1_io_wb_adr[31:0]      ), //o
-    .io_wb_dat_r     (muxes_0_io_wb_dat_r[31:0]  ), //i
-    .io_wb_dat_w     (Mem_1_io_wb_dat_w[31:0]    ), //o
-    .io_wb_sel       (Mem_1_io_wb_sel[3:0]       ), //o
-    .sys_clk         (sys_clk                    ), //i
-    .sys_reset       (sys_reset                  )  //i
+    .io_i_pc           (Exe_1_io_o_pc[31:0]        ), //i
+    .io_i_reg_data_b   (Exe_1_io_o_reg_data_b[31:0]), //i
+    .io_i_reg_addr_d   (Exe_1_io_o_reg_addr_d[4:0] ), //i
+    .io_i_mem_en       (Exe_1_io_o_mem_en          ), //i
+    .io_i_mem_we       (Exe_1_io_o_mem_we          ), //i
+    .io_i_mem_sel      (Exe_1_io_o_mem_sel[3:0]    ), //i
+    .io_i_mem_unsigned (Exe_1_io_o_mem_unsigned    ), //i
+    .io_i_reg_we       (Exe_1_io_o_reg_we          ), //i
+    .io_i_reg_sel      (Exe_1_io_o_reg_sel[1:0]    ), //i
+    .io_i_alu_y        (Exe_1_io_o_alu_y[31:0]     ), //i
+    .io_o_reg_we       (Mem_1_io_o_reg_we          ), //o
+    .io_o_reg_addr_d   (Mem_1_io_o_reg_addr_d[4:0] ), //o
+    .io_o_reg_data_d   (Mem_1_io_o_reg_data_d[31:0]), //o
+    .io_forward_we     (Mem_1_io_forward_we        ), //o
+    .io_forward_addr   (Mem_1_io_forward_addr[4:0] ), //o
+    .io_forward_data   (Mem_1_io_forward_data[31:0]), //o
+    .io_stall_req      (Mem_1_io_stall_req         ), //o
+    .io_wb_cyc         (Mem_1_io_wb_cyc            ), //o
+    .io_wb_stb         (Mem_1_io_wb_stb            ), //o
+    .io_wb_ack         (muxes_0_io_wb_ack          ), //i
+    .io_wb_we          (Mem_1_io_wb_we             ), //o
+    .io_wb_adr         (Mem_1_io_wb_adr[31:0]      ), //o
+    .io_wb_dat_r       (muxes_0_io_wb_dat_r[31:0]  ), //i
+    .io_wb_dat_w       (Mem_1_io_wb_dat_w[31:0]    ), //o
+    .io_wb_sel         (Mem_1_io_wb_sel[3:0]       ), //o
+    .sys_clk           (sys_clk                    ), //i
+    .sys_reset         (sys_reset                  )  //i
   );
   WB Wb_1 (
     .io_i_reg_we     (Mem_1_io_o_reg_we          ), //i
@@ -1814,6 +1824,7 @@ module MEM (
   input  wire          io_i_mem_en,
   input  wire          io_i_mem_we,
   input  wire [3:0]    io_i_mem_sel,
+  input  wire          io_i_mem_unsigned,
   input  wire          io_i_reg_we,
   input  wire [1:0]    io_i_reg_sel,
   input  wire [31:0]   io_i_alu_y,
@@ -1843,36 +1854,47 @@ module MEM (
   localparam fsm_enumDef_fetch = 2'd2;
 
   wire       [5:0]    _zz__zz_io_forward_data_1;
-  wire       [31:0]   _zz__zz_io_forward_data_2;
-  wire       [7:0]    _zz__zz_io_forward_data_2_1;
-  wire       [31:0]   _zz__zz_io_forward_data_2_2;
-  wire       [15:0]   _zz__zz_io_forward_data_2_3;
-  wire       [31:0]   _zz__zz_io_forward_data_2_4;
-  wire       [31:0]   _zz__zz_io_forward_data_2_5;
+  wire       [7:0]    _zz__zz_io_forward_data_2;
+  wire       [15:0]   _zz__zz_io_forward_data_2_1;
+  wire       [5:0]    _zz__zz_io_forward_data_3;
+  wire       [31:0]   _zz__zz_io_forward_data_4;
+  wire       [7:0]    _zz__zz_io_forward_data_4_1;
+  wire       [31:0]   _zz__zz_io_forward_data_4_2;
+  wire       [15:0]   _zz__zz_io_forward_data_4_3;
+  wire       [31:0]   _zz__zz_io_forward_data_4_4;
+  wire       [31:0]   _zz__zz_io_forward_data_4_5;
   wire       [31:0]   _zz__zz_io_forward_data;
   wire       [5:0]    _zz_io_wb_dat_w;
   wire       [5:0]    _zz__zz_io_o_reg_data_d_1;
-  wire       [31:0]   _zz__zz_io_o_reg_data_d_2;
-  wire       [7:0]    _zz__zz_io_o_reg_data_d_2_1;
-  wire       [31:0]   _zz__zz_io_o_reg_data_d_2_2;
-  wire       [15:0]   _zz__zz_io_o_reg_data_d_2_3;
-  wire       [31:0]   _zz__zz_io_o_reg_data_d_2_4;
-  wire       [31:0]   _zz__zz_io_o_reg_data_d_2_5;
+  wire       [7:0]    _zz__zz_io_o_reg_data_d_2;
+  wire       [15:0]   _zz__zz_io_o_reg_data_d_2_1;
+  wire       [5:0]    _zz__zz_io_o_reg_data_d_3;
+  wire       [31:0]   _zz__zz_io_o_reg_data_d_4;
+  wire       [7:0]    _zz__zz_io_o_reg_data_d_4_1;
+  wire       [31:0]   _zz__zz_io_o_reg_data_d_4_2;
+  wire       [15:0]   _zz__zz_io_o_reg_data_d_4_3;
+  wire       [31:0]   _zz__zz_io_o_reg_data_d_4_4;
+  wire       [31:0]   _zz__zz_io_o_reg_data_d_4_5;
   wire       [31:0]   _zz__zz_io_o_reg_data_d;
   wire       [5:0]    _zz_io_wb_dat_w_1;
-  wire       [5:0]    _zz__zz_io_o_reg_data_d_4;
+  wire       [5:0]    _zz__zz_io_o_reg_data_d_6;
+  wire       [7:0]    _zz__zz_io_o_reg_data_d_7;
+  wire       [15:0]   _zz__zz_io_o_reg_data_d_7_1;
+  wire       [5:0]    _zz__zz_io_o_reg_data_d_8;
+  wire       [31:0]   _zz__zz_io_o_reg_data_d_9;
+  wire       [7:0]    _zz__zz_io_o_reg_data_d_9_1;
+  wire       [31:0]   _zz__zz_io_o_reg_data_d_9_2;
+  wire       [15:0]   _zz__zz_io_o_reg_data_d_9_3;
+  wire       [31:0]   _zz__zz_io_o_reg_data_d_9_4;
+  wire       [31:0]   _zz__zz_io_o_reg_data_d_9_5;
   wire       [31:0]   _zz__zz_io_o_reg_data_d_5;
-  wire       [7:0]    _zz__zz_io_o_reg_data_d_5_1;
-  wire       [31:0]   _zz__zz_io_o_reg_data_d_5_2;
-  wire       [15:0]   _zz__zz_io_o_reg_data_d_5_3;
-  wire       [31:0]   _zz__zz_io_o_reg_data_d_5_4;
-  wire       [31:0]   _zz__zz_io_o_reg_data_d_5_5;
-  wire       [31:0]   _zz__zz_io_o_reg_data_d_3;
   wire       [31:0]   mem_adr;
   wire       [1:0]    offset;
   reg        [31:0]   _zz_io_forward_data;
   wire       [31:0]   _zz_io_forward_data_1;
   reg        [31:0]   _zz_io_forward_data_2;
+  wire       [31:0]   _zz_io_forward_data_3;
+  reg        [31:0]   _zz_io_forward_data_4;
   wire                fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
@@ -1881,9 +1903,13 @@ module MEM (
   reg        [31:0]   _zz_io_o_reg_data_d;
   wire       [31:0]   _zz_io_o_reg_data_d_1;
   reg        [31:0]   _zz_io_o_reg_data_d_2;
-  reg        [31:0]   _zz_io_o_reg_data_d_3;
-  wire       [31:0]   _zz_io_o_reg_data_d_4;
+  wire       [31:0]   _zz_io_o_reg_data_d_3;
+  reg        [31:0]   _zz_io_o_reg_data_d_4;
   reg        [31:0]   _zz_io_o_reg_data_d_5;
+  wire       [31:0]   _zz_io_o_reg_data_d_6;
+  reg        [31:0]   _zz_io_o_reg_data_d_7;
+  wire       [31:0]   _zz_io_o_reg_data_d_8;
+  reg        [31:0]   _zz_io_o_reg_data_d_9;
   `ifndef SYNTHESIS
   reg [23:0] io_i_reg_sel_string;
   reg [39:0] fsm_stateReg_string;
@@ -1892,31 +1918,40 @@ module MEM (
 
 
   assign _zz__zz_io_forward_data_1 = (offset * 4'b1000);
-  assign _zz__zz_io_forward_data_2_1 = _zz_io_forward_data_1[7 : 0];
-  assign _zz__zz_io_forward_data_2 = {{24{_zz__zz_io_forward_data_2_1[7]}}, _zz__zz_io_forward_data_2_1};
-  assign _zz__zz_io_forward_data_2_3 = _zz_io_forward_data_1[15 : 0];
-  assign _zz__zz_io_forward_data_2_2 = {{16{_zz__zz_io_forward_data_2_3[15]}}, _zz__zz_io_forward_data_2_3};
-  assign _zz__zz_io_forward_data_2_5 = _zz_io_forward_data_1[31 : 0];
-  assign _zz__zz_io_forward_data_2_4 = _zz__zz_io_forward_data_2_5;
+  assign _zz__zz_io_forward_data_2 = _zz_io_forward_data_1[7 : 0];
+  assign _zz__zz_io_forward_data_2_1 = _zz_io_forward_data_1[15 : 0];
+  assign _zz__zz_io_forward_data_3 = (offset * 4'b1000);
+  assign _zz__zz_io_forward_data_4_1 = _zz_io_forward_data_3[7 : 0];
+  assign _zz__zz_io_forward_data_4 = {{24{_zz__zz_io_forward_data_4_1[7]}}, _zz__zz_io_forward_data_4_1};
+  assign _zz__zz_io_forward_data_4_3 = _zz_io_forward_data_3[15 : 0];
+  assign _zz__zz_io_forward_data_4_2 = {{16{_zz__zz_io_forward_data_4_3[15]}}, _zz__zz_io_forward_data_4_3};
+  assign _zz__zz_io_forward_data_4_5 = _zz_io_forward_data_3[31 : 0];
+  assign _zz__zz_io_forward_data_4_4 = _zz__zz_io_forward_data_4_5;
   assign _zz__zz_io_forward_data = (io_i_pc + 32'h00000004);
   assign _zz_io_wb_dat_w = (offset * 4'b1000);
   assign _zz__zz_io_o_reg_data_d_1 = (offset * 4'b1000);
-  assign _zz__zz_io_o_reg_data_d_2_1 = _zz_io_o_reg_data_d_1[7 : 0];
-  assign _zz__zz_io_o_reg_data_d_2 = {{24{_zz__zz_io_o_reg_data_d_2_1[7]}}, _zz__zz_io_o_reg_data_d_2_1};
-  assign _zz__zz_io_o_reg_data_d_2_3 = _zz_io_o_reg_data_d_1[15 : 0];
-  assign _zz__zz_io_o_reg_data_d_2_2 = {{16{_zz__zz_io_o_reg_data_d_2_3[15]}}, _zz__zz_io_o_reg_data_d_2_3};
-  assign _zz__zz_io_o_reg_data_d_2_5 = _zz_io_o_reg_data_d_1[31 : 0];
-  assign _zz__zz_io_o_reg_data_d_2_4 = _zz__zz_io_o_reg_data_d_2_5;
+  assign _zz__zz_io_o_reg_data_d_2 = _zz_io_o_reg_data_d_1[7 : 0];
+  assign _zz__zz_io_o_reg_data_d_2_1 = _zz_io_o_reg_data_d_1[15 : 0];
+  assign _zz__zz_io_o_reg_data_d_3 = (offset * 4'b1000);
+  assign _zz__zz_io_o_reg_data_d_4_1 = _zz_io_o_reg_data_d_3[7 : 0];
+  assign _zz__zz_io_o_reg_data_d_4 = {{24{_zz__zz_io_o_reg_data_d_4_1[7]}}, _zz__zz_io_o_reg_data_d_4_1};
+  assign _zz__zz_io_o_reg_data_d_4_3 = _zz_io_o_reg_data_d_3[15 : 0];
+  assign _zz__zz_io_o_reg_data_d_4_2 = {{16{_zz__zz_io_o_reg_data_d_4_3[15]}}, _zz__zz_io_o_reg_data_d_4_3};
+  assign _zz__zz_io_o_reg_data_d_4_5 = _zz_io_o_reg_data_d_3[31 : 0];
+  assign _zz__zz_io_o_reg_data_d_4_4 = _zz__zz_io_o_reg_data_d_4_5;
   assign _zz__zz_io_o_reg_data_d = (io_i_pc + 32'h00000004);
   assign _zz_io_wb_dat_w_1 = (offset * 4'b1000);
-  assign _zz__zz_io_o_reg_data_d_4 = (offset * 4'b1000);
-  assign _zz__zz_io_o_reg_data_d_5_1 = _zz_io_o_reg_data_d_4[7 : 0];
-  assign _zz__zz_io_o_reg_data_d_5 = {{24{_zz__zz_io_o_reg_data_d_5_1[7]}}, _zz__zz_io_o_reg_data_d_5_1};
-  assign _zz__zz_io_o_reg_data_d_5_3 = _zz_io_o_reg_data_d_4[15 : 0];
-  assign _zz__zz_io_o_reg_data_d_5_2 = {{16{_zz__zz_io_o_reg_data_d_5_3[15]}}, _zz__zz_io_o_reg_data_d_5_3};
-  assign _zz__zz_io_o_reg_data_d_5_5 = _zz_io_o_reg_data_d_4[31 : 0];
-  assign _zz__zz_io_o_reg_data_d_5_4 = _zz__zz_io_o_reg_data_d_5_5;
-  assign _zz__zz_io_o_reg_data_d_3 = (io_i_pc + 32'h00000004);
+  assign _zz__zz_io_o_reg_data_d_6 = (offset * 4'b1000);
+  assign _zz__zz_io_o_reg_data_d_7 = _zz_io_o_reg_data_d_6[7 : 0];
+  assign _zz__zz_io_o_reg_data_d_7_1 = _zz_io_o_reg_data_d_6[15 : 0];
+  assign _zz__zz_io_o_reg_data_d_8 = (offset * 4'b1000);
+  assign _zz__zz_io_o_reg_data_d_9_1 = _zz_io_o_reg_data_d_8[7 : 0];
+  assign _zz__zz_io_o_reg_data_d_9 = {{24{_zz__zz_io_o_reg_data_d_9_1[7]}}, _zz__zz_io_o_reg_data_d_9_1};
+  assign _zz__zz_io_o_reg_data_d_9_3 = _zz_io_o_reg_data_d_8[15 : 0];
+  assign _zz__zz_io_o_reg_data_d_9_2 = {{16{_zz__zz_io_o_reg_data_d_9_3[15]}}, _zz__zz_io_o_reg_data_d_9_3};
+  assign _zz__zz_io_o_reg_data_d_9_5 = _zz_io_o_reg_data_d_8[31 : 0];
+  assign _zz__zz_io_o_reg_data_d_9_4 = _zz__zz_io_o_reg_data_d_9_5;
+  assign _zz__zz_io_o_reg_data_d_5 = (io_i_pc + 32'h00000004);
   `ifndef SYNTHESIS
   always @(*) begin
     case(io_i_reg_sel)
@@ -1954,7 +1989,11 @@ module MEM (
         _zz_io_forward_data = io_i_alu_y;
       end
       RegSel_MEM : begin
-        _zz_io_forward_data = _zz_io_forward_data_2;
+        if(io_i_mem_unsigned) begin
+          _zz_io_forward_data = _zz_io_forward_data_2;
+        end else begin
+          _zz_io_forward_data = _zz_io_forward_data_4;
+        end
       end
       default : begin
         _zz_io_forward_data = _zz__zz_io_forward_data;
@@ -1967,13 +2006,31 @@ module MEM (
     _zz_io_forward_data_2 = 32'h00000000;
     case(io_i_mem_sel)
       4'b0001 : begin
-        _zz_io_forward_data_2 = _zz__zz_io_forward_data_2;
+        _zz_io_forward_data_2 = {24'd0, _zz__zz_io_forward_data_2};
       end
       4'b0011 : begin
-        _zz_io_forward_data_2 = _zz__zz_io_forward_data_2_2;
+        _zz_io_forward_data_2 = {16'd0, _zz__zz_io_forward_data_2_1};
       end
       4'b1111 : begin
-        _zz_io_forward_data_2 = _zz__zz_io_forward_data_2_4;
+        _zz_io_forward_data_2 = _zz_io_forward_data_1[31 : 0];
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  assign _zz_io_forward_data_3 = (io_wb_dat_r >>> _zz__zz_io_forward_data_3);
+  always @(*) begin
+    _zz_io_forward_data_4 = 32'h00000000;
+    case(io_i_mem_sel)
+      4'b0001 : begin
+        _zz_io_forward_data_4 = _zz__zz_io_forward_data_4;
+      end
+      4'b0011 : begin
+        _zz_io_forward_data_4 = _zz__zz_io_forward_data_4_2;
+      end
+      4'b1111 : begin
+        _zz_io_forward_data_4 = _zz__zz_io_forward_data_4_4;
       end
       default : begin
       end
@@ -2108,7 +2165,11 @@ module MEM (
         _zz_io_o_reg_data_d = io_i_alu_y;
       end
       RegSel_MEM : begin
-        _zz_io_o_reg_data_d = _zz_io_o_reg_data_d_2;
+        if(io_i_mem_unsigned) begin
+          _zz_io_o_reg_data_d = _zz_io_o_reg_data_d_2;
+        end else begin
+          _zz_io_o_reg_data_d = _zz_io_o_reg_data_d_4;
+        end
       end
       default : begin
         _zz_io_o_reg_data_d = _zz__zz_io_o_reg_data_d;
@@ -2121,13 +2182,31 @@ module MEM (
     _zz_io_o_reg_data_d_2 = 32'h00000000;
     case(io_i_mem_sel)
       4'b0001 : begin
-        _zz_io_o_reg_data_d_2 = _zz__zz_io_o_reg_data_d_2;
+        _zz_io_o_reg_data_d_2 = {24'd0, _zz__zz_io_o_reg_data_d_2};
       end
       4'b0011 : begin
-        _zz_io_o_reg_data_d_2 = _zz__zz_io_o_reg_data_d_2_2;
+        _zz_io_o_reg_data_d_2 = {16'd0, _zz__zz_io_o_reg_data_d_2_1};
       end
       4'b1111 : begin
-        _zz_io_o_reg_data_d_2 = _zz__zz_io_o_reg_data_d_2_4;
+        _zz_io_o_reg_data_d_2 = _zz_io_o_reg_data_d_1[31 : 0];
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  assign _zz_io_o_reg_data_d_3 = (io_wb_dat_r >>> _zz__zz_io_o_reg_data_d_3);
+  always @(*) begin
+    _zz_io_o_reg_data_d_4 = 32'h00000000;
+    case(io_i_mem_sel)
+      4'b0001 : begin
+        _zz_io_o_reg_data_d_4 = _zz__zz_io_o_reg_data_d_4;
+      end
+      4'b0011 : begin
+        _zz_io_o_reg_data_d_4 = _zz__zz_io_o_reg_data_d_4_2;
+      end
+      4'b1111 : begin
+        _zz_io_o_reg_data_d_4 = _zz__zz_io_o_reg_data_d_4_4;
       end
       default : begin
       end
@@ -2137,29 +2216,51 @@ module MEM (
   always @(*) begin
     case(io_i_reg_sel)
       RegSel_ALU : begin
-        _zz_io_o_reg_data_d_3 = io_i_alu_y;
+        _zz_io_o_reg_data_d_5 = io_i_alu_y;
       end
       RegSel_MEM : begin
-        _zz_io_o_reg_data_d_3 = _zz_io_o_reg_data_d_5;
+        if(io_i_mem_unsigned) begin
+          _zz_io_o_reg_data_d_5 = _zz_io_o_reg_data_d_7;
+        end else begin
+          _zz_io_o_reg_data_d_5 = _zz_io_o_reg_data_d_9;
+        end
       end
       default : begin
-        _zz_io_o_reg_data_d_3 = _zz__zz_io_o_reg_data_d_3;
+        _zz_io_o_reg_data_d_5 = _zz__zz_io_o_reg_data_d_5;
       end
     endcase
   end
 
-  assign _zz_io_o_reg_data_d_4 = (io_wb_dat_r >>> _zz__zz_io_o_reg_data_d_4);
+  assign _zz_io_o_reg_data_d_6 = (io_wb_dat_r >>> _zz__zz_io_o_reg_data_d_6);
   always @(*) begin
-    _zz_io_o_reg_data_d_5 = 32'h00000000;
+    _zz_io_o_reg_data_d_7 = 32'h00000000;
     case(io_i_mem_sel)
       4'b0001 : begin
-        _zz_io_o_reg_data_d_5 = _zz__zz_io_o_reg_data_d_5;
+        _zz_io_o_reg_data_d_7 = {24'd0, _zz__zz_io_o_reg_data_d_7};
       end
       4'b0011 : begin
-        _zz_io_o_reg_data_d_5 = _zz__zz_io_o_reg_data_d_5_2;
+        _zz_io_o_reg_data_d_7 = {16'd0, _zz__zz_io_o_reg_data_d_7_1};
       end
       4'b1111 : begin
-        _zz_io_o_reg_data_d_5 = _zz__zz_io_o_reg_data_d_5_4;
+        _zz_io_o_reg_data_d_7 = _zz_io_o_reg_data_d_6[31 : 0];
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  assign _zz_io_o_reg_data_d_8 = (io_wb_dat_r >>> _zz__zz_io_o_reg_data_d_8);
+  always @(*) begin
+    _zz_io_o_reg_data_d_9 = 32'h00000000;
+    case(io_i_mem_sel)
+      4'b0001 : begin
+        _zz_io_o_reg_data_d_9 = _zz__zz_io_o_reg_data_d_9;
+      end
+      4'b0011 : begin
+        _zz_io_o_reg_data_d_9 = _zz__zz_io_o_reg_data_d_9_2;
+      end
+      4'b1111 : begin
+        _zz_io_o_reg_data_d_9 = _zz__zz_io_o_reg_data_d_9_4;
       end
       default : begin
       end
@@ -2189,7 +2290,7 @@ module MEM (
           if(io_wb_ack) begin
             io_o_reg_we <= io_i_reg_we;
             io_o_reg_addr_d <= io_i_reg_addr_d;
-            io_o_reg_data_d <= _zz_io_o_reg_data_d_3;
+            io_o_reg_data_d <= _zz_io_o_reg_data_d_5;
           end
         end
         default : begin
@@ -2209,13 +2310,14 @@ module EXE (
   input  wire [4:0]    io_i_reg_addr_b,
   input  wire [4:0]    io_i_reg_addr_d,
   input  wire [3:0]    io_i_alu_op,
-  input  wire [1:0]    io_i_br_type,
+  input  wire [2:0]    io_i_br_type,
   input  wire [31:0]   io_i_imm,
   input  wire          io_i_use_pc,
   input  wire          io_i_use_rs2,
   input  wire          io_i_mem_en,
   input  wire          io_i_mem_we,
   input  wire [3:0]    io_i_mem_sel,
+  input  wire          io_i_mem_unsigned,
   input  wire          io_i_reg_we,
   input  wire [1:0]    io_i_reg_sel,
   output reg  [31:0]   io_o_pc,
@@ -2224,6 +2326,7 @@ module EXE (
   output reg           io_o_mem_en,
   output reg           io_o_mem_we,
   output reg  [3:0]    io_o_mem_sel,
+  output reg           io_o_mem_unsigned,
   output reg           io_o_reg_we,
   output reg  [1:0]    io_o_reg_sel,
   output reg  [31:0]   io_o_alu_y,
@@ -2259,27 +2362,35 @@ module EXE (
   localparam AluOp_ANDN = 4'd12;
   localparam AluOp_CLZ = 4'd13;
   localparam AluOp_PACK = 4'd14;
-  localparam BrType_F = 2'd0;
-  localparam BrType_T = 2'd1;
-  localparam BrType_EQ = 2'd2;
-  localparam BrType_NE = 2'd3;
+  localparam BrType_F = 3'd0;
+  localparam BrType_T = 3'd1;
+  localparam BrType_EQ = 3'd2;
+  localparam BrType_NE = 3'd3;
+  localparam BrType_LT = 3'd4;
+  localparam BrType_GE = 3'd5;
+  localparam BrType_LTU = 3'd6;
+  localparam BrType_GEU = 3'd7;
   localparam RegSel_ALU = 2'd0;
   localparam RegSel_MEM = 2'd1;
   localparam RegSel_PC = 2'd2;
 
   wire       [31:0]   _zz_io_br_pc;
   wire       [0:0]    _zz_io_br_pc_1;
+  wire       [31:0]   _zz_io_br_br;
+  wire       [31:0]   _zz_io_br_br_1;
+  wire       [31:0]   _zz_io_br_br_2;
+  wire       [31:0]   _zz_io_br_br_3;
   reg        [31:0]   reg_a;
   reg        [31:0]   reg_b;
-  wire                when_EXE_l39;
   wire                when_EXE_l40;
-  wire                when_EXE_l43;
-  wire                when_EXE_l39_1;
+  wire                when_EXE_l41;
+  wire                when_EXE_l44;
   wire                when_EXE_l40_1;
-  wire                when_EXE_l43_1;
+  wire                when_EXE_l41_1;
+  wire                when_EXE_l44_1;
   `ifndef SYNTHESIS
   reg [39:0] io_i_alu_op_string;
-  reg [15:0] io_i_br_type_string;
+  reg [23:0] io_i_br_type_string;
   reg [23:0] io_i_reg_sel_string;
   reg [23:0] io_o_reg_sel_string;
   reg [39:0] io_alu_op_string;
@@ -2288,6 +2399,10 @@ module EXE (
 
   assign _zz_io_br_pc_1 = io_alu_y[0];
   assign _zz_io_br_pc = {31'd0, _zz_io_br_pc_1};
+  assign _zz_io_br_br = reg_a;
+  assign _zz_io_br_br_1 = reg_b;
+  assign _zz_io_br_br_2 = reg_b;
+  assign _zz_io_br_br_3 = reg_a;
   `ifndef SYNTHESIS
   always @(*) begin
     case(io_i_alu_op)
@@ -2311,11 +2426,15 @@ module EXE (
   end
   always @(*) begin
     case(io_i_br_type)
-      BrType_F : io_i_br_type_string = "F ";
-      BrType_T : io_i_br_type_string = "T ";
-      BrType_EQ : io_i_br_type_string = "EQ";
-      BrType_NE : io_i_br_type_string = "NE";
-      default : io_i_br_type_string = "??";
+      BrType_F : io_i_br_type_string = "F  ";
+      BrType_T : io_i_br_type_string = "T  ";
+      BrType_EQ : io_i_br_type_string = "EQ ";
+      BrType_NE : io_i_br_type_string = "NE ";
+      BrType_LT : io_i_br_type_string = "LT ";
+      BrType_GE : io_i_br_type_string = "GE ";
+      BrType_LTU : io_i_br_type_string = "LTU";
+      BrType_GEU : io_i_br_type_string = "GEU";
+      default : io_i_br_type_string = "???";
     endcase
   end
   always @(*) begin
@@ -2358,13 +2477,13 @@ module EXE (
 
   always @(*) begin
     reg_a = io_i_reg_data_a;
-    if(when_EXE_l39) begin
-      if(when_EXE_l40) begin
+    if(when_EXE_l40) begin
+      if(when_EXE_l41) begin
         reg_a = io_forward_1_data;
       end
     end
-    if(when_EXE_l39_1) begin
-      if(when_EXE_l40_1) begin
+    if(when_EXE_l40_1) begin
+      if(when_EXE_l41_1) begin
         reg_a = io_forward_0_data;
       end
     end
@@ -2372,24 +2491,24 @@ module EXE (
 
   always @(*) begin
     reg_b = io_i_reg_data_b;
-    if(when_EXE_l39) begin
-      if(when_EXE_l43) begin
+    if(when_EXE_l40) begin
+      if(when_EXE_l44) begin
         reg_b = io_forward_1_data;
       end
     end
-    if(when_EXE_l39_1) begin
-      if(when_EXE_l43_1) begin
+    if(when_EXE_l40_1) begin
+      if(when_EXE_l44_1) begin
         reg_b = io_forward_0_data;
       end
     end
   end
 
-  assign when_EXE_l39 = (io_forward_1_we && (io_forward_1_addr != 5'h00));
-  assign when_EXE_l40 = (io_forward_1_addr == io_i_reg_addr_a);
-  assign when_EXE_l43 = (io_forward_1_addr == io_i_reg_addr_b);
-  assign when_EXE_l39_1 = (io_forward_0_we && (io_forward_0_addr != 5'h00));
-  assign when_EXE_l40_1 = (io_forward_0_addr == io_i_reg_addr_a);
-  assign when_EXE_l43_1 = (io_forward_0_addr == io_i_reg_addr_b);
+  assign when_EXE_l40 = (io_forward_1_we && (io_forward_1_addr != 5'h00));
+  assign when_EXE_l41 = (io_forward_1_addr == io_i_reg_addr_a);
+  assign when_EXE_l44 = (io_forward_1_addr == io_i_reg_addr_b);
+  assign when_EXE_l40_1 = (io_forward_0_we && (io_forward_0_addr != 5'h00));
+  assign when_EXE_l41_1 = (io_forward_0_addr == io_i_reg_addr_a);
+  assign when_EXE_l44_1 = (io_forward_0_addr == io_i_reg_addr_b);
   assign io_alu_a = (io_i_use_pc ? io_i_pc : reg_a);
   assign io_alu_b = (io_i_use_rs2 ? reg_b : io_i_imm);
   assign io_alu_op = io_i_alu_op;
@@ -2405,8 +2524,20 @@ module EXE (
       BrType_EQ : begin
         io_br_br = (reg_a == reg_b);
       end
-      default : begin
+      BrType_NE : begin
         io_br_br = (reg_a != reg_b);
+      end
+      BrType_LT : begin
+        io_br_br = ($signed(_zz_io_br_br) < $signed(_zz_io_br_br_1));
+      end
+      BrType_GE : begin
+        io_br_br = ($signed(_zz_io_br_br_2) <= $signed(_zz_io_br_br_3));
+      end
+      BrType_LTU : begin
+        io_br_br = (reg_a < reg_b);
+      end
+      default : begin
+        io_br_br = (reg_b <= reg_a);
       end
     endcase
   end
@@ -2420,6 +2551,7 @@ module EXE (
       io_o_mem_en <= 1'b0;
       io_o_mem_we <= 1'b0;
       io_o_mem_sel <= 4'b0000;
+      io_o_mem_unsigned <= 1'b0;
       io_o_reg_we <= 1'b0;
       io_o_reg_sel <= RegSel_ALU;
       io_o_alu_y <= 32'h00000000;
@@ -2432,6 +2564,7 @@ module EXE (
         io_o_mem_en <= io_i_mem_en;
         io_o_mem_we <= io_i_mem_we;
         io_o_mem_sel <= io_i_mem_sel;
+        io_o_mem_unsigned <= io_i_mem_unsigned;
         io_o_reg_we <= io_i_reg_we;
         io_o_reg_sel <= io_i_reg_sel;
       end
@@ -2451,13 +2584,14 @@ module ID (
   output reg  [4:0]    io_o_reg_addr_b,
   output reg  [4:0]    io_o_reg_addr_d,
   output reg  [3:0]    io_o_alu_op,
-  output reg  [1:0]    io_o_br_type,
+  output reg  [2:0]    io_o_br_type,
   output reg  [31:0]   io_o_imm,
   output reg           io_o_use_pc,
   output reg           io_o_use_rs2,
   output reg           io_o_mem_en,
   output reg           io_o_mem_we,
   output reg  [3:0]    io_o_mem_sel,
+  output reg           io_o_mem_unsigned,
   output reg           io_o_reg_we,
   output reg  [1:0]    io_o_reg_sel,
   input  wire          io_stall,
@@ -2484,10 +2618,14 @@ module ID (
   localparam AluOp_ANDN = 4'd12;
   localparam AluOp_CLZ = 4'd13;
   localparam AluOp_PACK = 4'd14;
-  localparam BrType_F = 2'd0;
-  localparam BrType_T = 2'd1;
-  localparam BrType_EQ = 2'd2;
-  localparam BrType_NE = 2'd3;
+  localparam BrType_F = 3'd0;
+  localparam BrType_T = 3'd1;
+  localparam BrType_EQ = 3'd2;
+  localparam BrType_NE = 3'd3;
+  localparam BrType_LT = 3'd4;
+  localparam BrType_GE = 3'd5;
+  localparam BrType_LTU = 3'd6;
+  localparam BrType_GEU = 3'd7;
   localparam RegSel_ALU = 2'd0;
   localparam RegSel_MEM = 2'd1;
   localparam RegSel_PC = 2'd2;
@@ -2498,22 +2636,28 @@ module ID (
   localparam Instr_JALR = 5'd4;
   localparam Instr_BEQ = 5'd5;
   localparam Instr_BNE = 5'd6;
-  localparam Instr_LB = 5'd7;
-  localparam Instr_LW = 5'd8;
-  localparam Instr_SB = 5'd9;
-  localparam Instr_SW = 5'd10;
-  localparam Instr_ADDI = 5'd11;
-  localparam Instr_ORI = 5'd12;
-  localparam Instr_ANDI = 5'd13;
-  localparam Instr_SLLI = 5'd14;
-  localparam Instr_SRLI = 5'd15;
-  localparam Instr_ADD = 5'd16;
-  localparam Instr_XOR_1 = 5'd17;
-  localparam Instr_OR_1 = 5'd18;
-  localparam Instr_AND_1 = 5'd19;
-  localparam Instr_ANDN = 5'd20;
-  localparam Instr_CLZ = 5'd21;
-  localparam Instr_PACK = 5'd22;
+  localparam Instr_BLT = 5'd7;
+  localparam Instr_BGE = 5'd8;
+  localparam Instr_BLTU = 5'd9;
+  localparam Instr_BGEU = 5'd10;
+  localparam Instr_LB = 5'd11;
+  localparam Instr_LH = 5'd12;
+  localparam Instr_LW = 5'd13;
+  localparam Instr_LBU = 5'd14;
+  localparam Instr_SB = 5'd15;
+  localparam Instr_SW = 5'd16;
+  localparam Instr_ADDI = 5'd17;
+  localparam Instr_ORI = 5'd18;
+  localparam Instr_ANDI = 5'd19;
+  localparam Instr_SLLI = 5'd20;
+  localparam Instr_SRLI = 5'd21;
+  localparam Instr_ADD = 5'd22;
+  localparam Instr_XOR_1 = 5'd23;
+  localparam Instr_OR_1 = 5'd24;
+  localparam Instr_AND_1 = 5'd25;
+  localparam Instr_ANDN = 5'd26;
+  localparam Instr_CLZ = 5'd27;
+  localparam Instr_PACK = 5'd28;
   localparam InstrType_R = 3'd0;
   localparam InstrType_I = 3'd1;
   localparam InstrType_S = 3'd2;
@@ -2541,22 +2685,23 @@ module ID (
   reg        [2:0]    instr_type;
   reg        [31:0]   imm;
   reg        [3:0]    alu_op;
-  reg        [1:0]    br_type;
+  reg        [2:0]    br_type;
   reg                 use_pc;
   reg                 use_rs2;
   reg                 mem_en;
   reg                 mem_we;
   reg        [3:0]    mem_sel;
+  reg                 mem_unsigned;
   reg                 reg_we;
   reg        [1:0]    reg_sel;
   `ifndef SYNTHESIS
   reg [39:0] io_o_alu_op_string;
-  reg [15:0] io_o_br_type_string;
+  reg [23:0] io_o_br_type_string;
   reg [23:0] io_o_reg_sel_string;
   reg [39:0] instr_kind_string;
   reg [7:0] instr_type_string;
   reg [39:0] alu_op_string;
-  reg [15:0] br_type_string;
+  reg [23:0] br_type_string;
   reg [23:0] reg_sel_string;
   `endif
 
@@ -2594,11 +2739,15 @@ module ID (
   end
   always @(*) begin
     case(io_o_br_type)
-      BrType_F : io_o_br_type_string = "F ";
-      BrType_T : io_o_br_type_string = "T ";
-      BrType_EQ : io_o_br_type_string = "EQ";
-      BrType_NE : io_o_br_type_string = "NE";
-      default : io_o_br_type_string = "??";
+      BrType_F : io_o_br_type_string = "F  ";
+      BrType_T : io_o_br_type_string = "T  ";
+      BrType_EQ : io_o_br_type_string = "EQ ";
+      BrType_NE : io_o_br_type_string = "NE ";
+      BrType_LT : io_o_br_type_string = "LT ";
+      BrType_GE : io_o_br_type_string = "GE ";
+      BrType_LTU : io_o_br_type_string = "LTU";
+      BrType_GEU : io_o_br_type_string = "GEU";
+      default : io_o_br_type_string = "???";
     endcase
   end
   always @(*) begin
@@ -2618,8 +2767,14 @@ module ID (
       Instr_JALR : instr_kind_string = "JALR ";
       Instr_BEQ : instr_kind_string = "BEQ  ";
       Instr_BNE : instr_kind_string = "BNE  ";
+      Instr_BLT : instr_kind_string = "BLT  ";
+      Instr_BGE : instr_kind_string = "BGE  ";
+      Instr_BLTU : instr_kind_string = "BLTU ";
+      Instr_BGEU : instr_kind_string = "BGEU ";
       Instr_LB : instr_kind_string = "LB   ";
+      Instr_LH : instr_kind_string = "LH   ";
       Instr_LW : instr_kind_string = "LW   ";
+      Instr_LBU : instr_kind_string = "LBU  ";
       Instr_SB : instr_kind_string = "SB   ";
       Instr_SW : instr_kind_string = "SW   ";
       Instr_ADDI : instr_kind_string = "ADDI ";
@@ -2670,11 +2825,15 @@ module ID (
   end
   always @(*) begin
     case(br_type)
-      BrType_F : br_type_string = "F ";
-      BrType_T : br_type_string = "T ";
-      BrType_EQ : br_type_string = "EQ";
-      BrType_NE : br_type_string = "NE";
-      default : br_type_string = "??";
+      BrType_F : br_type_string = "F  ";
+      BrType_T : br_type_string = "T  ";
+      BrType_EQ : br_type_string = "EQ ";
+      BrType_NE : br_type_string = "NE ";
+      BrType_LT : br_type_string = "LT ";
+      BrType_GE : br_type_string = "GE ";
+      BrType_LTU : br_type_string = "LTU";
+      BrType_GEU : br_type_string = "GEU";
+      default : br_type_string = "???";
     endcase
   end
   always @(*) begin
@@ -2716,6 +2875,18 @@ module ID (
           3'b001 : begin
             instr_kind = Instr_BNE;
           end
+          3'b100 : begin
+            instr_kind = Instr_BLT;
+          end
+          3'b101 : begin
+            instr_kind = Instr_BGE;
+          end
+          3'b110 : begin
+            instr_kind = Instr_BLTU;
+          end
+          3'b111 : begin
+            instr_kind = Instr_BGEU;
+          end
           default : begin
           end
         endcase
@@ -2725,8 +2896,14 @@ module ID (
           3'b000 : begin
             instr_kind = Instr_LB;
           end
+          3'b001 : begin
+            instr_kind = Instr_LH;
+          end
           3'b010 : begin
             instr_kind = Instr_LW;
+          end
+          3'b100 : begin
+            instr_kind = Instr_LBU;
           end
           default : begin
           end
@@ -2821,13 +2998,13 @@ module ID (
       Instr_ADD, Instr_XOR_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
         instr_type = InstrType_R;
       end
-      Instr_JALR, Instr_ADDI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_LB, Instr_LW : begin
+      Instr_JALR, Instr_ADDI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_LB, Instr_LH, Instr_LW, Instr_LBU : begin
         instr_type = InstrType_I;
       end
       Instr_SB, Instr_SW : begin
         instr_type = InstrType_S;
       end
-      Instr_BEQ, Instr_BNE : begin
+      Instr_BEQ, Instr_BNE, Instr_BLT, Instr_BGE, Instr_BLTU, Instr_BGEU : begin
         instr_type = InstrType_B;
       end
       Instr_LUI, Instr_AUIPC : begin
@@ -2867,7 +3044,7 @@ module ID (
   always @(*) begin
     alu_op = AluOp_ADD;
     case(instr_kind)
-      Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_BEQ, Instr_BNE, Instr_LB, Instr_LW, Instr_SB, Instr_SW, Instr_ADDI, Instr_ADD : begin
+      Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_BEQ, Instr_BNE, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_SB, Instr_SW, Instr_ADDI, Instr_ADD : begin
         alu_op = AluOp_ADD;
       end
       Instr_ANDI, Instr_AND_1 : begin
@@ -2914,6 +3091,18 @@ module ID (
       Instr_BNE : begin
         br_type = BrType_NE;
       end
+      Instr_BLT : begin
+        br_type = BrType_LT;
+      end
+      Instr_BGE : begin
+        br_type = BrType_GE;
+      end
+      Instr_BLTU : begin
+        br_type = BrType_LTU;
+      end
+      Instr_BGEU : begin
+        br_type = BrType_GEU;
+      end
       default : begin
       end
     endcase
@@ -2922,7 +3111,7 @@ module ID (
   always @(*) begin
     use_pc = 1'b0;
     case(instr_kind)
-      Instr_AUIPC, Instr_JAL, Instr_BEQ, Instr_BNE : begin
+      Instr_AUIPC, Instr_JAL, Instr_BEQ, Instr_BNE, Instr_BLT, Instr_BGE, Instr_BLTU, Instr_BGEU : begin
         use_pc = 1'b1;
       end
       default : begin
@@ -2944,7 +3133,7 @@ module ID (
   always @(*) begin
     mem_en = 1'b0;
     case(instr_kind)
-      Instr_LB, Instr_LW, Instr_SB, Instr_SW : begin
+      Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_SB, Instr_SW : begin
         mem_en = 1'b1;
       end
       default : begin
@@ -2966,8 +3155,11 @@ module ID (
   always @(*) begin
     mem_sel = 4'b0000;
     case(instr_kind)
-      Instr_LB, Instr_SB : begin
+      Instr_LB, Instr_LBU, Instr_SB : begin
         mem_sel = 4'b0001;
+      end
+      Instr_LH : begin
+        mem_sel = 4'b0011;
       end
       Instr_LW, Instr_SW : begin
         mem_sel = 4'b1111;
@@ -2978,9 +3170,20 @@ module ID (
   end
 
   always @(*) begin
+    mem_unsigned = 1'b0;
+    case(instr_kind)
+      Instr_LBU : begin
+        mem_unsigned = 1'b1;
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  always @(*) begin
     reg_we = 1'b0;
     case(instr_kind)
-      Instr_LUI, Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_LB, Instr_LW, Instr_ADDI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_ADD, Instr_XOR_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
+      Instr_LUI, Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_ADDI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_ADD, Instr_XOR_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
         reg_we = 1'b1;
       end
       default : begin
@@ -2991,7 +3194,7 @@ module ID (
   always @(*) begin
     reg_sel = RegSel_ALU;
     case(instr_kind)
-      Instr_LB, Instr_LW : begin
+      Instr_LB, Instr_LH, Instr_LW, Instr_LBU : begin
         reg_sel = RegSel_MEM;
       end
       Instr_JAL, Instr_JALR : begin
@@ -3020,6 +3223,7 @@ module ID (
       io_o_mem_en <= 1'b0;
       io_o_mem_we <= 1'b0;
       io_o_mem_sel <= 4'b0000;
+      io_o_mem_unsigned <= 1'b0;
       io_o_reg_we <= 1'b0;
       io_o_reg_sel <= RegSel_ALU;
     end else begin
@@ -3043,6 +3247,7 @@ module ID (
           io_o_mem_en <= mem_en;
           io_o_mem_we <= mem_we;
           io_o_mem_sel <= mem_sel;
+          io_o_mem_unsigned <= mem_unsigned;
           io_o_reg_we <= reg_we;
           io_o_reg_sel <= reg_sel;
         end

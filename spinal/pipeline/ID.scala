@@ -76,6 +76,9 @@ class ID extends Component {
                     is (B"010") {
                         res := LW
                     }
+                    is (B"100") {
+                        res := LBU
+                    }
                 }
             }
             is (B"0100011") {
@@ -174,6 +177,7 @@ class ID extends Component {
                 LB,
                 LH,
                 LW,
+                LBU,
             ) {
                 res := I
             }
@@ -258,6 +262,7 @@ class ID extends Component {
                 LB,
                 LH,
                 LW,
+                LBU,
                 SB,
                 SW,
                 ADDI,
@@ -402,6 +407,7 @@ class ID extends Component {
                 LB,
                 LH,
                 LW,
+                LBU,
                 SB,
                 SW,
             ) {
@@ -429,6 +435,7 @@ class ID extends Component {
         switch (instr_kind) {
             is (
                 LB,
+                LBU,
                 SB,
             ) {
                 res := Sel.BYTE
@@ -448,6 +455,18 @@ class ID extends Component {
         res
     }
 
+    val mem_unsigned: Bool = {
+        val res = False
+        switch (instr_kind) {
+            is (
+                LBU,
+            ) {
+                res := True
+            }
+        }
+        res
+    }
+
     val reg_we: Bool = {
         val res = False
         switch (instr_kind) {
@@ -459,6 +478,7 @@ class ID extends Component {
                 LB,
                 LH,
                 LW,
+                LBU,
                 ADDI,
                 ORI,
                 ANDI,
@@ -485,6 +505,7 @@ class ID extends Component {
                 LB,
                 LH,
                 LW,
+                LBU,
             ) {
                 res := RegSel.MEM
             }
@@ -518,6 +539,7 @@ class ID extends Component {
     io.o.mem_en.setAsReg() init(False)
     io.o.mem_we.setAsReg() init(False)
     io.o.mem_sel.setAsReg() init(Sel.NONE)
+    io.o.mem_unsigned.setAsReg() init(False)
     io.o.reg_we.setAsReg() init(False)
     io.o.reg_sel.setAsReg() init(RegSel.ALU)
 
@@ -544,6 +566,7 @@ class ID extends Component {
         io.o.mem_en := mem_en
         io.o.mem_we := mem_we
         io.o.mem_sel := mem_sel
+        io.o.mem_unsigned := mem_unsigned
         io.o.reg_we := reg_we
         io.o.reg_sel := reg_sel
     }

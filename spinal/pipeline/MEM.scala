@@ -33,7 +33,11 @@ class MEM extends Component {
                 res := io.i.alu_y
             }
             is (RegSel.MEM) {
-                res := Util.sign_extend(mem_data_read, io.i.mem_sel)
+                when (io.i.mem_unsigned) {
+                    res := Util.zero_extend(mem_data_read, io.i.mem_sel)
+                } otherwise {
+                    res := Util.sign_extend(mem_data_read, io.i.mem_sel)
+                }
             }
             is (RegSel.PC) {
                 res := (io.i.pc + 4).asBits
