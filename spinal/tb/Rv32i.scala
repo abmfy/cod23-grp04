@@ -22,7 +22,10 @@ object Rv32i extends App {
         dut.clockDomain.forkStimulus(100 ns)
         dut.clockDomain.waitSampling()
 
+        // To clear txd buffer
+        dut.clockDomain.assertReset()
         sleep(100 us)
+        dut.clockDomain.deassertReset()
 
         val baud_period = (1 sec) / dut.uart.config.baud
 
