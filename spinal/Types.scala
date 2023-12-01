@@ -86,6 +86,7 @@ object Instr extends SpinalEnum {
         SRAI,
         ADD,
         SUB,
+        SLL,
         XOR,
         OR,
         AND,
