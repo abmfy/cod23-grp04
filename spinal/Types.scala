@@ -17,6 +17,8 @@ object Types {
     def reg() = UInt(5 bits)
     def reg(width: Int) = UInt(width bits)
 
+    def csr = UInt(12 bits)
+
     def sel = Bits(4 bits)
 }
 
@@ -53,6 +55,10 @@ object AluOp extends SpinalEnum {
         ANDN,
         CLZ,
         PACK = newElement()
+}
+
+object CsrOp extends SpinalEnum {
+    val N, W, S, C = newElement()
 }
 
 object Instr extends SpinalEnum {
@@ -94,8 +100,14 @@ object Instr extends SpinalEnum {
         SRA,
         OR,
         AND,
+        ECALL,
+        EBREAK,
         // Zifencei
         FENCE_I,
+        // Zicsr,
+        CSRRW,
+        CSRRS,
+        CSRRC,
         // Extra
         ANDN,
         CLZ,
@@ -107,4 +119,13 @@ object Instr extends SpinalEnum {
 
 object InstrType extends SpinalEnum {
     val R, I, S, B, U, J = newElement()
+}
+
+object PrivilegeMode extends SpinalEnum {
+    val U, S, M = newElement()
+    defaultEncoding = SpinalEnumEncoding("staticEncoding")(
+        U -> 0,
+        S -> 1,
+        M -> 3,
+    )
 }

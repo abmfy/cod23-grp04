@@ -25,6 +25,8 @@ class EXE extends Component {
     io.o.pc.setAsReg() init(0)
     io.o.reg_data_b.setAsReg() init(0)
     io.o.reg_addr_d.setAsReg() init(0)
+    io.o.csr_op.setAsReg() init(CsrOp.N)
+    io.o.imm.setAsReg() init(0)
     io.o.mem_en.setAsReg() init(False)
     io.o.mem_we.setAsReg() init(False)
     io.o.mem_sel.setAsReg() init(0)
@@ -61,6 +63,8 @@ class EXE extends Component {
         io.o.pc := io.i.pc
         io.o.reg_data_b := reg_b
         io.o.reg_addr_d := io.i.reg_addr_d
+        io.o.csr_op := io.i.csr_op
+        io.o.imm := io.i.imm
         io.o.mem_en := io.i.mem_en
         io.o.mem_we := io.i.mem_we
         io.o.mem_sel := io.i.mem_sel

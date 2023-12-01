@@ -196,6 +196,29 @@ class ID extends Component {
                     }
                 }
             }
+            is (B"1110011") {
+                switch (funct3) {
+                    is (B"000") {
+                        switch (rs2(0)) {
+                            is (False) {
+                                res := ECALL
+                            }
+                            is (True) {
+                                res := EBREAK
+                            }
+                        }
+                    }
+                    is (B"001") {
+                        res := CSRRW
+                    }
+                    is (B"010") {
+                        res := CSRRS
+                    }
+                    is (B"011") {
+                        res := CSRRC
+                    }
+                }
+            }
             is (B"0001111") {
                 res := FENCE_I
             }
@@ -240,6 +263,11 @@ class ID extends Component {
                 LW,
                 LBU,
                 LHU,
+                ECALL,
+                EBREAK,
+                CSRRW,
+                CSRRS,
+                CSRRC,
             ) {
                 res := I
             }
@@ -316,6 +344,13 @@ class ID extends Component {
     val alu_op: AluOp.C = {
         val res = AluOp.ADD.craft()
         switch (instr_kind) {
+            is (
+                CSRRW,
+                CSRRS,
+                CSRRC,
+            ) {
+                res := AluOp.OP1
+            }
             is (
                 AUIPC,
                 JAL,
@@ -407,6 +442,28 @@ class ID extends Component {
                 PACK,
             ) {
                 res := AluOp.PACK
+            }
+        }
+        res
+    }
+
+    val csr_op: CsrOp.C = {
+        val res = CsrOp.N.craft()
+        switch (instr_kind) {
+            is (
+                CSRRW,
+            ) {
+                res := CsrOp.W
+            }
+            is (
+                CSRRS,
+            ) {
+                res := CsrOp.S
+            }
+            is (
+                CSRRC,
+            ) {
+                res := CsrOp.C
             }
         }
         res
@@ -650,6 +707,7 @@ class ID extends Component {
     io.o.reg_addr_b.setAsReg() init(0)
     io.o.reg_addr_d.setAsReg() init(0)
     io.o.alu_op.setAsReg() init(AluOp.ADD)
+    io.o.csr_op.setAsReg() init(CsrOp.N)
     io.o.br_type.setAsReg() init(BrType.F)
     io.o.imm.setAsReg() init(0)
     io.o.use_pc.setAsReg() init(False)
@@ -678,6 +736,7 @@ class ID extends Component {
         io.o.reg_addr_b := rs2
         io.o.reg_addr_d := rd
         io.o.alu_op := alu_op
+        io.o.csr_op := csr_op
         io.o.br_type := br_type
         io.o.imm := imm
         io.o.use_pc := use_pc

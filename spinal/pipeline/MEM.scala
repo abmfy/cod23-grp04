@@ -15,6 +15,9 @@ class MEM extends Component {
         // Hazard handling
         val stall_req = out Bool()
 
+        // Csr file
+        val csr = master port CsrPorts()
+
         // Wishbone master
         val wb = master port WishbonePorts()
     }
@@ -22,11 +25,11 @@ class MEM extends Component {
     val mem_adr = io.i.alu_y.asUInt
     val offset = mem_adr(0, 2 bits)
 
-    def mem_sel: Bits = io.i.mem_sel |<< offset
-    def mem_data_read: Bits = io.wb.dat_r |>> (offset * 8)
-    def mem_data_write: Bits = io.i.reg_data_b |<< (offset * 8)
+    val mem_sel: Bits = io.i.mem_sel |<< offset
+    val mem_data_read: Bits = io.wb.dat_r |>> (offset * 8)
+    val mem_data_write: Bits = io.i.reg_data_b |<< (offset * 8)
 
-    def reg_data: Bits = {
+    val reg_data: Bits = {
         val res = Types.data
         switch (io.i.reg_sel) {
             is (RegSel.ALU) {
@@ -42,6 +45,9 @@ class MEM extends Component {
             is (RegSel.PC) {
                 res := (io.i.pc + 4).asBits
             }
+        }
+        when (io.i.csr_op =/= CsrOp.N) {
+            res := io.csr.r
         }
         res
     }
@@ -78,6 +84,32 @@ class MEM extends Component {
     io.forward.we := io.i.reg_we
     io.forward.addr := io.i.reg_addr_d
     io.forward.data := reg_data
+
+    // Csr
+    val csr = new Area {
+        val rs1 = io.i.alu_y
+
+        io.csr.addr := 0
+        io.csr.w := 0
+        io.csr.we := False
+
+        when (io.i.csr_op =/= CsrOp.N) {
+            io.csr.addr := io.i.imm(0, 12 bits).asUInt
+            io.csr.we := True
+        }
+
+        switch (io.i.csr_op) {
+            is (CsrOp.W) {
+                io.csr.w := rs1
+            }
+            is (CsrOp.S) {
+                io.csr.w := io.csr.r | rs1
+            }
+            is (CsrOp.C) {
+                io.csr.w := io.csr.r & ~rs1
+            }
+        }
+    }
 
     io.stall_req := io.i.mem_en && !io.wb.ack
 

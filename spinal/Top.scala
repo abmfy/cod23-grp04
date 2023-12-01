@@ -13,6 +13,7 @@ class Top (
     // Components
     val reg_file = new RegFile
     val alu = new Alu
+    val csr = new CsrFile
     
     // Pipelines
     val If = new IF
@@ -53,6 +54,9 @@ class Top (
     Exe.io.forward(1) <> Wb.io.forward
 
     Exe.io.stall := Mem.io.stall_req
+
+    // MEM
+    Mem.io.csr <> csr.io
 
     // WB
     Wb.io.reg <> reg_file.io.w
