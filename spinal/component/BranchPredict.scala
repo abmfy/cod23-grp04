@@ -50,35 +50,42 @@ class BranchPredict(config: BPConfig = BPConfig()) extends  Component {
     val exe_index = io.exe_pc(5 downto 2)
 
     when (is_EXE_branch_type && !exe_branch_type_buffer) {
-      
-        switch (BHT(exe_index)) {
-            is (0) {
-                when (io.br_we) {
+        when (io.exe_pc =/= TAG(exe_index)) { // 新指令，从零开始的预测
+           when (io.br_we) {
                     BHT(exe_index) := U"01"
-                }
-            }
-            is (1) {
-                when (io.br_we) {
-                    BHT(exe_index) := U"10"
                 } otherwise {
                     BHT(exe_index) := U"00"
                 }
-            }
-            is (2) {
-                when (io.br_we && (BTB(exe_index) === io.br_addr)) { // BTB会不会已经被改掉了? BTB的含义: 当前的index对应的目的地址，所以应该不用考虑
-                    BHT(exe_index) := U"11"
+        TAG(exe_index) := io.exe_pc
+        } otherwise {
+            switch (BHT(exe_index)) {
+                is (0) {
+                    when (io.br_we) {
+                        BHT(exe_index) := U"01"
+                    }
+                }
+                is (1) {
+                    when (io.br_we) {
+                        BHT(exe_index) := U"10"
+                    } otherwise {
+                        BHT(exe_index) := U"00"
+                    }
+                }
+                is (2) {
+                    when (io.br_we && (BTB(exe_index) === io.br_addr)) { // BTB会不会已经被改掉了? BTB的含义: 当前的index对应的目的地址，所以应该不用考虑
+                        BHT(exe_index) := U"11"
 
-                } otherwise {
-                    BHT(exe_index) := U"01"
+                    } otherwise {
+                        BHT(exe_index) := U"01"
+                    }
+                }
+                is (3) {
+                    when( !(io.br_we && (BTB(exe_index) === io.br_addr))) {
+                        BHT(exe_index) := U"10"
+                    }
                 }
             }
-            is (3) {
-                when( !(io.br_we && (BTB(exe_index) === io.br_addr))) {
-                    BHT(exe_index) := U"10"
-                }
-            }
-        }
-        
+         }
         TAG(exe_index) := io.exe_pc
         BTB(exe_index) := io.br_addr
         exe_branch_type_buffer := True
