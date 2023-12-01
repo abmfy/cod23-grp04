@@ -175,6 +175,9 @@ class ID extends Component {
                             is (B"0000000") {
                                 res := SRL
                             }
+                            is (B"0100000") {
+                                res := SRA
+                            }
                         }
                     }
                     is (B"110") {
@@ -209,6 +212,7 @@ class ID extends Component {
                 SLTU,
                 XOR,
                 SRL,
+                SRA,
                 OR,
                 AND,
                 ANDN,
@@ -365,6 +369,7 @@ class ID extends Component {
             }
             is (
                 SRAI,
+                SRA,
             ) {
                 res := AluOp.SRA
             }
@@ -477,6 +482,7 @@ class ID extends Component {
                 SLTU,
                 XOR,
                 SRL,
+                SRA,
                 OR,
                 AND,
                 ANDN,
@@ -590,6 +596,7 @@ class ID extends Component {
                 SLTU,
                 XOR,
                 SRL,
+                SRA,
                 OR,
                 AND,
                 ANDN,

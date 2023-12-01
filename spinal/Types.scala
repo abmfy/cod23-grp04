@@ -91,6 +91,7 @@ object Instr extends SpinalEnum {
         SLTU,
         XOR,
         SRL,
+        SRA,
         OR,
         AND,
         // Extra
