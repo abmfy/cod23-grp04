@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : 574914b5a32e832a066cb124f6ad2ca9d103949b
+// Git hash  : 0f0f6e167d5160753c3df01ba4e99946e224ad66
 
 `timescale 1ns/1ps
 
@@ -96,6 +96,7 @@ module Top (
   wire       [2:0]    Id_1_io_o_br_type;
   wire       [31:0]   Id_1_io_o_imm;
   wire                Id_1_io_o_use_pc;
+  wire                Id_1_io_o_use_uimm;
   wire                Id_1_io_o_use_rs2;
   wire                Id_1_io_o_mem_en;
   wire                Id_1_io_o_mem_we;
@@ -457,6 +458,7 @@ module Top (
     .io_o_br_type      (Id_1_io_o_br_type[2:0]    ), //o
     .io_o_imm          (Id_1_io_o_imm[31:0]       ), //o
     .io_o_use_pc       (Id_1_io_o_use_pc          ), //o
+    .io_o_use_uimm     (Id_1_io_o_use_uimm        ), //o
     .io_o_use_rs2      (Id_1_io_o_use_rs2         ), //o
     .io_o_mem_en       (Id_1_io_o_mem_en          ), //o
     .io_o_mem_we       (Id_1_io_o_mem_we          ), //o
@@ -486,6 +488,7 @@ module Top (
     .io_i_br_type      (Id_1_io_o_br_type[2:0]     ), //i
     .io_i_imm          (Id_1_io_o_imm[31:0]        ), //i
     .io_i_use_pc       (Id_1_io_o_use_pc           ), //i
+    .io_i_use_uimm     (Id_1_io_o_use_uimm         ), //i
     .io_i_use_rs2      (Id_1_io_o_use_rs2          ), //i
     .io_i_mem_en       (Id_1_io_o_mem_en           ), //i
     .io_i_mem_we       (Id_1_io_o_mem_we           ), //i
@@ -2270,6 +2273,7 @@ module EXE (
   input  wire [2:0]    io_i_br_type,
   input  wire [31:0]   io_i_imm,
   input  wire          io_i_use_pc,
+  input  wire          io_i_use_uimm,
   input  wire          io_i_use_rs2,
   input  wire          io_i_mem_en,
   input  wire          io_i_mem_we,
@@ -2340,6 +2344,8 @@ module EXE (
   localparam RegSel_MEM = 2'd1;
   localparam RegSel_PC = 2'd2;
 
+  wire       [31:0]   _zz_io_alu_a;
+  wire       [4:0]    _zz_io_alu_a_1;
   wire       [31:0]   _zz_io_br_pc;
   wire       [0:0]    _zz_io_br_pc_1;
   wire       [31:0]   _zz_io_br_br;
@@ -2365,6 +2371,8 @@ module EXE (
   `endif
 
 
+  assign _zz_io_alu_a_1 = io_i_reg_addr_a;
+  assign _zz_io_alu_a = {27'd0, _zz_io_alu_a_1};
   assign _zz_io_br_pc_1 = io_alu_y[0];
   assign _zz_io_br_pc = {31'd0, _zz_io_br_pc_1};
   assign _zz_io_br_br = reg_a;
@@ -2499,7 +2507,7 @@ module EXE (
   assign when_EXE_l43_1 = (io_forward_0_we && (io_forward_0_addr != 5'h00));
   assign when_EXE_l44_1 = (io_forward_0_addr == io_i_reg_addr_a);
   assign when_EXE_l47_1 = (io_forward_0_addr == io_i_reg_addr_b);
-  assign io_alu_a = (io_i_use_pc ? io_i_pc : reg_a);
+  assign io_alu_a = (io_i_use_pc ? io_i_pc : (io_i_use_uimm ? _zz_io_alu_a : reg_a));
   assign io_alu_b = (io_i_use_rs2 ? reg_b : io_i_imm);
   assign io_alu_op = io_i_alu_op;
   assign io_br_pc = (io_alu_y ^ _zz_io_br_pc);
@@ -2586,6 +2594,7 @@ module ID (
   output reg  [2:0]    io_o_br_type,
   output reg  [31:0]   io_o_imm,
   output reg           io_o_use_pc,
+  output reg           io_o_use_uimm,
   output reg           io_o_use_rs2,
   output reg           io_o_mem_en,
   output reg           io_o_mem_we,
@@ -2678,9 +2687,12 @@ module ID (
   localparam Instr_CSRRW = 6'd41;
   localparam Instr_CSRRS = 6'd42;
   localparam Instr_CSRRC = 6'd43;
-  localparam Instr_ANDN = 6'd44;
-  localparam Instr_CLZ = 6'd45;
-  localparam Instr_PACK = 6'd46;
+  localparam Instr_CSRRWI = 6'd44;
+  localparam Instr_CSRRSI = 6'd45;
+  localparam Instr_CSRRCI = 6'd46;
+  localparam Instr_ANDN = 6'd47;
+  localparam Instr_CLZ = 6'd48;
+  localparam Instr_PACK = 6'd49;
   localparam InstrType_R = 3'd0;
   localparam InstrType_I = 3'd1;
   localparam InstrType_S = 3'd2;
@@ -2712,6 +2724,7 @@ module ID (
   reg        [1:0]    csr_op;
   reg        [2:0]    br_type;
   reg                 use_pc;
+  reg                 use_uimm;
   reg                 use_rs2;
   reg                 mem_en;
   reg                 mem_we;
@@ -2842,6 +2855,9 @@ module ID (
       Instr_CSRRW : instr_kind_string = "CSRRW  ";
       Instr_CSRRS : instr_kind_string = "CSRRS  ";
       Instr_CSRRC : instr_kind_string = "CSRRC  ";
+      Instr_CSRRWI : instr_kind_string = "CSRRWI ";
+      Instr_CSRRSI : instr_kind_string = "CSRRSI ";
+      Instr_CSRRCI : instr_kind_string = "CSRRCI ";
       Instr_ANDN : instr_kind_string = "ANDN   ";
       Instr_CLZ : instr_kind_string = "CLZ    ";
       Instr_PACK : instr_kind_string = "PACK   ";
@@ -3125,6 +3141,15 @@ module ID (
           3'b011 : begin
             instr_kind = Instr_CSRRC;
           end
+          3'b101 : begin
+            instr_kind = Instr_CSRRWI;
+          end
+          3'b110 : begin
+            instr_kind = Instr_CSRRSI;
+          end
+          3'b111 : begin
+            instr_kind = Instr_CSRRCI;
+          end
           default : begin
           end
         endcase
@@ -3144,7 +3169,7 @@ module ID (
       Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
         instr_type = InstrType_R;
       end
-      Instr_JALR, Instr_ADDI, Instr_SLTI, Instr_SLTIU, Instr_XORI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_SRAI, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_ECALL, Instr_EBREAK, Instr_CSRRW, Instr_CSRRS, Instr_CSRRC : begin
+      Instr_JALR, Instr_ADDI, Instr_SLTI, Instr_SLTIU, Instr_XORI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_SRAI, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_ECALL, Instr_EBREAK, Instr_CSRRW, Instr_CSRRS, Instr_CSRRC, Instr_CSRRWI, Instr_CSRRSI, Instr_CSRRCI : begin
         instr_type = InstrType_I;
       end
       Instr_SB, Instr_SH, Instr_SW : begin
@@ -3190,7 +3215,7 @@ module ID (
   always @(*) begin
     alu_op = AluOp_ADD;
     case(instr_kind)
-      Instr_CSRRW, Instr_CSRRS, Instr_CSRRC : begin
+      Instr_CSRRW, Instr_CSRRS, Instr_CSRRC, Instr_CSRRWI, Instr_CSRRSI, Instr_CSRRCI : begin
         alu_op = AluOp_OP1;
       end
       Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_BEQ, Instr_BNE, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_SB, Instr_SH, Instr_SW, Instr_ADDI, Instr_ADD : begin
@@ -3243,13 +3268,13 @@ module ID (
   always @(*) begin
     csr_op = CsrOp_N;
     case(instr_kind)
-      Instr_CSRRW : begin
+      Instr_CSRRW, Instr_CSRRWI : begin
         csr_op = CsrOp_W;
       end
-      Instr_CSRRS : begin
+      Instr_CSRRS, Instr_CSRRSI : begin
         csr_op = CsrOp_S;
       end
-      Instr_CSRRC : begin
+      Instr_CSRRC, Instr_CSRRCI : begin
         csr_op = CsrOp_C;
       end
       default : begin
@@ -3291,6 +3316,17 @@ module ID (
     case(instr_kind)
       Instr_AUIPC, Instr_JAL, Instr_BEQ, Instr_BNE, Instr_BLT, Instr_BGE, Instr_BLTU, Instr_BGEU : begin
         use_pc = 1'b1;
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  always @(*) begin
+    use_uimm = 1'b0;
+    case(instr_kind)
+      Instr_CSRRSI, Instr_CSRRWI, Instr_CSRRCI : begin
+        use_uimm = 1'b1;
       end
       default : begin
       end
@@ -3361,7 +3397,7 @@ module ID (
   always @(*) begin
     reg_we = 1'b0;
     case(instr_kind)
-      Instr_LUI, Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_ADDI, Instr_SLTI, Instr_SLTIU, Instr_XORI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_SRAI, Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
+      Instr_LUI, Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_ADDI, Instr_SLTI, Instr_SLTIU, Instr_XORI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_SRAI, Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_CSRRW, Instr_CSRRS, Instr_CSRRC, Instr_CSRRWI, Instr_CSRRSI, Instr_CSRRCI, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
         reg_we = 1'b1;
       end
       default : begin
@@ -3399,6 +3435,7 @@ module ID (
       io_o_br_type <= BrType_F;
       io_o_imm <= 32'h00000000;
       io_o_use_pc <= 1'b0;
+      io_o_use_uimm <= 1'b0;
       io_o_use_rs2 <= 1'b0;
       io_o_mem_en <= 1'b0;
       io_o_mem_we <= 1'b0;
@@ -3427,6 +3464,7 @@ module ID (
           io_o_br_type <= br_type;
           io_o_imm <= imm;
           io_o_use_pc <= use_pc;
+          io_o_use_uimm <= use_uimm;
           io_o_use_rs2 <= use_rs2;
           io_o_mem_en <= mem_en;
           io_o_mem_we <= mem_we;

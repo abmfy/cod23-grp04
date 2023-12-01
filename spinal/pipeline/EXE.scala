@@ -50,7 +50,9 @@ class EXE extends Component {
         }
     }
 
-    io.alu.a := io.i.use_pc ? io.i.pc.asBits | reg_a
+    io.alu.a := io.i.use_pc ? io.i.pc.asBits | (
+        io.i.use_uimm ? Util.zero_extend(io.i.reg_addr_a.asBits) | reg_a
+    )
     io.alu.b := io.i.use_rs2 ? reg_b | io.i.imm
     io.alu.op := io.i.alu_op
 

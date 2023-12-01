@@ -22,7 +22,7 @@ case class ID_EXE() extends Bundle with IMasterSlave {
     val csr_op = CsrOp()
     val br_type = BrType()
     val imm = Types.data
-    val use_pc, use_rs2 = Bool()
+    val use_pc, use_uimm, use_rs2 = Bool()
     val mem_en, mem_we = Bool()
     val mem_sel = Types.sel
     val mem_unsigned = Bool()
@@ -39,7 +39,7 @@ case class ID_EXE() extends Bundle with IMasterSlave {
             csr_op,
             br_type,
             imm,
-            use_pc, use_rs2,
+            use_pc, use_uimm, use_rs2,
             mem_en, mem_we,
             mem_sel,
             mem_unsigned,

@@ -217,6 +217,15 @@ class ID extends Component {
                     is (B"011") {
                         res := CSRRC
                     }
+                    is (B"101") {
+                        res := CSRRWI
+                    }
+                    is (B"110") {
+                        res := CSRRSI
+                    }
+                    is (B"111") {
+                        res := CSRRCI
+                    }
                 }
             }
             is (B"0001111") {
@@ -268,6 +277,9 @@ class ID extends Component {
                 CSRRW,
                 CSRRS,
                 CSRRC,
+                CSRRWI,
+                CSRRSI,
+                CSRRCI,
             ) {
                 res := I
             }
@@ -348,6 +360,9 @@ class ID extends Component {
                 CSRRW,
                 CSRRS,
                 CSRRC,
+                CSRRWI,
+                CSRRSI,
+                CSRRCI,
             ) {
                 res := AluOp.OP1
             }
@@ -452,16 +467,19 @@ class ID extends Component {
         switch (instr_kind) {
             is (
                 CSRRW,
+                CSRRWI,
             ) {
                 res := CsrOp.W
             }
             is (
                 CSRRS,
+                CSRRSI,
             ) {
                 res := CsrOp.S
             }
             is (
                 CSRRC,
+                CSRRCI,
             ) {
                 res := CsrOp.C
             }
@@ -524,6 +542,20 @@ class ID extends Component {
                 BGE,
                 BLTU,
                 BGEU,
+            ) {
+                res := True
+            }
+        }
+        res
+    }
+
+    val use_uimm: Bool = {
+        val res = False
+        switch (instr_kind) {
+            is (
+                CSRRSI,
+                CSRRWI,
+                CSRRCI,
             ) {
                 res := True
             }
@@ -659,6 +691,12 @@ class ID extends Component {
                 SRA,
                 OR,
                 AND,
+                CSRRW,
+                CSRRS,
+                CSRRC,
+                CSRRWI,
+                CSRRSI,
+                CSRRCI,
                 ANDN,
                 CLZ,
                 PACK,
@@ -711,6 +749,7 @@ class ID extends Component {
     io.o.br_type.setAsReg() init(BrType.F)
     io.o.imm.setAsReg() init(0)
     io.o.use_pc.setAsReg() init(False)
+    io.o.use_uimm.setAsReg() init(False)
     io.o.use_rs2.setAsReg() init(False)
     io.o.mem_en.setAsReg() init(False)
     io.o.mem_we.setAsReg() init(False)
@@ -740,6 +779,7 @@ class ID extends Component {
         io.o.br_type := br_type
         io.o.imm := imm
         io.o.use_pc := use_pc
+        io.o.use_uimm := use_uimm
         io.o.use_rs2 := use_rs2
         io.o.mem_en := mem_en
         io.o.mem_we := mem_we

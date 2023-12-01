@@ -108,6 +108,9 @@ object Instr extends SpinalEnum {
         CSRRW,
         CSRRS,
         CSRRC,
+        CSRRWI,
+        CSRRSI,
+        CSRRCI,
         // Extra
         ANDN,
         CLZ,
