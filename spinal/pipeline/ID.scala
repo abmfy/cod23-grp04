@@ -157,6 +157,9 @@ class ID extends Component {
                     is (B"010") {
                         res := SLT
                     }
+                    is (B"011") {
+                        res := SLTU
+                    }
                     is (B"100") {
                         switch (funct7) {
                             is (B"0000000") {
@@ -196,6 +199,7 @@ class ID extends Component {
                 SUB,
                 SLL,
                 SLT,
+                SLTU,
                 XOR,
                 OR,
                 AND,
@@ -363,6 +367,7 @@ class ID extends Component {
             }
             is (
                 SLTIU,
+                SLTU,
             ) {
                 res := AluOp.SLTU
             }
@@ -460,6 +465,7 @@ class ID extends Component {
                 SUB,
                 SLL,
                 SLT,
+                SLTU,
                 XOR,
                 OR,
                 AND,
@@ -571,6 +577,7 @@ class ID extends Component {
                 SUB,
                 SLL,
                 SLT,
+                SLTU,
                 XOR,
                 OR,
                 AND,

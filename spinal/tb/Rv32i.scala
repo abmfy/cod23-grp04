@@ -12,7 +12,7 @@ import spinal.sim.SimManagerContext
 object Rv32i extends App {
     Config.sim.compile(InOutWrapper(new Top(
         simulation = true,
-        base_sram_init = Some("asm/rv32i/slt.bin"),
+        base_sram_init = Some("asm/rv32i/sltu.bin"),
     ))).doSim { dut =>
         SimTimeout(10 ms)
 
