@@ -19,7 +19,7 @@ object Rv32i extends App {
         // Initialization
         UartModel.init(dut.io.uart0.rxd)
 
-        dut.clockDomain.forkStimulus(100 ns)
+        dut.clockDomain.forkStimulus(10 ns)
         dut.clockDomain.waitSampling()
 
         // To clear txd buffer
@@ -40,7 +40,7 @@ object Rv32i extends App {
             }
         }
 
-        Tracer.init(dut.Wb)
+        Tracer.init(dut.Wb, 10 ns)
 
         var counter = 0
 

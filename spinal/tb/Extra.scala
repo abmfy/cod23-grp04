@@ -19,7 +19,7 @@ object Extra extends App {
         // Initialization
         UartModel.init(dut.io.uart0.rxd)
 
-        dut.clockDomain.forkStimulus(100 ns)
+        dut.clockDomain.forkStimulus(10 ns)
         dut.clockDomain.waitSampling()
 
         val result = 0x55555555L

@@ -7,7 +7,7 @@ import spinal.core.sim._
 import java.io.{BufferedWriter, FileWriter}
 
 object Tracer {
-    def init(wb: WB) = {
+    def init(wb: WB, clock_period: TimeNumber) = {
         val writer = new FileWriter("simWorkspace/trace.txt")
         fork {
             while (true) {
@@ -19,7 +19,7 @@ object Tracer {
                     if (reg_addr == 0) reg_we = 0
                     writer.write(f"$pc%08x $reg_we $reg_addr%02x $reg_data%08x\n")
                 }
-                sleep(100 ns)
+                sleep(clock_period)
             }
         }
     }

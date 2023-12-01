@@ -22,10 +22,13 @@ object Lab6 extends App {
 
         UartModel.init(dut.io.uart0.rxd)
 
-        dut.clockDomain.forkStimulus(100 ns)
+        dut.clockDomain.forkStimulus(10 ns)
         dut.clockDomain.waitSampling()
 
+        // To clear txd buffer
+        dut.clockDomain.assertReset()
         sleep(100 us)
+        dut.clockDomain.deassertReset()
 
         val baud_period = (1 sec) / dut.uart.config.baud
 
