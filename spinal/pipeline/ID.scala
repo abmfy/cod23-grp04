@@ -142,7 +142,14 @@ class ID extends Component {
             is (B"0110011") {
                 switch (funct3) {
                     is (B"000") {
-                        res := ADD
+                        switch (funct7) {
+                            is (B"0000000") {
+                                res := ADD
+                            }
+                            is (B"0100000") {
+                                res := SUB
+                            }
+                        }
                     }
                     is (B"100") {
                         switch (funct7) {
@@ -180,6 +187,7 @@ class ID extends Component {
         switch (instr_kind) {
             is (
                 ADD,
+                SUB,
                 XOR,
                 OR,
                 AND,
@@ -299,6 +307,11 @@ class ID extends Component {
                 ADD,
             ) {
                 res := AluOp.ADD
+            }
+            is (
+                SUB,
+            ) {
+                res := AluOp.SUB
             }
             is (
                 ANDI,
@@ -434,6 +447,7 @@ class ID extends Component {
         switch (instr_kind) {
             is (
                 ADD,
+                SUB,
                 XOR,
                 OR,
                 AND,
@@ -542,6 +556,7 @@ class ID extends Component {
                 SRLI,
                 SRAI,
                 ADD,
+                SUB,
                 XOR,
                 OR,
                 AND,
