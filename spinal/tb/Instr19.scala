@@ -37,7 +37,18 @@ object Instr19 extends App {
             }
         }
 
+        var counter = 0
+
+        fork {
+            while (true) {
+                dut.clockDomain.waitSampling()
+                counter += 1
+            }
+        }
+
         // Testbench
         waitUntil(passed)
+
+        println(f"Clocks elapsed: $counter")
     }
 }
