@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : c630609524e2363bab63aad81cb3c01e0563ed41
+// Git hash  : 657828be6fff09218f7c8e7e05999dd7c047c990
 
 `timescale 1ns/1ps
 
@@ -29,21 +29,23 @@ module Top (
   inout  wire [31:0]   base_ram_data,
   inout  wire [31:0]   ext_ram_data
 );
-  localparam AluOp_OP1 = 4'd0;
-  localparam AluOp_ADD = 4'd1;
-  localparam AluOp_SUB = 4'd2;
-  localparam AluOp_AND_1 = 4'd3;
-  localparam AluOp_OR_1 = 4'd4;
-  localparam AluOp_XOR_1 = 4'd5;
-  localparam AluOp_NOT_1 = 4'd6;
-  localparam AluOp_SLL_1 = 4'd7;
-  localparam AluOp_SRL_1 = 4'd8;
-  localparam AluOp_SRA_1 = 4'd9;
-  localparam AluOp_ROL_1 = 4'd10;
-  localparam AluOp_OP2 = 4'd11;
-  localparam AluOp_ANDN = 4'd12;
-  localparam AluOp_CLZ = 4'd13;
-  localparam AluOp_PACK = 4'd14;
+  localparam AluOp_OP1 = 5'd0;
+  localparam AluOp_ADD = 5'd1;
+  localparam AluOp_SUB = 5'd2;
+  localparam AluOp_AND_1 = 5'd3;
+  localparam AluOp_OR_1 = 5'd4;
+  localparam AluOp_XOR_1 = 5'd5;
+  localparam AluOp_NOT_1 = 5'd6;
+  localparam AluOp_SLL_1 = 5'd7;
+  localparam AluOp_SRL_1 = 5'd8;
+  localparam AluOp_SRA_1 = 5'd9;
+  localparam AluOp_ROL_1 = 5'd10;
+  localparam AluOp_SLT = 5'd11;
+  localparam AluOp_SLTU = 5'd12;
+  localparam AluOp_OP2 = 5'd13;
+  localparam AluOp_ANDN = 5'd14;
+  localparam AluOp_CLZ = 5'd15;
+  localparam AluOp_PACK = 5'd16;
   localparam BrType_F = 3'd0;
   localparam BrType_T = 3'd1;
   localparam BrType_EQ = 3'd2;
@@ -68,6 +70,7 @@ module Top (
   wire       [31:0]   reg_file_io_r_data_a;
   wire       [31:0]   reg_file_io_r_data_b;
   wire       [31:0]   alu_1_io_y;
+  wire                If_2_io_o_real;
   wire       [31:0]   If_2_io_o_pc;
   wire       [31:0]   If_2_io_o_instr;
   wire                If_2_io_wb_cyc;
@@ -76,13 +79,14 @@ module Top (
   wire       [31:0]   If_2_io_wb_adr;
   wire       [31:0]   If_2_io_wb_dat_w;
   wire       [3:0]    If_2_io_wb_sel;
+  wire                Id_1_io_o_real;
   wire       [31:0]   Id_1_io_o_pc;
   wire       [31:0]   Id_1_io_o_reg_data_a;
   wire       [31:0]   Id_1_io_o_reg_data_b;
   wire       [4:0]    Id_1_io_o_reg_addr_a;
   wire       [4:0]    Id_1_io_o_reg_addr_b;
   wire       [4:0]    Id_1_io_o_reg_addr_d;
-  wire       [3:0]    Id_1_io_o_alu_op;
+  wire       [4:0]    Id_1_io_o_alu_op;
   wire       [2:0]    Id_1_io_o_br_type;
   wire       [31:0]   Id_1_io_o_imm;
   wire                Id_1_io_o_use_pc;
@@ -95,6 +99,7 @@ module Top (
   wire       [1:0]    Id_1_io_o_reg_sel;
   wire       [4:0]    Id_1_io_reg_addr_a;
   wire       [4:0]    Id_1_io_reg_addr_b;
+  wire                Exe_1_io_o_real;
   wire       [31:0]   Exe_1_io_o_pc;
   wire       [31:0]   Exe_1_io_o_reg_data_b;
   wire       [4:0]    Exe_1_io_o_reg_addr_d;
@@ -110,7 +115,9 @@ module Top (
   wire                Exe_1_io_flush_req;
   wire       [31:0]   Exe_1_io_alu_a;
   wire       [31:0]   Exe_1_io_alu_b;
-  wire       [3:0]    Exe_1_io_alu_op;
+  wire       [4:0]    Exe_1_io_alu_op;
+  wire                Mem_1_io_o_real;
+  wire       [31:0]   Mem_1_io_o_pc;
   wire                Mem_1_io_o_reg_we;
   wire       [4:0]    Mem_1_io_o_reg_addr_d;
   wire       [31:0]   Mem_1_io_o_reg_data_d;
@@ -393,10 +400,11 @@ module Top (
   Alu alu_1 (
     .io_a  (Exe_1_io_alu_a[31:0]), //i
     .io_b  (Exe_1_io_alu_b[31:0]), //i
-    .io_op (Exe_1_io_alu_op[3:0]), //i
+    .io_op (Exe_1_io_alu_op[4:0]), //i
     .io_y  (alu_1_io_y[31:0]    )  //o
   );
   IF_1 If_2 (
+    .io_o_real   (If_2_io_o_real           ), //o
     .io_o_pc     (If_2_io_o_pc[31:0]       ), //o
     .io_o_instr  (If_2_io_o_instr[31:0]    ), //o
     .io_br_br    (Exe_1_io_br_br           ), //i
@@ -415,15 +423,17 @@ module Top (
     .sys_reset   (sys_reset                )  //i
   );
   ID Id_1 (
+    .io_i_real         (If_2_io_o_real            ), //i
     .io_i_pc           (If_2_io_o_pc[31:0]        ), //i
     .io_i_instr        (If_2_io_o_instr[31:0]     ), //i
+    .io_o_real         (Id_1_io_o_real            ), //o
     .io_o_pc           (Id_1_io_o_pc[31:0]        ), //o
     .io_o_reg_data_a   (Id_1_io_o_reg_data_a[31:0]), //o
     .io_o_reg_data_b   (Id_1_io_o_reg_data_b[31:0]), //o
     .io_o_reg_addr_a   (Id_1_io_o_reg_addr_a[4:0] ), //o
     .io_o_reg_addr_b   (Id_1_io_o_reg_addr_b[4:0] ), //o
     .io_o_reg_addr_d   (Id_1_io_o_reg_addr_d[4:0] ), //o
-    .io_o_alu_op       (Id_1_io_o_alu_op[3:0]     ), //o
+    .io_o_alu_op       (Id_1_io_o_alu_op[4:0]     ), //o
     .io_o_br_type      (Id_1_io_o_br_type[2:0]    ), //o
     .io_o_imm          (Id_1_io_o_imm[31:0]       ), //o
     .io_o_use_pc       (Id_1_io_o_use_pc          ), //o
@@ -444,13 +454,14 @@ module Top (
     .sys_reset         (sys_reset                 )  //i
   );
   EXE Exe_1 (
+    .io_i_real         (Id_1_io_o_real             ), //i
     .io_i_pc           (Id_1_io_o_pc[31:0]         ), //i
     .io_i_reg_data_a   (Id_1_io_o_reg_data_a[31:0] ), //i
     .io_i_reg_data_b   (Id_1_io_o_reg_data_b[31:0] ), //i
     .io_i_reg_addr_a   (Id_1_io_o_reg_addr_a[4:0]  ), //i
     .io_i_reg_addr_b   (Id_1_io_o_reg_addr_b[4:0]  ), //i
     .io_i_reg_addr_d   (Id_1_io_o_reg_addr_d[4:0]  ), //i
-    .io_i_alu_op       (Id_1_io_o_alu_op[3:0]      ), //i
+    .io_i_alu_op       (Id_1_io_o_alu_op[4:0]      ), //i
     .io_i_br_type      (Id_1_io_o_br_type[2:0]     ), //i
     .io_i_imm          (Id_1_io_o_imm[31:0]        ), //i
     .io_i_use_pc       (Id_1_io_o_use_pc           ), //i
@@ -461,6 +472,7 @@ module Top (
     .io_i_mem_unsigned (Id_1_io_o_mem_unsigned     ), //i
     .io_i_reg_we       (Id_1_io_o_reg_we           ), //i
     .io_i_reg_sel      (Id_1_io_o_reg_sel[1:0]     ), //i
+    .io_o_real         (Exe_1_io_o_real            ), //o
     .io_o_pc           (Exe_1_io_o_pc[31:0]        ), //o
     .io_o_reg_data_b   (Exe_1_io_o_reg_data_b[31:0]), //o
     .io_o_reg_addr_d   (Exe_1_io_o_reg_addr_d[4:0] ), //o
@@ -483,12 +495,13 @@ module Top (
     .io_flush_req      (Exe_1_io_flush_req         ), //o
     .io_alu_a          (Exe_1_io_alu_a[31:0]       ), //o
     .io_alu_b          (Exe_1_io_alu_b[31:0]       ), //o
-    .io_alu_op         (Exe_1_io_alu_op[3:0]       ), //o
+    .io_alu_op         (Exe_1_io_alu_op[4:0]       ), //o
     .io_alu_y          (alu_1_io_y[31:0]           ), //i
     .sys_clk           (sys_clk                    ), //i
     .sys_reset         (sys_reset                  )  //i
   );
   MEM Mem_1 (
+    .io_i_real         (Exe_1_io_o_real            ), //i
     .io_i_pc           (Exe_1_io_o_pc[31:0]        ), //i
     .io_i_reg_data_b   (Exe_1_io_o_reg_data_b[31:0]), //i
     .io_i_reg_addr_d   (Exe_1_io_o_reg_addr_d[4:0] ), //i
@@ -499,6 +512,8 @@ module Top (
     .io_i_reg_we       (Exe_1_io_o_reg_we          ), //i
     .io_i_reg_sel      (Exe_1_io_o_reg_sel[1:0]    ), //i
     .io_i_alu_y        (Exe_1_io_o_alu_y[31:0]     ), //i
+    .io_o_real         (Mem_1_io_o_real            ), //o
+    .io_o_pc           (Mem_1_io_o_pc[31:0]        ), //o
     .io_o_reg_we       (Mem_1_io_o_reg_we          ), //o
     .io_o_reg_addr_d   (Mem_1_io_o_reg_addr_d[4:0] ), //o
     .io_o_reg_data_d   (Mem_1_io_o_reg_data_d[31:0]), //o
@@ -518,6 +533,8 @@ module Top (
     .sys_reset         (sys_reset                  )  //i
   );
   WB Wb_1 (
+    .io_i_real       (Mem_1_io_o_real            ), //i
+    .io_i_pc         (Mem_1_io_o_pc[31:0]        ), //i
     .io_i_reg_we     (Mem_1_io_o_reg_we          ), //i
     .io_i_reg_addr_d (Mem_1_io_o_reg_addr_d[4:0] ), //i
     .io_i_reg_data_d (Mem_1_io_o_reg_data_d[31:0]), //i
@@ -1796,6 +1813,8 @@ module WbMux (
 endmodule
 
 module WB (
+  input  wire          io_i_real,
+  input  wire [31:0]   io_i_pc,
   input  wire          io_i_reg_we,
   input  wire [4:0]    io_i_reg_addr_d,
   input  wire [31:0]   io_i_reg_data_d,
@@ -1818,6 +1837,7 @@ module WB (
 endmodule
 
 module MEM (
+  input  wire          io_i_real,
   input  wire [31:0]   io_i_pc,
   input  wire [31:0]   io_i_reg_data_b,
   input  wire [4:0]    io_i_reg_addr_d,
@@ -1828,6 +1848,8 @@ module MEM (
   input  wire          io_i_reg_we,
   input  wire [1:0]    io_i_reg_sel,
   input  wire [31:0]   io_i_alu_y,
+  output reg           io_o_real,
+  output reg  [31:0]   io_o_pc,
   output reg           io_o_reg_we,
   output reg  [4:0]    io_o_reg_addr_d,
   output reg  [31:0]   io_o_reg_data_d,
@@ -2269,6 +2291,8 @@ module MEM (
 
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
+      io_o_real <= 1'b0;
+      io_o_pc <= 32'h00000000;
       io_o_reg_we <= 1'b0;
       io_o_reg_addr_d <= 5'h00;
       io_o_reg_data_d <= 32'h00000000;
@@ -2278,16 +2302,24 @@ module MEM (
       case(fsm_stateReg)
         fsm_enumDef_start : begin
           if(io_i_mem_en) begin
+            io_o_real <= 1'b0;
+            io_o_pc <= 32'h00000000;
             io_o_reg_we <= 1'b0;
           end else begin
+            io_o_real <= io_i_real;
+            io_o_pc <= io_i_pc;
             io_o_reg_we <= io_i_reg_we;
             io_o_reg_addr_d <= io_i_reg_addr_d;
             io_o_reg_data_d <= _zz_io_o_reg_data_d;
           end
         end
         fsm_enumDef_fetch : begin
+          io_o_real <= 1'b0;
+          io_o_pc <= 32'h00000000;
           io_o_reg_we <= 1'b0;
           if(io_wb_ack) begin
+            io_o_real <= io_i_real;
+            io_o_pc <= io_i_pc;
             io_o_reg_we <= io_i_reg_we;
             io_o_reg_addr_d <= io_i_reg_addr_d;
             io_o_reg_data_d <= _zz_io_o_reg_data_d_5;
@@ -2303,13 +2335,14 @@ module MEM (
 endmodule
 
 module EXE (
+  input  wire          io_i_real,
   input  wire [31:0]   io_i_pc,
   input  wire [31:0]   io_i_reg_data_a,
   input  wire [31:0]   io_i_reg_data_b,
   input  wire [4:0]    io_i_reg_addr_a,
   input  wire [4:0]    io_i_reg_addr_b,
   input  wire [4:0]    io_i_reg_addr_d,
-  input  wire [3:0]    io_i_alu_op,
+  input  wire [4:0]    io_i_alu_op,
   input  wire [2:0]    io_i_br_type,
   input  wire [31:0]   io_i_imm,
   input  wire          io_i_use_pc,
@@ -2320,6 +2353,7 @@ module EXE (
   input  wire          io_i_mem_unsigned,
   input  wire          io_i_reg_we,
   input  wire [1:0]    io_i_reg_sel,
+  output reg           io_o_real,
   output reg  [31:0]   io_o_pc,
   output reg  [31:0]   io_o_reg_data_b,
   output reg  [4:0]    io_o_reg_addr_d,
@@ -2342,26 +2376,28 @@ module EXE (
   output wire          io_flush_req,
   output wire [31:0]   io_alu_a,
   output wire [31:0]   io_alu_b,
-  output wire [3:0]    io_alu_op,
+  output wire [4:0]    io_alu_op,
   input  wire [31:0]   io_alu_y,
   input  wire          sys_clk,
   input  wire          sys_reset
 );
-  localparam AluOp_OP1 = 4'd0;
-  localparam AluOp_ADD = 4'd1;
-  localparam AluOp_SUB = 4'd2;
-  localparam AluOp_AND_1 = 4'd3;
-  localparam AluOp_OR_1 = 4'd4;
-  localparam AluOp_XOR_1 = 4'd5;
-  localparam AluOp_NOT_1 = 4'd6;
-  localparam AluOp_SLL_1 = 4'd7;
-  localparam AluOp_SRL_1 = 4'd8;
-  localparam AluOp_SRA_1 = 4'd9;
-  localparam AluOp_ROL_1 = 4'd10;
-  localparam AluOp_OP2 = 4'd11;
-  localparam AluOp_ANDN = 4'd12;
-  localparam AluOp_CLZ = 4'd13;
-  localparam AluOp_PACK = 4'd14;
+  localparam AluOp_OP1 = 5'd0;
+  localparam AluOp_ADD = 5'd1;
+  localparam AluOp_SUB = 5'd2;
+  localparam AluOp_AND_1 = 5'd3;
+  localparam AluOp_OR_1 = 5'd4;
+  localparam AluOp_XOR_1 = 5'd5;
+  localparam AluOp_NOT_1 = 5'd6;
+  localparam AluOp_SLL_1 = 5'd7;
+  localparam AluOp_SRL_1 = 5'd8;
+  localparam AluOp_SRA_1 = 5'd9;
+  localparam AluOp_ROL_1 = 5'd10;
+  localparam AluOp_SLT = 5'd11;
+  localparam AluOp_SLTU = 5'd12;
+  localparam AluOp_OP2 = 5'd13;
+  localparam AluOp_ANDN = 5'd14;
+  localparam AluOp_CLZ = 5'd15;
+  localparam AluOp_PACK = 5'd16;
   localparam BrType_F = 3'd0;
   localparam BrType_T = 3'd1;
   localparam BrType_EQ = 3'd2;
@@ -2382,12 +2418,12 @@ module EXE (
   wire       [31:0]   _zz_io_br_br_3;
   reg        [31:0]   reg_a;
   reg        [31:0]   reg_b;
-  wire                when_EXE_l40;
   wire                when_EXE_l41;
-  wire                when_EXE_l44;
-  wire                when_EXE_l40_1;
+  wire                when_EXE_l42;
+  wire                when_EXE_l45;
   wire                when_EXE_l41_1;
-  wire                when_EXE_l44_1;
+  wire                when_EXE_l42_1;
+  wire                when_EXE_l45_1;
   `ifndef SYNTHESIS
   reg [39:0] io_i_alu_op_string;
   reg [23:0] io_i_br_type_string;
@@ -2417,6 +2453,8 @@ module EXE (
       AluOp_SRL_1 : io_i_alu_op_string = "SRL_1";
       AluOp_SRA_1 : io_i_alu_op_string = "SRA_1";
       AluOp_ROL_1 : io_i_alu_op_string = "ROL_1";
+      AluOp_SLT : io_i_alu_op_string = "SLT  ";
+      AluOp_SLTU : io_i_alu_op_string = "SLTU ";
       AluOp_OP2 : io_i_alu_op_string = "OP2  ";
       AluOp_ANDN : io_i_alu_op_string = "ANDN ";
       AluOp_CLZ : io_i_alu_op_string = "CLZ  ";
@@ -2466,6 +2504,8 @@ module EXE (
       AluOp_SRL_1 : io_alu_op_string = "SRL_1";
       AluOp_SRA_1 : io_alu_op_string = "SRA_1";
       AluOp_ROL_1 : io_alu_op_string = "ROL_1";
+      AluOp_SLT : io_alu_op_string = "SLT  ";
+      AluOp_SLTU : io_alu_op_string = "SLTU ";
       AluOp_OP2 : io_alu_op_string = "OP2  ";
       AluOp_ANDN : io_alu_op_string = "ANDN ";
       AluOp_CLZ : io_alu_op_string = "CLZ  ";
@@ -2477,13 +2517,13 @@ module EXE (
 
   always @(*) begin
     reg_a = io_i_reg_data_a;
-    if(when_EXE_l40) begin
-      if(when_EXE_l41) begin
+    if(when_EXE_l41) begin
+      if(when_EXE_l42) begin
         reg_a = io_forward_1_data;
       end
     end
-    if(when_EXE_l40_1) begin
-      if(when_EXE_l41_1) begin
+    if(when_EXE_l41_1) begin
+      if(when_EXE_l42_1) begin
         reg_a = io_forward_0_data;
       end
     end
@@ -2491,24 +2531,24 @@ module EXE (
 
   always @(*) begin
     reg_b = io_i_reg_data_b;
-    if(when_EXE_l40) begin
-      if(when_EXE_l44) begin
+    if(when_EXE_l41) begin
+      if(when_EXE_l45) begin
         reg_b = io_forward_1_data;
       end
     end
-    if(when_EXE_l40_1) begin
-      if(when_EXE_l44_1) begin
+    if(when_EXE_l41_1) begin
+      if(when_EXE_l45_1) begin
         reg_b = io_forward_0_data;
       end
     end
   end
 
-  assign when_EXE_l40 = (io_forward_1_we && (io_forward_1_addr != 5'h00));
-  assign when_EXE_l41 = (io_forward_1_addr == io_i_reg_addr_a);
-  assign when_EXE_l44 = (io_forward_1_addr == io_i_reg_addr_b);
-  assign when_EXE_l40_1 = (io_forward_0_we && (io_forward_0_addr != 5'h00));
-  assign when_EXE_l41_1 = (io_forward_0_addr == io_i_reg_addr_a);
-  assign when_EXE_l44_1 = (io_forward_0_addr == io_i_reg_addr_b);
+  assign when_EXE_l41 = (io_forward_1_we && (io_forward_1_addr != 5'h00));
+  assign when_EXE_l42 = (io_forward_1_addr == io_i_reg_addr_a);
+  assign when_EXE_l45 = (io_forward_1_addr == io_i_reg_addr_b);
+  assign when_EXE_l41_1 = (io_forward_0_we && (io_forward_0_addr != 5'h00));
+  assign when_EXE_l42_1 = (io_forward_0_addr == io_i_reg_addr_a);
+  assign when_EXE_l45_1 = (io_forward_0_addr == io_i_reg_addr_b);
   assign io_alu_a = (io_i_use_pc ? io_i_pc : reg_a);
   assign io_alu_b = (io_i_use_rs2 ? reg_b : io_i_imm);
   assign io_alu_op = io_i_alu_op;
@@ -2545,6 +2585,7 @@ module EXE (
   assign io_flush_req = io_br_br;
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
+      io_o_real <= 1'b0;
       io_o_pc <= 32'h00000000;
       io_o_reg_data_b <= 32'h00000000;
       io_o_reg_addr_d <= 5'h00;
@@ -2558,6 +2599,7 @@ module EXE (
     end else begin
       if(!io_stall) begin
         io_o_alu_y <= io_alu_y;
+        io_o_real <= io_i_real;
         io_o_pc <= io_i_pc;
         io_o_reg_data_b <= reg_b;
         io_o_reg_addr_d <= io_i_reg_addr_d;
@@ -2575,15 +2617,17 @@ module EXE (
 endmodule
 
 module ID (
+  input  wire          io_i_real,
   input  wire [31:0]   io_i_pc,
   input  wire [31:0]   io_i_instr,
+  output reg           io_o_real,
   output reg  [31:0]   io_o_pc,
   output reg  [31:0]   io_o_reg_data_a,
   output reg  [31:0]   io_o_reg_data_b,
   output reg  [4:0]    io_o_reg_addr_a,
   output reg  [4:0]    io_o_reg_addr_b,
   output reg  [4:0]    io_o_reg_addr_d,
-  output reg  [3:0]    io_o_alu_op,
+  output reg  [4:0]    io_o_alu_op,
   output reg  [2:0]    io_o_br_type,
   output reg  [31:0]   io_o_imm,
   output reg           io_o_use_pc,
@@ -2603,21 +2647,23 @@ module ID (
   input  wire          sys_clk,
   input  wire          sys_reset
 );
-  localparam AluOp_OP1 = 4'd0;
-  localparam AluOp_ADD = 4'd1;
-  localparam AluOp_SUB = 4'd2;
-  localparam AluOp_AND_1 = 4'd3;
-  localparam AluOp_OR_1 = 4'd4;
-  localparam AluOp_XOR_1 = 4'd5;
-  localparam AluOp_NOT_1 = 4'd6;
-  localparam AluOp_SLL_1 = 4'd7;
-  localparam AluOp_SRL_1 = 4'd8;
-  localparam AluOp_SRA_1 = 4'd9;
-  localparam AluOp_ROL_1 = 4'd10;
-  localparam AluOp_OP2 = 4'd11;
-  localparam AluOp_ANDN = 4'd12;
-  localparam AluOp_CLZ = 4'd13;
-  localparam AluOp_PACK = 4'd14;
+  localparam AluOp_OP1 = 5'd0;
+  localparam AluOp_ADD = 5'd1;
+  localparam AluOp_SUB = 5'd2;
+  localparam AluOp_AND_1 = 5'd3;
+  localparam AluOp_OR_1 = 5'd4;
+  localparam AluOp_XOR_1 = 5'd5;
+  localparam AluOp_NOT_1 = 5'd6;
+  localparam AluOp_SLL_1 = 5'd7;
+  localparam AluOp_SRL_1 = 5'd8;
+  localparam AluOp_SRA_1 = 5'd9;
+  localparam AluOp_ROL_1 = 5'd10;
+  localparam AluOp_SLT = 5'd11;
+  localparam AluOp_SLTU = 5'd12;
+  localparam AluOp_OP2 = 5'd13;
+  localparam AluOp_ANDN = 5'd14;
+  localparam AluOp_CLZ = 5'd15;
+  localparam AluOp_PACK = 5'd16;
   localparam BrType_F = 3'd0;
   localparam BrType_T = 3'd1;
   localparam BrType_EQ = 3'd2;
@@ -2629,35 +2675,48 @@ module ID (
   localparam RegSel_ALU = 2'd0;
   localparam RegSel_MEM = 2'd1;
   localparam RegSel_PC = 2'd2;
-  localparam Instr_UNK = 5'd0;
-  localparam Instr_LUI = 5'd1;
-  localparam Instr_AUIPC = 5'd2;
-  localparam Instr_JAL = 5'd3;
-  localparam Instr_JALR = 5'd4;
-  localparam Instr_BEQ = 5'd5;
-  localparam Instr_BNE = 5'd6;
-  localparam Instr_BLT = 5'd7;
-  localparam Instr_BGE = 5'd8;
-  localparam Instr_BLTU = 5'd9;
-  localparam Instr_BGEU = 5'd10;
-  localparam Instr_LB = 5'd11;
-  localparam Instr_LH = 5'd12;
-  localparam Instr_LW = 5'd13;
-  localparam Instr_LBU = 5'd14;
-  localparam Instr_SB = 5'd15;
-  localparam Instr_SW = 5'd16;
-  localparam Instr_ADDI = 5'd17;
-  localparam Instr_ORI = 5'd18;
-  localparam Instr_ANDI = 5'd19;
-  localparam Instr_SLLI = 5'd20;
-  localparam Instr_SRLI = 5'd21;
-  localparam Instr_ADD = 5'd22;
-  localparam Instr_XOR_1 = 5'd23;
-  localparam Instr_OR_1 = 5'd24;
-  localparam Instr_AND_1 = 5'd25;
-  localparam Instr_ANDN = 5'd26;
-  localparam Instr_CLZ = 5'd27;
-  localparam Instr_PACK = 5'd28;
+  localparam Instr_UNK = 6'd0;
+  localparam Instr_LUI = 6'd1;
+  localparam Instr_AUIPC = 6'd2;
+  localparam Instr_JAL = 6'd3;
+  localparam Instr_JALR = 6'd4;
+  localparam Instr_BEQ = 6'd5;
+  localparam Instr_BNE = 6'd6;
+  localparam Instr_BLT = 6'd7;
+  localparam Instr_BGE = 6'd8;
+  localparam Instr_BLTU = 6'd9;
+  localparam Instr_BGEU = 6'd10;
+  localparam Instr_LB = 6'd11;
+  localparam Instr_LH = 6'd12;
+  localparam Instr_LW = 6'd13;
+  localparam Instr_LBU = 6'd14;
+  localparam Instr_LHU = 6'd15;
+  localparam Instr_SB = 6'd16;
+  localparam Instr_SH = 6'd17;
+  localparam Instr_SW = 6'd18;
+  localparam Instr_ADDI = 6'd19;
+  localparam Instr_SLTI = 6'd20;
+  localparam Instr_SLTIU = 6'd21;
+  localparam Instr_XORI = 6'd22;
+  localparam Instr_ORI = 6'd23;
+  localparam Instr_ANDI = 6'd24;
+  localparam Instr_SLLI = 6'd25;
+  localparam Instr_SRLI = 6'd26;
+  localparam Instr_SRAI = 6'd27;
+  localparam Instr_ADD = 6'd28;
+  localparam Instr_SUB = 6'd29;
+  localparam Instr_SLL_1 = 6'd30;
+  localparam Instr_SLT = 6'd31;
+  localparam Instr_SLTU = 6'd32;
+  localparam Instr_XOR_1 = 6'd33;
+  localparam Instr_SRL_1 = 6'd34;
+  localparam Instr_SRA_1 = 6'd35;
+  localparam Instr_OR_1 = 6'd36;
+  localparam Instr_AND_1 = 6'd37;
+  localparam Instr_FENCE_I = 6'd38;
+  localparam Instr_ANDN = 6'd39;
+  localparam Instr_CLZ = 6'd40;
+  localparam Instr_PACK = 6'd41;
   localparam InstrType_R = 3'd0;
   localparam InstrType_I = 3'd1;
   localparam InstrType_S = 3'd2;
@@ -2681,10 +2740,10 @@ module ID (
   wire       [4:0]    rs1;
   wire       [4:0]    rs2;
   wire       [4:0]    rd;
-  reg        [4:0]    instr_kind;
+  reg        [5:0]    instr_kind;
   reg        [2:0]    instr_type;
   reg        [31:0]   imm;
-  reg        [3:0]    alu_op;
+  reg        [4:0]    alu_op;
   reg        [2:0]    br_type;
   reg                 use_pc;
   reg                 use_rs2;
@@ -2698,7 +2757,7 @@ module ID (
   reg [39:0] io_o_alu_op_string;
   reg [23:0] io_o_br_type_string;
   reg [23:0] io_o_reg_sel_string;
-  reg [39:0] instr_kind_string;
+  reg [55:0] instr_kind_string;
   reg [7:0] instr_type_string;
   reg [39:0] alu_op_string;
   reg [23:0] br_type_string;
@@ -2730,6 +2789,8 @@ module ID (
       AluOp_SRL_1 : io_o_alu_op_string = "SRL_1";
       AluOp_SRA_1 : io_o_alu_op_string = "SRA_1";
       AluOp_ROL_1 : io_o_alu_op_string = "ROL_1";
+      AluOp_SLT : io_o_alu_op_string = "SLT  ";
+      AluOp_SLTU : io_o_alu_op_string = "SLTU ";
       AluOp_OP2 : io_o_alu_op_string = "OP2  ";
       AluOp_ANDN : io_o_alu_op_string = "ANDN ";
       AluOp_CLZ : io_o_alu_op_string = "CLZ  ";
@@ -2760,36 +2821,49 @@ module ID (
   end
   always @(*) begin
     case(instr_kind)
-      Instr_UNK : instr_kind_string = "UNK  ";
-      Instr_LUI : instr_kind_string = "LUI  ";
-      Instr_AUIPC : instr_kind_string = "AUIPC";
-      Instr_JAL : instr_kind_string = "JAL  ";
-      Instr_JALR : instr_kind_string = "JALR ";
-      Instr_BEQ : instr_kind_string = "BEQ  ";
-      Instr_BNE : instr_kind_string = "BNE  ";
-      Instr_BLT : instr_kind_string = "BLT  ";
-      Instr_BGE : instr_kind_string = "BGE  ";
-      Instr_BLTU : instr_kind_string = "BLTU ";
-      Instr_BGEU : instr_kind_string = "BGEU ";
-      Instr_LB : instr_kind_string = "LB   ";
-      Instr_LH : instr_kind_string = "LH   ";
-      Instr_LW : instr_kind_string = "LW   ";
-      Instr_LBU : instr_kind_string = "LBU  ";
-      Instr_SB : instr_kind_string = "SB   ";
-      Instr_SW : instr_kind_string = "SW   ";
-      Instr_ADDI : instr_kind_string = "ADDI ";
-      Instr_ORI : instr_kind_string = "ORI  ";
-      Instr_ANDI : instr_kind_string = "ANDI ";
-      Instr_SLLI : instr_kind_string = "SLLI ";
-      Instr_SRLI : instr_kind_string = "SRLI ";
-      Instr_ADD : instr_kind_string = "ADD  ";
-      Instr_XOR_1 : instr_kind_string = "XOR_1";
-      Instr_OR_1 : instr_kind_string = "OR_1 ";
-      Instr_AND_1 : instr_kind_string = "AND_1";
-      Instr_ANDN : instr_kind_string = "ANDN ";
-      Instr_CLZ : instr_kind_string = "CLZ  ";
-      Instr_PACK : instr_kind_string = "PACK ";
-      default : instr_kind_string = "?????";
+      Instr_UNK : instr_kind_string = "UNK    ";
+      Instr_LUI : instr_kind_string = "LUI    ";
+      Instr_AUIPC : instr_kind_string = "AUIPC  ";
+      Instr_JAL : instr_kind_string = "JAL    ";
+      Instr_JALR : instr_kind_string = "JALR   ";
+      Instr_BEQ : instr_kind_string = "BEQ    ";
+      Instr_BNE : instr_kind_string = "BNE    ";
+      Instr_BLT : instr_kind_string = "BLT    ";
+      Instr_BGE : instr_kind_string = "BGE    ";
+      Instr_BLTU : instr_kind_string = "BLTU   ";
+      Instr_BGEU : instr_kind_string = "BGEU   ";
+      Instr_LB : instr_kind_string = "LB     ";
+      Instr_LH : instr_kind_string = "LH     ";
+      Instr_LW : instr_kind_string = "LW     ";
+      Instr_LBU : instr_kind_string = "LBU    ";
+      Instr_LHU : instr_kind_string = "LHU    ";
+      Instr_SB : instr_kind_string = "SB     ";
+      Instr_SH : instr_kind_string = "SH     ";
+      Instr_SW : instr_kind_string = "SW     ";
+      Instr_ADDI : instr_kind_string = "ADDI   ";
+      Instr_SLTI : instr_kind_string = "SLTI   ";
+      Instr_SLTIU : instr_kind_string = "SLTIU  ";
+      Instr_XORI : instr_kind_string = "XORI   ";
+      Instr_ORI : instr_kind_string = "ORI    ";
+      Instr_ANDI : instr_kind_string = "ANDI   ";
+      Instr_SLLI : instr_kind_string = "SLLI   ";
+      Instr_SRLI : instr_kind_string = "SRLI   ";
+      Instr_SRAI : instr_kind_string = "SRAI   ";
+      Instr_ADD : instr_kind_string = "ADD    ";
+      Instr_SUB : instr_kind_string = "SUB    ";
+      Instr_SLL_1 : instr_kind_string = "SLL_1  ";
+      Instr_SLT : instr_kind_string = "SLT    ";
+      Instr_SLTU : instr_kind_string = "SLTU   ";
+      Instr_XOR_1 : instr_kind_string = "XOR_1  ";
+      Instr_SRL_1 : instr_kind_string = "SRL_1  ";
+      Instr_SRA_1 : instr_kind_string = "SRA_1  ";
+      Instr_OR_1 : instr_kind_string = "OR_1   ";
+      Instr_AND_1 : instr_kind_string = "AND_1  ";
+      Instr_FENCE_I : instr_kind_string = "FENCE_I";
+      Instr_ANDN : instr_kind_string = "ANDN   ";
+      Instr_CLZ : instr_kind_string = "CLZ    ";
+      Instr_PACK : instr_kind_string = "PACK   ";
+      default : instr_kind_string = "???????";
     endcase
   end
   always @(*) begin
@@ -2816,6 +2890,8 @@ module ID (
       AluOp_SRL_1 : alu_op_string = "SRL_1";
       AluOp_SRA_1 : alu_op_string = "SRA_1";
       AluOp_ROL_1 : alu_op_string = "ROL_1";
+      AluOp_SLT : alu_op_string = "SLT  ";
+      AluOp_SLTU : alu_op_string = "SLTU ";
       AluOp_OP2 : alu_op_string = "OP2  ";
       AluOp_ANDN : alu_op_string = "ANDN ";
       AluOp_CLZ : alu_op_string = "CLZ  ";
@@ -2905,6 +2981,9 @@ module ID (
           3'b100 : begin
             instr_kind = Instr_LBU;
           end
+          3'b101 : begin
+            instr_kind = Instr_LHU;
+          end
           default : begin
           end
         endcase
@@ -2913,6 +2992,9 @@ module ID (
         case(funct3)
           3'b000 : begin
             instr_kind = Instr_SB;
+          end
+          3'b001 : begin
+            instr_kind = Instr_SH;
           end
           3'b010 : begin
             instr_kind = Instr_SW;
@@ -2925,6 +3007,15 @@ module ID (
         case(funct3)
           3'b000 : begin
             instr_kind = Instr_ADDI;
+          end
+          3'b010 : begin
+            instr_kind = Instr_SLTI;
+          end
+          3'b011 : begin
+            instr_kind = Instr_SLTIU;
+          end
+          3'b100 : begin
+            instr_kind = Instr_XORI;
           end
           3'b110 : begin
             instr_kind = Instr_ORI;
@@ -2944,17 +3035,42 @@ module ID (
               end
             endcase
           end
-          3'b101 : begin
-            instr_kind = Instr_SRLI;
-          end
           default : begin
+            case(funct7)
+              7'h00 : begin
+                instr_kind = Instr_SRLI;
+              end
+              7'h20 : begin
+                instr_kind = Instr_SRAI;
+              end
+              default : begin
+              end
+            endcase
           end
         endcase
       end
       7'h33 : begin
         case(funct3)
           3'b000 : begin
-            instr_kind = Instr_ADD;
+            case(funct7)
+              7'h00 : begin
+                instr_kind = Instr_ADD;
+              end
+              7'h20 : begin
+                instr_kind = Instr_SUB;
+              end
+              default : begin
+              end
+            endcase
+          end
+          3'b001 : begin
+            instr_kind = Instr_SLL_1;
+          end
+          3'b010 : begin
+            instr_kind = Instr_SLT;
+          end
+          3'b011 : begin
+            instr_kind = Instr_SLTU;
           end
           3'b100 : begin
             case(funct7)
@@ -2968,10 +3084,22 @@ module ID (
               end
             endcase
           end
+          3'b101 : begin
+            case(funct7)
+              7'h00 : begin
+                instr_kind = Instr_SRL_1;
+              end
+              7'h20 : begin
+                instr_kind = Instr_SRA_1;
+              end
+              default : begin
+              end
+            endcase
+          end
           3'b110 : begin
             instr_kind = Instr_OR_1;
           end
-          3'b111 : begin
+          default : begin
             case(funct7)
               7'h00 : begin
                 instr_kind = Instr_AND_1;
@@ -2983,9 +3111,10 @@ module ID (
               end
             endcase
           end
-          default : begin
-          end
         endcase
+      end
+      7'h0f : begin
+        instr_kind = Instr_FENCE_I;
       end
       default : begin
       end
@@ -2995,13 +3124,13 @@ module ID (
   always @(*) begin
     instr_type = InstrType_I;
     case(instr_kind)
-      Instr_ADD, Instr_XOR_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
+      Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
         instr_type = InstrType_R;
       end
-      Instr_JALR, Instr_ADDI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_LB, Instr_LH, Instr_LW, Instr_LBU : begin
+      Instr_JALR, Instr_ADDI, Instr_SLTI, Instr_SLTIU, Instr_XORI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_SRAI, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU : begin
         instr_type = InstrType_I;
       end
-      Instr_SB, Instr_SW : begin
+      Instr_SB, Instr_SH, Instr_SW : begin
         instr_type = InstrType_S;
       end
       Instr_BEQ, Instr_BNE, Instr_BLT, Instr_BGE, Instr_BLTU, Instr_BGEU : begin
@@ -3044,8 +3173,11 @@ module ID (
   always @(*) begin
     alu_op = AluOp_ADD;
     case(instr_kind)
-      Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_BEQ, Instr_BNE, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_SB, Instr_SW, Instr_ADDI, Instr_ADD : begin
+      Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_BEQ, Instr_BNE, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_SB, Instr_SH, Instr_SW, Instr_ADDI, Instr_ADD : begin
         alu_op = AluOp_ADD;
+      end
+      Instr_SUB : begin
+        alu_op = AluOp_SUB;
       end
       Instr_ANDI, Instr_AND_1 : begin
         alu_op = AluOp_AND_1;
@@ -3053,14 +3185,23 @@ module ID (
       Instr_ORI, Instr_OR_1 : begin
         alu_op = AluOp_OR_1;
       end
-      Instr_XOR_1 : begin
+      Instr_XORI, Instr_XOR_1 : begin
         alu_op = AluOp_XOR_1;
       end
-      Instr_SLLI : begin
+      Instr_SLLI, Instr_SLL_1 : begin
         alu_op = AluOp_SLL_1;
       end
-      Instr_SRLI : begin
+      Instr_SRLI, Instr_SRL_1 : begin
         alu_op = AluOp_SRL_1;
+      end
+      Instr_SRAI, Instr_SRA_1 : begin
+        alu_op = AluOp_SRA_1;
+      end
+      Instr_SLTI, Instr_SLT : begin
+        alu_op = AluOp_SLT;
+      end
+      Instr_SLTIU, Instr_SLTU : begin
+        alu_op = AluOp_SLTU;
       end
       Instr_LUI : begin
         alu_op = AluOp_OP2;
@@ -3122,7 +3263,7 @@ module ID (
   always @(*) begin
     use_rs2 = 1'b0;
     case(instr_kind)
-      Instr_ADD, Instr_XOR_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_PACK : begin
+      Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_PACK : begin
         use_rs2 = 1'b1;
       end
       default : begin
@@ -3133,7 +3274,7 @@ module ID (
   always @(*) begin
     mem_en = 1'b0;
     case(instr_kind)
-      Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_SB, Instr_SW : begin
+      Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_SB, Instr_SH, Instr_SW : begin
         mem_en = 1'b1;
       end
       default : begin
@@ -3144,7 +3285,7 @@ module ID (
   always @(*) begin
     mem_we = 1'b0;
     case(instr_kind)
-      Instr_SB, Instr_SW : begin
+      Instr_SB, Instr_SH, Instr_SW : begin
         mem_we = 1'b1;
       end
       default : begin
@@ -3158,7 +3299,7 @@ module ID (
       Instr_LB, Instr_LBU, Instr_SB : begin
         mem_sel = 4'b0001;
       end
-      Instr_LH : begin
+      Instr_LH, Instr_LHU, Instr_SH : begin
         mem_sel = 4'b0011;
       end
       Instr_LW, Instr_SW : begin
@@ -3172,7 +3313,7 @@ module ID (
   always @(*) begin
     mem_unsigned = 1'b0;
     case(instr_kind)
-      Instr_LBU : begin
+      Instr_LBU, Instr_LHU : begin
         mem_unsigned = 1'b1;
       end
       default : begin
@@ -3183,7 +3324,7 @@ module ID (
   always @(*) begin
     reg_we = 1'b0;
     case(instr_kind)
-      Instr_LUI, Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_ADDI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_ADD, Instr_XOR_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
+      Instr_LUI, Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_ADDI, Instr_SLTI, Instr_SLTIU, Instr_XORI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_SRAI, Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
         reg_we = 1'b1;
       end
       default : begin
@@ -3194,7 +3335,7 @@ module ID (
   always @(*) begin
     reg_sel = RegSel_ALU;
     case(instr_kind)
-      Instr_LB, Instr_LH, Instr_LW, Instr_LBU : begin
+      Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU : begin
         reg_sel = RegSel_MEM;
       end
       Instr_JAL, Instr_JALR : begin
@@ -3209,6 +3350,7 @@ module ID (
   assign io_reg_addr_b = rs2;
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
+      io_o_real <= 1'b0;
       io_o_pc <= 32'h00000000;
       io_o_reg_data_a <= 32'h00000000;
       io_o_reg_data_b <= 32'h00000000;
@@ -3229,10 +3371,13 @@ module ID (
     end else begin
       if(!io_stall) begin
         if(io_bubble) begin
+          io_o_real <= 1'b0;
+          io_o_pc <= 32'h00000000;
           io_o_br_type <= BrType_F;
           io_o_mem_en <= 1'b0;
           io_o_reg_we <= 1'b0;
         end else begin
+          io_o_real <= io_i_real;
           io_o_pc <= io_i_pc;
           io_o_reg_data_a <= io_reg_data_a;
           io_o_reg_data_b <= io_reg_data_b;
@@ -3259,6 +3404,7 @@ module ID (
 endmodule
 
 module IF_1 (
+  output reg           io_o_real,
   output reg  [31:0]   io_o_pc,
   output reg  [31:0]   io_o_instr,
   input  wire          io_br_br,
@@ -3291,8 +3437,8 @@ module IF_1 (
   reg        [1:0]    fsm_stateNext;
   wire                _zz_when_StateMachine_l237;
   wire                _zz_when_StateMachine_l237_1;
-  wire                when_IF_l91;
-  wire                when_IF_l102;
+  wire                when_IF_l95;
+  wire                when_IF_l106;
   wire                when_StateMachine_l237;
   wire                when_StateMachine_l253;
   `ifndef SYNTHESIS
@@ -3389,9 +3535,9 @@ module IF_1 (
         end
       end
       fsm_enumDef_fetch : begin
-        if(when_IF_l91) begin
+        if(when_IF_l95) begin
           if(!io_stall) begin
-            if(when_IF_l102) begin
+            if(when_IF_l106) begin
               fsm_stateNext = fsm_enumDef_start;
             end else begin
               fsm_stateNext = fsm_enumDef_start;
@@ -3410,8 +3556,8 @@ module IF_1 (
     end
   end
 
-  assign when_IF_l91 = (io_wb_ack || delay_ack);
-  assign when_IF_l102 = (io_br_br || delay_br);
+  assign when_IF_l95 = (io_wb_ack || delay_ack);
+  assign when_IF_l106 = (io_br_br || delay_br);
   assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_1));
   assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_1);
   always @(posedge sys_clk or posedge sys_reset) begin
@@ -3420,6 +3566,7 @@ module IF_1 (
       delay_br <= 1'b0;
       delay_ack <= 1'b0;
       delay_instr <= 32'h00000013;
+      io_o_real <= 1'b0;
       io_o_pc <= 32'h80000000;
       io_o_instr <= 32'h00000013;
       io_wb_stb <= 1'b0;
@@ -3434,8 +3581,12 @@ module IF_1 (
         fsm_enumDef_start : begin
           if(!io_stall) begin
             if(io_bubble) begin
+              io_o_real <= 1'b0;
+              io_o_pc <= 32'h00000000;
               io_o_instr <= 32'h00000013;
             end else begin
+              io_o_real <= 1'b0;
+              io_o_pc <= 32'h00000000;
               io_o_instr <= 32'h00000013;
               if(io_br_br) begin
                 delay_br <= 1'b0;
@@ -3444,8 +3595,10 @@ module IF_1 (
           end
         end
         fsm_enumDef_fetch : begin
+          io_o_real <= 1'b0;
+          io_o_pc <= 32'h00000000;
           io_o_instr <= 32'h00000013;
-          if(when_IF_l91) begin
+          if(when_IF_l95) begin
             delay_ack <= 1'b0;
             if(io_stall) begin
               delay_ack <= 1'b1;
@@ -3454,9 +3607,10 @@ module IF_1 (
                 delay_instr <= io_wb_dat_r;
               end
             end else begin
-              if(when_IF_l102) begin
+              if(when_IF_l106) begin
                 delay_br <= 1'b0;
               end else begin
+                io_o_real <= 1'b1;
                 io_o_pc <= pc;
                 io_o_instr <= (delay_ack ? delay_instr : io_wb_dat_r);
                 pc <= (pc + 32'h00000004);
@@ -3482,45 +3636,51 @@ endmodule
 module Alu (
   input  wire [31:0]   io_a,
   input  wire [31:0]   io_b,
-  input  wire [3:0]    io_op,
+  input  wire [4:0]    io_op,
   output reg  [31:0]   io_y
 );
-  localparam AluOp_OP1 = 4'd0;
-  localparam AluOp_ADD = 4'd1;
-  localparam AluOp_SUB = 4'd2;
-  localparam AluOp_AND_1 = 4'd3;
-  localparam AluOp_OR_1 = 4'd4;
-  localparam AluOp_XOR_1 = 4'd5;
-  localparam AluOp_NOT_1 = 4'd6;
-  localparam AluOp_SLL_1 = 4'd7;
-  localparam AluOp_SRL_1 = 4'd8;
-  localparam AluOp_SRA_1 = 4'd9;
-  localparam AluOp_ROL_1 = 4'd10;
-  localparam AluOp_OP2 = 4'd11;
-  localparam AluOp_ANDN = 4'd12;
-  localparam AluOp_CLZ = 4'd13;
-  localparam AluOp_PACK = 4'd14;
+  localparam AluOp_OP1 = 5'd0;
+  localparam AluOp_ADD = 5'd1;
+  localparam AluOp_SUB = 5'd2;
+  localparam AluOp_AND_1 = 5'd3;
+  localparam AluOp_OR_1 = 5'd4;
+  localparam AluOp_XOR_1 = 5'd5;
+  localparam AluOp_NOT_1 = 5'd6;
+  localparam AluOp_SLL_1 = 5'd7;
+  localparam AluOp_SRL_1 = 5'd8;
+  localparam AluOp_SRA_1 = 5'd9;
+  localparam AluOp_ROL_1 = 5'd10;
+  localparam AluOp_SLT = 5'd11;
+  localparam AluOp_SLTU = 5'd12;
+  localparam AluOp_OP2 = 5'd13;
+  localparam AluOp_ANDN = 5'd14;
+  localparam AluOp_CLZ = 5'd15;
+  localparam AluOp_PACK = 5'd16;
 
   wire       [31:0]   _zz_io_y_7;
   wire       [31:0]   _zz_io_y_8;
   wire       [31:0]   _zz_io_y_9;
+  wire       [0:0]    _zz_io_y_10;
+  wire       [0:0]    _zz_io_y_11;
   wire                _zz__zz_io_y_6;
   wire       [0:0]    _zz__zz_io_y_6_1;
   wire       [20:0]   _zz__zz_io_y_6_2;
   wire                _zz__zz_io_y_6_3;
   wire       [0:0]    _zz__zz_io_y_6_4;
   wire       [9:0]    _zz__zz_io_y_6_5;
-  wire                _zz_io_y_10;
-  wire       [31:0]   _zz_io_y_11;
-  wire       [31:0]   _zz_io_y_12;
-  wire                _zz_io_y_13;
+  wire                _zz_io_y_12;
+  wire       [31:0]   _zz_io_y_13;
   wire       [31:0]   _zz_io_y_14;
-  wire       [31:0]   _zz_io_y_15;
-  wire                _zz_io_y_16;
+  wire                _zz_io_y_15;
+  wire       [31:0]   _zz_io_y_16;
   wire       [31:0]   _zz_io_y_17;
-  wire       [31:0]   _zz_io_y_18;
+  wire                _zz_io_y_18;
+  wire       [31:0]   _zz_io_y_19;
+  wire       [31:0]   _zz_io_y_20;
   wire       [31:0]   s_a;
   wire       [31:0]   s_b;
+  wire       [31:0]   u_a;
+  wire       [31:0]   u_b;
   wire       [4:0]    shamt;
   reg        [31:0]   _zz_io_y;
   reg        [31:0]   _zz_io_y_1;
@@ -3537,21 +3697,23 @@ module Alu (
   assign _zz_io_y_7 = ($signed(s_a) + $signed(s_b));
   assign _zz_io_y_8 = ($signed(s_a) - $signed(s_b));
   assign _zz_io_y_9 = ($signed(s_a) >>> shamt);
+  assign _zz_io_y_10 = ($signed(s_a) < $signed(s_b));
+  assign _zz_io_y_11 = (u_a < u_b);
   assign _zz__zz_io_y_6 = io_a[9];
   assign _zz__zz_io_y_6_1 = io_a[10];
   assign _zz__zz_io_y_6_2 = {io_a[11],{io_a[12],{io_a[13],{io_a[14],{io_a[15],{io_a[16],{io_a[17],{io_a[18],{io_a[19],{_zz__zz_io_y_6_3,{_zz__zz_io_y_6_4,_zz__zz_io_y_6_5}}}}}}}}}}};
   assign _zz__zz_io_y_6_3 = io_a[20];
   assign _zz__zz_io_y_6_4 = io_a[21];
   assign _zz__zz_io_y_6_5 = {io_a[22],{io_a[23],{io_a[24],{io_a[25],{io_a[26],{io_a[27],{io_a[28],{io_a[29],{io_a[30],io_a[31]}}}}}}}}};
-  assign _zz_io_y_10 = _zz_io_y_6[8];
-  assign _zz_io_y_11 = 32'h00000008;
-  assign _zz_io_y_12 = (_zz_io_y_6[9] ? 32'h00000009 : (_zz_io_y_6[10] ? 32'h0000000a : (_zz_io_y_6[11] ? 32'h0000000b : (_zz_io_y_6[12] ? 32'h0000000c : (_zz_io_y_6[13] ? 32'h0000000d : (_zz_io_y_6[14] ? 32'h0000000e : (_zz_io_y_6[15] ? 32'h0000000f : (_zz_io_y_6[16] ? 32'h00000010 : (_zz_io_y_6[17] ? 32'h00000011 : (_zz_io_y_6[18] ? 32'h00000012 : (_zz_io_y_13 ? _zz_io_y_14 : _zz_io_y_15)))))))))));
-  assign _zz_io_y_13 = _zz_io_y_6[19];
-  assign _zz_io_y_14 = 32'h00000013;
-  assign _zz_io_y_15 = (_zz_io_y_6[20] ? 32'h00000014 : (_zz_io_y_6[21] ? 32'h00000015 : (_zz_io_y_6[22] ? 32'h00000016 : (_zz_io_y_6[23] ? 32'h00000017 : (_zz_io_y_6[24] ? 32'h00000018 : (_zz_io_y_6[25] ? 32'h00000019 : (_zz_io_y_6[26] ? 32'h0000001a : (_zz_io_y_6[27] ? 32'h0000001b : (_zz_io_y_6[28] ? 32'h0000001c : (_zz_io_y_6[29] ? 32'h0000001d : (_zz_io_y_16 ? _zz_io_y_17 : _zz_io_y_18)))))))))));
-  assign _zz_io_y_16 = _zz_io_y_6[30];
-  assign _zz_io_y_17 = 32'h0000001e;
-  assign _zz_io_y_18 = 32'h0000001f;
+  assign _zz_io_y_12 = _zz_io_y_6[8];
+  assign _zz_io_y_13 = 32'h00000008;
+  assign _zz_io_y_14 = (_zz_io_y_6[9] ? 32'h00000009 : (_zz_io_y_6[10] ? 32'h0000000a : (_zz_io_y_6[11] ? 32'h0000000b : (_zz_io_y_6[12] ? 32'h0000000c : (_zz_io_y_6[13] ? 32'h0000000d : (_zz_io_y_6[14] ? 32'h0000000e : (_zz_io_y_6[15] ? 32'h0000000f : (_zz_io_y_6[16] ? 32'h00000010 : (_zz_io_y_6[17] ? 32'h00000011 : (_zz_io_y_6[18] ? 32'h00000012 : (_zz_io_y_15 ? _zz_io_y_16 : _zz_io_y_17)))))))))));
+  assign _zz_io_y_15 = _zz_io_y_6[19];
+  assign _zz_io_y_16 = 32'h00000013;
+  assign _zz_io_y_17 = (_zz_io_y_6[20] ? 32'h00000014 : (_zz_io_y_6[21] ? 32'h00000015 : (_zz_io_y_6[22] ? 32'h00000016 : (_zz_io_y_6[23] ? 32'h00000017 : (_zz_io_y_6[24] ? 32'h00000018 : (_zz_io_y_6[25] ? 32'h00000019 : (_zz_io_y_6[26] ? 32'h0000001a : (_zz_io_y_6[27] ? 32'h0000001b : (_zz_io_y_6[28] ? 32'h0000001c : (_zz_io_y_6[29] ? 32'h0000001d : (_zz_io_y_18 ? _zz_io_y_19 : _zz_io_y_20)))))))))));
+  assign _zz_io_y_18 = _zz_io_y_6[30];
+  assign _zz_io_y_19 = 32'h0000001e;
+  assign _zz_io_y_20 = 32'h0000001f;
   `ifndef SYNTHESIS
   always @(*) begin
     case(io_op)
@@ -3566,6 +3728,8 @@ module Alu (
       AluOp_SRL_1 : io_op_string = "SRL_1";
       AluOp_SRA_1 : io_op_string = "SRA_1";
       AluOp_ROL_1 : io_op_string = "ROL_1";
+      AluOp_SLT : io_op_string = "SLT  ";
+      AluOp_SLTU : io_op_string = "SLTU ";
       AluOp_OP2 : io_op_string = "OP2  ";
       AluOp_ANDN : io_op_string = "ANDN ";
       AluOp_CLZ : io_op_string = "CLZ  ";
@@ -3577,6 +3741,8 @@ module Alu (
 
   assign s_a = io_a;
   assign s_b = io_b;
+  assign u_a = io_a;
+  assign u_b = io_b;
   assign shamt = io_b[4 : 0];
   always @(*) begin
     case(io_op)
@@ -3613,6 +3779,12 @@ module Alu (
       AluOp_ROL_1 : begin
         io_y = _zz_io_y;
       end
+      AluOp_SLT : begin
+        io_y = {31'd0, _zz_io_y_10};
+      end
+      AluOp_SLTU : begin
+        io_y = {31'd0, _zz_io_y_11};
+      end
       AluOp_OP2 : begin
         io_y = io_b;
       end
@@ -3620,7 +3792,7 @@ module Alu (
         io_y = (io_a & (~ io_b));
       end
       AluOp_CLZ : begin
-        io_y = ((io_a != 32'h00000000) ? (_zz_io_y_6[0] ? 32'h00000000 : (_zz_io_y_6[1] ? 32'h00000001 : (_zz_io_y_6[2] ? 32'h00000002 : (_zz_io_y_6[3] ? 32'h00000003 : (_zz_io_y_6[4] ? 32'h00000004 : (_zz_io_y_6[5] ? 32'h00000005 : (_zz_io_y_6[6] ? 32'h00000006 : (_zz_io_y_6[7] ? 32'h00000007 : (_zz_io_y_10 ? _zz_io_y_11 : _zz_io_y_12))))))))) : 32'h00000020);
+        io_y = ((io_a != 32'h00000000) ? (_zz_io_y_6[0] ? 32'h00000000 : (_zz_io_y_6[1] ? 32'h00000001 : (_zz_io_y_6[2] ? 32'h00000002 : (_zz_io_y_6[3] ? 32'h00000003 : (_zz_io_y_6[4] ? 32'h00000004 : (_zz_io_y_6[5] ? 32'h00000005 : (_zz_io_y_6[6] ? 32'h00000006 : (_zz_io_y_6[7] ? 32'h00000007 : (_zz_io_y_12 ? _zz_io_y_13 : _zz_io_y_14))))))))) : 32'h00000020);
       end
       default : begin
         io_y = {io_b[15 : 0],io_a[15 : 0]};

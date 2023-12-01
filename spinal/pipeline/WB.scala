@@ -1,6 +1,7 @@
 package cod
 
 import spinal.core._
+import spinal.core.sim._
 import spinal.lib._
 
 class WB extends Component {
@@ -12,6 +13,8 @@ class WB extends Component {
 
         val reg = master port RegFileWritePorts()
     }
+
+    io.i.simPublic()
 
     // Forwarding
     io.forward.we := io.i.reg_we

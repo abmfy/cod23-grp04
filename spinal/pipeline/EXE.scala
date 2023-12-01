@@ -21,6 +21,7 @@ class EXE extends Component {
         val alu = master port AluPorts()
     }
 
+    io.o.real.setAsReg() init(False)
     io.o.pc.setAsReg() init(0)
     io.o.reg_data_b.setAsReg() init(0)
     io.o.reg_addr_d.setAsReg() init(0)
@@ -56,6 +57,7 @@ class EXE extends Component {
     } otherwise {
         io.o.alu_y := io.alu.y
 
+        io.o.real := io.i.real
         io.o.pc := io.i.pc
         io.o.reg_data_b := reg_b
         io.o.reg_addr_d := io.i.reg_addr_d

@@ -47,6 +47,8 @@ class MEM extends Component {
     }
 
     def bubble(): Unit = {
+        io.o.real := False
+        io.o.pc := 0
         io.o.reg_we := False
     }
 
@@ -59,11 +61,15 @@ class MEM extends Component {
     }
 
     def proceed(): Unit = {
+        io.o.real := io.i.real
+        io.o.pc := io.i.pc
         io.o.reg_we := io.i.reg_we
         io.o.reg_addr_d := io.i.reg_addr_d
         io.o.reg_data_d := reg_data
     }
 
+    io.o.real.setAsReg() init(False)
+    io.o.pc.setAsReg() init(0)
     io.o.reg_we.setAsReg() init(False)
     io.o.reg_addr_d.setAsReg() init(0)
     io.o.reg_data_d.setAsReg() init(0)

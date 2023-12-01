@@ -32,6 +32,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     val delay_ack = Reg(Bool()) init(False)
     val delay_instr = Reg(Types.data) init(Instr.NOP)
 
+    io.o.real.setAsReg() init(False)
     io.o.pc.setAsReg() init(config.start)
     io.o.instr.setAsReg() init(Instr.NOP)
 
@@ -40,10 +41,13 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     io.wb.cyc := io.wb.stb
 
     def bubble(): Unit = {
+        io.o.real := False
+        io.o.pc := 0
         io.o.instr := Instr.NOP
     }
 
     def output(instr: Bits): Unit = {
+        io.o.real := True
         io.o.pc := pc
         io.o.instr := instr
         pc := pc + 4

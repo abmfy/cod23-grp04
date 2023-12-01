@@ -635,11 +635,14 @@ class ID extends Component {
     }
 
     def bubble() = {
+        io.o.real := False
+        io.o.pc := 0
         io.o.br_type := BrType.F
         io.o.mem_en := False
         io.o.reg_we := False
     }
 
+    io.o.real.setAsReg() init(False)
     io.o.pc.setAsReg() init(0)
     io.o.reg_data_a.setAsReg() init(0)
     io.o.reg_data_b.setAsReg() init(0)
@@ -666,6 +669,7 @@ class ID extends Component {
     } elsewhen (io.bubble) {
         bubble()
     } otherwise {
+        io.o.real := io.i.real
         io.o.pc := io.i.pc
         
         io.o.reg_data_a := io.reg.data_a
