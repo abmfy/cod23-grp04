@@ -128,7 +128,14 @@ class ID extends Component {
                         }
                     }
                     is (B"101") {
-                        res := SRLI
+                        switch (funct7) {
+                            is (B"0000000") {
+                                res := SRLI
+                            }
+                            is (B"0100000") {
+                                res := SRAI
+                            }
+                        }
                     }
                 }
             }
@@ -192,6 +199,7 @@ class ID extends Component {
                 ANDI,
                 SLLI,
                 SRLI,
+                SRAI,
                 LB,
                 LH,
                 LW,
@@ -319,6 +327,11 @@ class ID extends Component {
                 SRLI,
             ) {
                 res := AluOp.SRL
+            }
+            is (
+                SRAI,
+            ) {
+                res := AluOp.SRA
             }
             is (
                 SLTI,
@@ -527,6 +540,7 @@ class ID extends Component {
                 ANDI,
                 SLLI,
                 SRLI,
+                SRAI,
                 ADD,
                 XOR,
                 OR,
