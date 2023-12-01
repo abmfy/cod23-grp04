@@ -108,6 +108,9 @@ class ID extends Component {
                     is (B"011") {
                         res := SLTIU
                     }
+                    is (B"100") {
+                        res := XORI
+                    }
                     is (B"110") {
                         res := ORI
                     }
@@ -184,6 +187,7 @@ class ID extends Component {
                 ADDI,
                 SLTI,
                 SLTIU,
+                XORI,
                 ORI,
                 ANDI,
                 SLLI,
@@ -301,6 +305,7 @@ class ID extends Component {
                 res := AluOp.OR
             }
             is (
+                XORI,
                 XOR,
             ) {
                 res := AluOp.XOR
@@ -517,6 +522,7 @@ class ID extends Component {
                 ADDI,
                 SLTI,
                 SLTIU,
+                XORI,
                 ORI,
                 ANDI,
                 SLLI,
