@@ -37,7 +37,7 @@ class BranchPredict(config: BPConfig = BPConfig()) extends  Component {
     val io = slave port BranchPredictPorts()
 
     val BTB = Vec(Reg(Types.addr(BTB_WIDTH)) init(0), count)
-    // val TAG = Vec(Reg(Types.addr(TAG_WIDTH)) init(0), count)
+    val TAG = Vec(Reg(Types.addr(TAG_WIDTH)) init(0), count)
     val BHT = Vec(Reg(Types.addr(BHT_WIDTH)) init(0), count)
 
     val is_IF_branch_type = io.if_instr(0, 7 bits) === B"1101111" || io.if_instr(0, 7 bits) === B"1100011"  // 不涉及加减，可以不用buffer
@@ -46,12 +46,11 @@ class BranchPredict(config: BPConfig = BPConfig()) extends  Component {
     val if_index = io.IF_pc(5 downto 2)
     // val next_taken_reg= is_IF_branch_type  && (BHT(if_index) >= 2)
     io.next_pc := BTB(if_index)
-    io.next_taken := is_IF_branch_type  && (BHT(if_index) >= 2)
+    io.next_taken := is_IF_branch_type  && io.IF_pc === TAG(if_index) && (BHT(if_index) >= 2)
     val exe_index = io.exe_pc(5 downto 2)
 
     when (is_EXE_branch_type && !exe_branch_type_buffer) {
       
-        // TAG(exe_index) := io.exe_pc
         switch (BHT(exe_index)) {
             is (0) {
                 when (io.br_we) {
@@ -79,7 +78,8 @@ class BranchPredict(config: BPConfig = BPConfig()) extends  Component {
                 }
             }
         }
-
+        
+        TAG(exe_index) := io.exe_pc
         BTB(exe_index) := io.br_addr
         exe_branch_type_buffer := True
 
