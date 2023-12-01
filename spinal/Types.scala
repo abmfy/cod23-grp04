@@ -94,6 +94,8 @@ object Instr extends SpinalEnum {
         SRA,
         OR,
         AND,
+        // Zifencei
+        FENCE_I,
         // Extra
         ANDN,
         CLZ,

@@ -196,6 +196,9 @@ class ID extends Component {
                     }
                 }
             }
+            is (B"0001111") {
+                res := FENCE_I
+            }
         }
         res
     }
