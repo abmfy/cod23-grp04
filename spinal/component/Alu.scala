@@ -58,6 +58,9 @@ class Alu(width: Int = 32) extends Component {
         is (AluOp.ROL) {
             io.y := io.a rotateLeft shamt
         }
+        is (AluOp.SLT) {
+            io.y := (s_a < s_b).asBits.resized
+        }
         is (AluOp.OP2) {
             io.y := io.b
         }

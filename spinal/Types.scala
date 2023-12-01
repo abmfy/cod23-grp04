@@ -36,7 +36,22 @@ object BrType extends SpinalEnum {
 }
 
 object AluOp extends SpinalEnum {
-    val OP1, ADD, SUB, AND, OR, XOR, NOT, SLL, SRL, SRA, ROL, OP2, ANDN, CLZ, PACK = newElement()
+    val OP1,
+        ADD,
+        SUB,
+        AND,
+        OR,
+        XOR,
+        NOT,
+        SLL,
+        SRL,
+        SRA,
+        ROL,
+        SLT,
+        OP2,
+        ANDN,
+        CLZ,
+        PACK = newElement()
 }
 
 object Instr extends SpinalEnum {
@@ -60,6 +75,7 @@ object Instr extends SpinalEnum {
         SH,
         SW,
         ADDI,
+        SLTI,
         ORI,
         ANDI,
         SLLI,
