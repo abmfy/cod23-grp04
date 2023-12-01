@@ -170,6 +170,13 @@ class ID extends Component {
                             }
                         }
                     }
+                    is (B"101") {
+                        switch (funct7) {
+                            is (B"0000000") {
+                                res := SRL
+                            }
+                        }
+                    }
                     is (B"110") {
                         res := OR
                     }
@@ -201,6 +208,7 @@ class ID extends Component {
                 SLT,
                 SLTU,
                 XOR,
+                SRL,
                 OR,
                 AND,
                 ANDN,
@@ -351,6 +359,7 @@ class ID extends Component {
             }
             is (
                 SRLI,
+                SRL,
             ) {
                 res := AluOp.SRL
             }
@@ -467,6 +476,7 @@ class ID extends Component {
                 SLT,
                 SLTU,
                 XOR,
+                SRL,
                 OR,
                 AND,
                 ANDN,
@@ -579,6 +589,7 @@ class ID extends Component {
                 SLT,
                 SLTU,
                 XOR,
+                SRL,
                 OR,
                 AND,
                 ANDN,
