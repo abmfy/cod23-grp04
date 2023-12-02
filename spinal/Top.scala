@@ -14,6 +14,7 @@ class Top (
     val reg_file = new RegFile
     val alu = new Alu
     val csr = new CsrFile
+    val trap = new Trap
     
     // Pipelines
     val If = new IF
@@ -36,16 +37,22 @@ class Top (
 
     io.gpio.leds := If.io.o.instr.resized
 
-    If.io.br <> Exe.io.br
+    If.io.br.br := trap.io.br.br || Exe.io.br.br
+    If.io.br.pc := trap.io.br.br ? trap.io.br.pc | Exe.io.br.pc
 
-    If.io.stall := !Exe.io.flush_req && Mem.io.stall_req
-    If.io.bubble := Exe.io.flush_req
+    If.io.stall := !trap.io.flush_req(0) && !Exe.io.flush_req && Mem.io.stall_req
+    If.io.bubble := trap.io.flush_req(0) || Exe.io.flush_req
+
+    If.io.mie := csr.io.mie.r
+    If.io.mip := csr.io.mip.r
 
     // ID
     Id.io.reg <> reg_file.io.r
 
-    Id.io.stall := Exe.io.flush_req && Mem.io.stall_req
-    Id.io.bubble := Exe.io.flush_req
+    Id.io.stall := !trap.io.flush_req(1) && !Exe.io.flush_req && Mem.io.stall_req
+    Id.io.bubble := trap.io.flush_req(1) || Exe.io.flush_req
+
+    trap.io.trap(0) := Id.io.trap
 
     // EXE
     Exe.io.alu <> alu.io
@@ -54,12 +61,35 @@ class Top (
     Exe.io.forward(1) <> Wb.io.forward
 
     Exe.io.stall := Mem.io.stall_req
+    Exe.io.bubble := trap.io.flush_req(2)
+
+    trap.io.trap(1) := Exe.io.trap
 
     // MEM
-    Mem.io.csr <> csr.io
+    Mem.io.csr <> csr.io.csr
+
+    trap.io.trap(2) := Mem.io.trap
 
     // WB
     Wb.io.reg <> reg_file.io.w
+
+    Wb.io.trap_commit <> trap.io.commit
+
+    // Trap
+    trap.io.mstatus <> csr.io.mstatus
+    trap.io.mtvec <> csr.io.mtvec
+    trap.io.mepc <> csr.io.mepc
+    trap.io.mcause <> csr.io.mcause
+
+    // Csr
+    csr.io.mscratch.we := False
+    csr.io.mscratch.w := 0
+
+    csr.io.mip.we := False
+    csr.io.mip.w := 0
+
+    csr.io.mie.we := False
+    csr.io.mie.w := 0
 
     // Wishbone IO
     val muxes = List.fill(2)(new WbMux(WbMuxConfig(

@@ -15,10 +15,26 @@ class EXE extends Component {
 
         // Hazard handling
         val stall = in Bool()
+        val bubble = in Bool()
         val flush_req = out Bool()
+
+        // Trap
+        val trap = out Bool()
 
         // Alu
         val alu = master port AluPorts()
+    }
+
+    def bubble() = {
+        io.o.real := False
+        io.o.pc := 0
+        io.o.csr_op := CsrOp.N
+        io.o.mem_en := False
+        io.o.reg_we := False
+
+        io.trap := False
+        io.o.trap.epc := 0
+        io.o.trap.cause := 0
     }
 
     io.o.real.setAsReg() init(False)
@@ -34,6 +50,13 @@ class EXE extends Component {
     io.o.reg_we.setAsReg() init(False)
     io.o.reg_sel.setAsReg() init(RegSel.ALU)
     io.o.alu_y.setAsReg() init(0)
+
+    io.o.trap.trap.setAsReg() init(False)
+    io.o.trap.epc.setAsReg() init(0)
+    io.o.trap.cause.setAsReg() init(0)
+
+    io.o.trap.trap := io.trap
+    io.trap := io.o.trap.trap
 
     val reg_a = CombInit(io.i.reg_data_a)
     val reg_b = CombInit(io.i.reg_data_b)
@@ -58,6 +81,12 @@ class EXE extends Component {
 
     when (io.stall) {
         // Pass
+    } elsewhen (io.bubble) {
+        bubble()
+    } elsewhen (io.i.trap.trap) {
+        io.trap := True
+        io.o.trap.epc := io.i.trap.epc
+        io.o.trap.cause := io.i.trap.cause
     } otherwise {
         io.o.alu_y := io.alu.y
 
@@ -103,6 +132,11 @@ class EXE extends Component {
         is (GEU) {
             io.br.br := reg_a.asUInt >= reg_b.asUInt
         }
+    }
+
+    // Trapped
+    when (io.i.trap.trap) {
+        io.br.br := False
     }
 
     io.flush_req := io.br.br

@@ -12,8 +12,12 @@ class ID extends Component {
         val i = slave port IF_ID()
         val o = master port ID_EXE()
 
+        // Hazard handling
         val stall = in Bool()
         val bubble = in Bool()
+
+        // Trap
+        val trap = out Bool()
 
         // RegFile
         val reg = master port RegFileReadPorts()
@@ -199,12 +203,15 @@ class ID extends Component {
             is (B"1110011") {
                 switch (funct3) {
                     is (B"000") {
-                        switch (rs2(0)) {
-                            is (False) {
+                        switch (rs2) {
+                            is (U"00000") {
                                 res := ECALL
                             }
-                            is (True) {
+                            is (U"00001") {
                                 res := EBREAK
+                            }
+                            is (U"00010") {
+                                res := MRET
                             }
                         }
                     }
@@ -280,6 +287,7 @@ class ID extends Component {
                 CSRRWI,
                 CSRRSI,
                 CSRRCI,
+                MRET,
             ) {
                 res := I
             }
@@ -732,9 +740,14 @@ class ID extends Component {
     def bubble() = {
         io.o.real := False
         io.o.pc := 0
+        io.o.csr_op := CsrOp.N
         io.o.br_type := BrType.F
         io.o.mem_en := False
         io.o.reg_we := False
+
+        io.trap := False
+        io.o.trap.epc := 0
+        io.o.trap.cause := 0
     }
 
     io.o.real.setAsReg() init(False)
@@ -758,6 +771,13 @@ class ID extends Component {
     io.o.reg_we.setAsReg() init(False)
     io.o.reg_sel.setAsReg() init(RegSel.ALU)
 
+    io.o.trap.trap.setAsReg() init(False)
+    io.o.trap.epc.setAsReg() init(0)
+    io.o.trap.cause.setAsReg() init(0)
+
+    io.o.trap.trap := io.trap
+    io.trap := io.o.trap.trap
+
     io.reg.addr_a := rs1
     io.reg.addr_b := rs2
 
@@ -765,6 +785,22 @@ class ID extends Component {
         // Pass
     } elsewhen (io.bubble) {
         bubble()
+    } elsewhen (io.i.trap.trap) {
+        io.trap := True
+        io.o.trap.epc := io.i.trap.epc
+        io.o.trap.cause := io.i.trap.cause
+    } elsewhen (instr_kind === EBREAK) {
+        io.trap := True
+        io.o.trap.epc := io.i.pc
+        io.o.trap.cause := TrapCause.BREAKPOINT
+    } elsewhen (instr_kind === ECALL) {
+        io.trap := True
+        io.o.trap.epc := io.i.pc
+        io.o.trap.cause := TrapCause.ENVIRONMENT_CALL_FROM_U_MODE
+    } elsewhen (instr_kind === MRET) {
+        io.trap := True
+        io.o.trap.epc := io.i.pc
+        io.o.trap.cause := TrapCause.RETURN_FROM_M_MODE
     } otherwise {
         io.o.real := io.i.real
         io.o.pc := io.i.pc

@@ -4,17 +4,20 @@ import spinal.core._
 import spinal.lib._
 
 case class IF_ID() extends Bundle with IMasterSlave {
-    val real = Bool()
+    val real = Bool() allowPruning()
     val pc = Types.addr
     val instr = Types.data
 
+    val trap = TrapPorts()
+
     override def asMaster(): Unit = {
         out (real, pc, instr)
+        master (trap)
     }
 }
 
 case class ID_EXE() extends Bundle with IMasterSlave {
-    val real = Bool()
+    val real = Bool() allowPruning()
     val pc = Types.addr
     val reg_data_a, reg_data_b = Types.data
     val reg_addr_a, reg_addr_b, reg_addr_d = Types.reg
@@ -28,6 +31,8 @@ case class ID_EXE() extends Bundle with IMasterSlave {
     val mem_unsigned = Bool()
     val reg_we = Bool()
     val reg_sel = RegSel()
+    
+    val trap = TrapPorts()
 
     override def asMaster(): Unit = {
         out (
@@ -46,11 +51,12 @@ case class ID_EXE() extends Bundle with IMasterSlave {
             reg_we,
             reg_sel,
         )
+        master(trap)
     }
 }
 
 case class EXE_MEM() extends Bundle with IMasterSlave {
-    val real = Bool()
+    val real = Bool() allowPruning()
     val pc = Types.addr
     val reg_data_b = Types.data
     val reg_addr_d = Types.reg
@@ -62,6 +68,8 @@ case class EXE_MEM() extends Bundle with IMasterSlave {
     val reg_we = Bool()
     val reg_sel = RegSel()
     val alu_y = Types.data
+
+    val trap = TrapPorts()
 
     override def asMaster(): Unit = {
         out (
@@ -78,15 +86,18 @@ case class EXE_MEM() extends Bundle with IMasterSlave {
             reg_sel,
             alu_y,
         )
+        master(trap)
     }
 }
 
 case class MEM_WB() extends Bundle with IMasterSlave {
-    val real = Bool()
-    val pc = Types.addr
+    val real = Bool() allowPruning()
+    val pc = Types.addr allowPruning()
     val reg_we = Bool()
     val reg_addr_d = Types.reg
     val reg_data_d = Types.data
+
+    val trap = TrapPorts()
 
     override def asMaster(): Unit = {
         out (
@@ -96,6 +107,7 @@ case class MEM_WB() extends Bundle with IMasterSlave {
             reg_addr_d,
             reg_data_d,
         )
+        master(trap)
     }
 }
 
@@ -115,5 +127,16 @@ case class ForwardPorts() extends Bundle with IMasterSlave {
 
     override def asMaster(): Unit = {
         out (we, addr, data)
+    }
+}
+
+case class TrapPorts() extends Bundle with IMasterSlave {
+    val trap = Bool()
+
+    val epc = Types.addr
+    val cause = Types.data
+
+    override def asMaster(): Unit = {
+        out (trap, epc, cause)
     }
 }

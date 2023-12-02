@@ -4,6 +4,17 @@ import spinal.core._
 import spinal.lib._
 
 case class CsrPorts() extends Bundle with IMasterSlave {
+    val r = Types.data
+    val w = Types.data
+    val we = Bool()
+
+    override def asMaster(): Unit = {
+        in (r)
+        out (w, we)
+    }
+}
+
+case class CsrFilePorts() extends Bundle with IMasterSlave {
     val addr = Types.csr
     val r = Types.data
     val w = Types.data
@@ -16,26 +27,48 @@ case class CsrPorts() extends Bundle with IMasterSlave {
 }
 
 class CsrFile extends Component {
-    val io = slave port CsrPorts()
+    val io = new Bundle {
+        val csr = slave port CsrFilePorts()
 
-    val csr_file = Seq(
-        new Mstatus,
-        new Mie,
-        new Mtvec,
+        val mstatus, mie, mtvec = slave port CsrPorts()
 
-        new Mscratch,
-        new Mepc,
-        new Mcause,
-        new Mip,
+        val mscratch, mepc, mcause, mip = slave port CsrPorts()
+    }
+
+    val mstatus = new Mstatus
+    val mie = new Mie
+    val mtvec = new Mtvec
+
+    val mscratch = new Mscratch
+    val mepc = new Mepc
+    val mcause = new Mcause
+    val mip = new Mip
+
+    val csr_file = Seq (
+        mstatus -> io.mstatus,
+        mie -> io.mie,
+        mtvec -> io.mtvec,
+
+        mscratch -> io.mscratch,
+        mepc -> io.mepc,
+        mcause -> io.mcause,
+        mip -> io.mip,
     )
 
-    io.r := 0
+    io.mscratch.r allowPruning()
+    io.mcause.r allowPruning()
 
-    csr_file.foreach { csr =>
-        when (io.addr === csr.addr) {
-            io.r := csr.io.r
-            csr.io.w := io.w
-            csr.io.we := io.we
+    io.csr.r := 0
+
+    csr_file.foreach { case (csr, ports) =>
+        ports.r := csr.io.r
+        when (ports.we) {
+            csr.io.we := True
+            csr.io.w := ports.w
+        } elsewhen (io.csr.addr === csr.addr) {
+            io.csr.r := csr.io.r
+            csr.io.w := io.csr.w
+            csr.io.we := io.csr.we
         } otherwise {
             csr.io.w := 0
             csr.io.we := False
@@ -44,11 +77,7 @@ class CsrFile extends Component {
 }
 
 class Csr(val addr: Int) extends Component {
-    val io = new Bundle {
-        val r = out port Types.data
-        val w = in port Types.data
-        val we = in Bool()
-    }
+    val io = slave port CsrPorts()
     val reg = Reg(Types.data) init(0)
     io.r := reg
 }
@@ -56,7 +85,8 @@ class Csr(val addr: Int) extends Component {
 // Machine Trap Setup
 
 class Mstatus extends Csr(0x300) {
-    val mpp = reg(11, 2 bits)
+    // WARL
+    val mpp = reg(11, 2 bits) allowPruning()
     val mpp_w = io.w(11, 2 bits)
 
     when (io.we) {
@@ -73,8 +103,9 @@ class Mstatus extends Csr(0x300) {
 }
 
 class Mie extends Csr(0x304) {
-    val mtie = reg(7)
-    val mtie_w = io.w(7)
+    // WARL
+    val mtie = reg(InterruptField.MTI) allowPruning()
+    val mtie_w = io.w(InterruptField.MTI)
 
     when (io.we) {
         mtie := mtie_w
@@ -82,12 +113,15 @@ class Mie extends Csr(0x304) {
 }
 
 class Mtvec extends Csr(0x305) {
-    val mode = reg(0, 2 bits)
+    // WARL
+    val mode = reg(0, 2 bits) allowPruning()
     val mode_w = io.w(0, 2 bits)
-    val base = reg(2, 30 bits)
+    // WARL
+    val base = reg(2, 30 bits) allowPruning()
     val base_w = io.w(2, 30 bits)
 
     when (io.we) {
+        mode := mode_w
         base := base_w
     }
 }
@@ -95,26 +129,43 @@ class Mtvec extends Csr(0x305) {
 // Machine Trap Handling
 
 class Mscratch extends Csr(0x340) {
+    // RW
+    val mscratch = reg(0, 32 bits) allowPruning()
+    val mscratch_w = io.w(0, 32 bits)
+
     when (io.we) {
-        reg := io.w
+        mscratch := mscratch_w
     }
 }
 
 class Mepc extends Csr(0x341) {
+    // WARL
+    val mepc = reg(0, 32 bits) allowPruning()
+    val mepc_w = io.w(0, 32 bits)
+
     when (io.we) {
-        reg := io.w
+        mepc := mepc_w
     }
 }
 
 class Mcause extends Csr(0x342) {
+    // RW
+    val interrupt = reg(31) allowPruning()
+    val interrupt_w = io.w(31)
+    // WLRL
+    val exception_code = reg(0, 31 bits) allowPruning()
+    val exception_code_w = io.w(0, 31 bits)
+
     when (io.we) {
-        reg := io.w
+        interrupt := interrupt_w
+        exception_code := exception_code_w
     }
 }
 
 class Mip extends Csr(0x344) {
-    val mtip = reg(7)
-    val mtip_w = io.w(7)
+    // WARL
+    val mtip = reg(InterruptField.MTI) allowPruning()
+    val mtip_w = io.w(InterruptField.MTI)
 
     when (io.we) {
         mtip := mtip_w

@@ -19,6 +19,11 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         val stall = in Bool()
         val bubble = in Bool()
 
+        // Trap
+        val trap = out Bool()
+        val mie = in port Types.data
+        val mip = in port Types.data
+
         // Wishbone master
         val wb = master port WishbonePorts()
     }
@@ -32,9 +37,19 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     val delay_ack = Reg(Bool()) init(False)
     val delay_instr = Reg(Types.data) init(Instr.NOP)
 
+    // Interrupt
+    val interrupt = io.mie & io.mip
+
     io.o.real.setAsReg() init(False)
     io.o.pc.setAsReg() init(config.start)
     io.o.instr.setAsReg() init(Instr.NOP)
+
+    io.o.trap.trap.setAsReg() init(False)
+    io.o.trap.epc.setAsReg() init(0)
+    io.o.trap.cause.setAsReg() init(0)
+
+    io.trap := io.o.trap.trap
+    io.o.trap.trap := io.trap
 
     // To break combinatorial loop
     io.wb.stb.setAsReg() init(False)
@@ -44,13 +59,29 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         io.o.real := False
         io.o.pc := 0
         io.o.instr := Instr.NOP
+
+        io.trap := False
+        io.o.trap.epc := 0
+        io.o.trap.cause := 0
     }
 
     def output(instr: Bits): Unit = {
-        io.o.real := True
-        io.o.pc := pc
-        io.o.instr := instr
-        pc := pc + 4
+        when (interrupt =/= 0) {
+            io.trap := True
+            io.o.trap.epc := pc
+            
+            when (interrupt(InterruptField.MTI)) {
+                io.o.trap.cause := TrapCause.MACHINE_TIMER_INTERRUPT
+            } otherwise {
+                io.o.trap.cause := TrapCause.UNKNOWN_INTERRUPT
+            }
+        } otherwise {
+            io.trap := False
+            io.o.real := True
+            io.o.pc := pc
+            io.o.instr := instr
+            pc := pc + 4
+        }
     }
 
     val fsm = new StateMachine {
@@ -74,7 +105,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                 } otherwise {
                     bubble()
                     // Branch immediately when idle
-                    when (io.br.br) {
+                    when (io.br.br || delay_br) {
                         delay_br := False
                     }
                     goto(fetch)

@@ -15,8 +15,11 @@ class MEM extends Component {
         // Hazard handling
         val stall_req = out Bool()
 
+        // Trap
+        val trap = out Bool()
+
         // Csr file
-        val csr = master port CsrPorts()
+        val csr = master port CsrFilePorts()
 
         // Wishbone master
         val wb = master port WishbonePorts()
@@ -56,6 +59,10 @@ class MEM extends Component {
         io.o.real := False
         io.o.pc := 0
         io.o.reg_we := False
+
+        io.trap := False
+        io.o.trap.epc := 0
+        io.o.trap.cause := 0
     }
 
     def req(): Unit = {
@@ -72,6 +79,10 @@ class MEM extends Component {
         io.o.reg_we := io.i.reg_we
         io.o.reg_addr_d := io.i.reg_addr_d
         io.o.reg_data_d := reg_data
+
+        io.trap := False
+        io.o.trap.epc := 0
+        io.o.trap.cause := 0
     }
 
     io.o.real.setAsReg() init(False)
@@ -79,6 +90,13 @@ class MEM extends Component {
     io.o.reg_we.setAsReg() init(False)
     io.o.reg_addr_d.setAsReg() init(0)
     io.o.reg_data_d.setAsReg() init(0)
+
+    io.o.trap.trap.setAsReg() init(False)
+    io.o.trap.epc.setAsReg() init(0)
+    io.o.trap.cause.setAsReg() init(0)
+
+    io.o.trap.trap := io.trap
+    io.trap := io.o.trap.trap
 
     // Forwarding
     io.forward.we := io.i.reg_we
@@ -124,7 +142,12 @@ class MEM extends Component {
 
         val start: State = new State with EntryPoint {
             whenIsActive {
-                when (io.i.mem_en) {
+                // Trapped
+                when (io.i.trap.trap) {
+                    io.trap := True
+                    io.o.trap.epc := io.i.trap.epc
+                    io.o.trap.cause := io.i.trap.cause
+                } elsewhen (io.i.mem_en) {
                     bubble()
                     req()
                     goto(fetch)

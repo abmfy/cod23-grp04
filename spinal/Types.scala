@@ -111,6 +111,8 @@ object Instr extends SpinalEnum {
         CSRRWI,
         CSRRSI,
         CSRRCI,
+        // Trap-Return
+        MRET,
         // Extra
         ANDN,
         CLZ,
@@ -131,4 +133,30 @@ object PrivilegeMode extends SpinalEnum {
         S -> 1,
         M -> 3,
     )
+}
+
+object TrapVectorMode {
+    val DIRECT = 0
+    val VECTORED = 1
+}
+
+object InterruptField {
+    val SSI = 1
+    val MSI = 3
+    val STI = 5
+    val MTI = 7
+    val SEI = 9
+    val MEI = 11
+}
+
+object TrapCause {
+    val INTERRUPT = 1L << 31
+    val EXCEPTION = 0L << 31
+
+    val MACHINE_TIMER_INTERRUPT = INTERRUPT | 7
+    val UNKNOWN_INTERRUPT = INTERRUPT | 16
+
+    val BREAKPOINT = EXCEPTION | 3
+    val ENVIRONMENT_CALL_FROM_U_MODE = EXCEPTION | 8
+    val RETURN_FROM_M_MODE = EXCEPTION | 24
 }
