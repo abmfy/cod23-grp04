@@ -45,7 +45,7 @@ object Exception extends App {
             }
         }
 
-        val string_expected = "idP"
+        val string_expected = "idhP"
         waitUntil (
             string_expected == string_received.result ||
             !string_expected.startsWith(string_received)

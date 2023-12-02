@@ -15,6 +15,7 @@ class Top (
     val alu = new Alu
     val csr = new CsrFile
     val trap = new Trap
+    val timer = new Timer
     
     // Pipelines
     val If = new IF
@@ -46,6 +47,8 @@ class Top (
     If.io.mie := csr.io.mie.r
     If.io.mip := csr.io.mip.r
 
+    If.io.prv := trap.io.prv
+
     // ID
     Id.io.reg <> reg_file.io.r
 
@@ -70,6 +73,8 @@ class Top (
 
     trap.io.trap(2) := Mem.io.trap
 
+    Mem.io.timer <> timer.io.timer
+
     // WB
     Wb.io.reg <> reg_file.io.w
 
@@ -90,6 +95,8 @@ class Top (
 
     csr.io.mie.we := False
     csr.io.mie.w := 0
+
+    csr.io.timeout := timer.io.timeout
 
     // Wishbone IO
     val muxes = List.fill(2)(new WbMux(WbMuxConfig(

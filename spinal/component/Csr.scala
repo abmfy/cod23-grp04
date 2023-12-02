@@ -33,6 +33,9 @@ class CsrFile extends Component {
         val mstatus, mie, mtvec = slave port CsrPorts()
 
         val mscratch, mepc, mcause, mip = slave port CsrPorts()
+
+        // Timer
+        val timeout = in Bool()
     }
 
     val mstatus = new Mstatus
@@ -43,6 +46,8 @@ class CsrFile extends Component {
     val mepc = new Mepc
     val mcause = new Mcause
     val mip = new Mip
+
+    mip.timeout := io.timeout
 
     val csr_file = Seq (
         mstatus -> io.mstatus,
@@ -57,6 +62,7 @@ class CsrFile extends Component {
 
     io.mscratch.r allowPruning()
     io.mcause.r allowPruning()
+    io.mip.w allowPruning()
 
     io.csr.r := 0
 
@@ -163,11 +169,13 @@ class Mcause extends Csr(0x342) {
 }
 
 class Mip extends Csr(0x344) {
-    // WARL
-    val mtip = reg(InterruptField.MTI) allowPruning()
-    val mtip_w = io.w(InterruptField.MTI)
+    io.w allowPruning()
+    io.we allowPruning()
 
-    when (io.we) {
-        mtip := mtip_w
-    }
+    val timeout = in Bool()
+
+    // RO
+    io.r(InterruptField.MTI) := timeout
+
+    reg := 0
 }

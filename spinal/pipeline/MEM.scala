@@ -21,6 +21,9 @@ class MEM extends Component {
         // Csr file
         val csr = master port CsrFilePorts()
 
+        // Timer
+        val timer = master port TimerPorts()
+
         // Wishbone master
         val wb = master port WishbonePorts()
     }
@@ -103,6 +106,58 @@ class MEM extends Component {
     io.forward.addr := io.i.reg_addr_d
     io.forward.data := reg_data
 
+    // Timer
+    val timer = new Area {
+        val mtime_req = mem_adr === Timer.CLINT_MTIME
+        val mtimeh_req = mem_adr === Timer.CLINT_MTIMEH
+        val mtimecmp_req = mem_adr === Timer.CLINT_MTIMECMP
+        val mtimecmph_req = mem_adr === Timer.CLINT_MTIMECMPH
+
+        val req = mtime_req || mtimeh_req || mtimecmp_req || mtimecmph_req
+
+        when (mtime_req) {
+            mem_data_read := io.timer.mtime.r |>> (offset * 8)
+        }
+        when (mtimeh_req) {
+            mem_data_read := io.timer.mtimeh.r |>> (offset * 8)
+        }
+        when (mtimecmp_req) {
+            mem_data_read := io.timer.mtimecmp.r |>> (offset * 8)
+        }
+        when (mtimecmph_req) {
+            mem_data_read := io.timer.mtimecmph.r |>> (offset * 8)
+        }
+
+        io.timer.mtime.we := False
+        io.timer.mtimeh.we := False
+        io.timer.mtimecmp.we := False
+        io.timer.mtimecmph.we := False
+
+        io.timer.mtime.w := 0
+        io.timer.mtimeh.w := 0
+        io.timer.mtimecmp.w := 0
+        io.timer.mtimecmph.w := 0
+
+        when (io.i.mem_en && io.i.mem_we) {
+            when (mtime_req) {
+                io.timer.mtime.we := True
+                io.timer.mtime.w := mem_data_write
+            }
+            when (mtimeh_req) {
+                io.timer.mtimeh.we := True
+                io.timer.mtimeh.w := mem_data_write
+            }
+            when (mtimecmp_req) {
+                io.timer.mtimecmp.we := True
+                io.timer.mtimecmp.w := mem_data_write
+            }
+            when (mtimecmph_req) {
+                io.timer.mtimecmph.we := True
+                io.timer.mtimecmph.w := mem_data_write
+            }
+        }
+    }
+
     // Csr
     val csr = new Area {
         val rs1 = io.i.alu_y
@@ -129,7 +184,7 @@ class MEM extends Component {
         }
     }
 
-    io.stall_req := io.i.mem_en && !io.wb.ack
+    io.stall_req := io.i.mem_en && !timer.req && !io.wb.ack
 
     io.wb.cyc := io.wb.stb
 
@@ -149,8 +204,13 @@ class MEM extends Component {
                     io.o.trap.cause := io.i.trap.cause
                 } elsewhen (io.i.mem_en) {
                     bubble()
-                    req()
-                    goto(fetch)
+
+                    when (timer.req) {
+                        proceed()
+                    } otherwise {
+                        req()
+                        goto(fetch)
+                    }
                 } otherwise {
                     proceed()
                 }

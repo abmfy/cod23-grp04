@@ -24,6 +24,9 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         val mie = in port Types.data
         val mip = in port Types.data
 
+        // Privilege mode
+        val prv = in port PrivilegeMode()
+
         // Wishbone master
         val wb = master port WishbonePorts()
     }
@@ -66,7 +69,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     }
 
     def output(instr: Bits): Unit = {
-        when (interrupt =/= 0) {
+        when ((io.prv !== PrivilegeMode.M) && interrupt =/= 0) {
             io.trap := True
             io.o.trap.epc := pc
             
