@@ -20,6 +20,7 @@ class Top (
     val Exe = new EXE
     val Mem = new MEM
     val Wb = new WB
+    val ICache = new ICache
 
     If.io.o <> Id.io.i
     Id.io.o <> Exe.io.i
@@ -36,6 +37,7 @@ class Top (
     io.gpio.leds := If.io.o.instr.resized
 
     If.io.br <> Exe.io.br
+    If.io.cache <> ICache.io.toIF
 
     If.io.stall := !Exe.io.flush_req && Mem.io.stall_req
     If.io.bubble := Exe.io.flush_req
@@ -81,7 +83,7 @@ class Top (
 
     // Masters
     muxes(0).io.wb <> Mem.io.wb
-    muxes(1).io.wb <> If.io.wb
+    muxes(1).io.wb <> ICache.io.wb
 
     // Slaves
     val (base_ram, ext_ram) = if (simulation) {
