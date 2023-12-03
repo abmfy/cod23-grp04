@@ -148,6 +148,7 @@ class Top (
     }
     val uart = new UartController(UartControllerConfig(
         clk_freq = if (simulation) 100000000 else ClockDomain.current.frequency.getValue.toInt,
+        baud = if (simulation) 10000000 else 115200,
     ))
     uart.io.uart <> io.uart0
     uart.io.wb <> arbiters(2).io.wb
