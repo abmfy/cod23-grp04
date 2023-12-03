@@ -19,8 +19,10 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         val stall = in Bool()
         val bubble = in Bool()
 
-        // Wishbone master
-        val wb = master port WishbonePorts()
+        // // Wishbone master
+        // val wb = master port WishbonePorts()
+        // ICache
+        val cache = master port ICachePorts()
     }
 
     val pc = Reg(Types.addr) init(config.start)
@@ -35,9 +37,10 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     io.o.pc.setAsReg() init(config.start)
     io.o.instr.setAsReg() init(Instr.NOP)
 
-    // To break combinatorial loop
-    io.wb.stb.setAsReg() init(False)
-    io.wb.cyc := io.wb.stb
+    // // To break combinatorial loop
+    // io.wb.stb.setAsReg() init(False)
+    // io.wb.cyc := io.wb.stb
+    io.cache.icache_en.setAsReg() init(False)
 
     def bubble(): Unit = {
         io.o.instr := Instr.NOP
@@ -50,10 +53,11 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     }
 
     val fsm = new StateMachine {
-        io.wb.we := False
-        io.wb.adr := 0
-        io.wb.dat_w := 0
-        io.wb.sel := 0
+        // io.wb.we := False
+        // io.wb.adr := 0
+        // io.wb.dat_w := 0
+        // io.wb.sel := 0
+        io.cache.addr := 0
 
         // Delayed branching
         when (io.br.br) {
@@ -79,38 +83,37 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         }
         val fetch: State = new State {
             onEntry {
-                io.wb.stb := True
+                io.cache.icache_en := True
             }
             whenIsActive {
                 bubble()
-                io.wb.we := False
-                io.wb.adr := pc
-                io.wb.sel := Sel.WORD
-
+                // io.wb.we := False
+                // io.wb.adr := pc
+                // io.wb.sel := Sel.WORD
+                io.cache.addr := pc
                 // Fetch complete
-                when (io.wb.ack || delay_ack) {
+                when (io.cache.ack || delay_ack) {
                     delay_ack := False
 
                     // If stalled, store ack for next cycle
                     when (io.stall) {
                         delay_ack := True
                         // Store instruction and stop requesting when first acked
-                        when (io.wb.ack) {
-                            io.wb.stb := False
-                            delay_instr := io.wb.dat_r
+                        when (io.cache.ack) {
+                            delay_instr := io.cache.data
                         }
                     } elsewhen (io.br.br || delay_br) {
                         // Don't proceed when branching
                         delay_br := False
                         goto(start)
                     } otherwise {
-                        output(delay_ack ? delay_instr | io.wb.dat_r)
+                        output(delay_ack ? delay_instr | io.cache.data)
                         goto(start)
                     }
                 }
             }
             onExit {
-                io.wb.stb := False
+                io.cache.icache_en := False
             }
         }
     }
