@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : be30a498305752bfb38a4f078241380788e282df
+// Git hash  : 794d43536860bc2d18435c6a2af3ab661cbd08a9
 
 `timescale 1ns/1ps
 
@@ -3957,7 +3957,7 @@ module IF_1 (
   output wire          io_wb_cyc,
   output reg           io_wb_stb,
   input  wire          io_wb_ack,
-  output reg           io_wb_we,
+  output wire          io_wb_we,
   output reg  [31:0]   io_wb_adr,
   input  wire [31:0]   io_wb_dat_r,
   output wire [31:0]   io_wb_dat_w,
@@ -3984,11 +3984,11 @@ module IF_1 (
   reg        [1:0]    fsm_stateNext;
   wire                _zz_when_StateMachine_l237;
   wire                _zz_when_StateMachine_l237_1;
-  wire                when_IF_l111;
-  wire                when_IF_l129;
-  wire                when_IF_l72;
+  wire                when_IF_l110;
+  wire                when_IF_l127;
   wire                when_IF_l76;
-  wire                when_IF_l140;
+  wire                when_IF_l80;
+  wire                when_IF_l138;
   wire                when_StateMachine_l237;
   wire                when_StateMachine_l253;
   `ifndef SYNTHESIS
@@ -4040,10 +4040,10 @@ module IF_1 (
       end
       fsm_enumDef_fetch : begin
         io_trap = 1'b0;
-        if(when_IF_l129) begin
+        if(when_IF_l127) begin
           if(!io_stall) begin
-            if(!when_IF_l140) begin
-              if(when_IF_l72) begin
+            if(!when_IF_l138) begin
+              if(when_IF_l76) begin
                 io_trap = 1'b1;
               end else begin
                 io_trap = 1'b0;
@@ -4058,6 +4058,8 @@ module IF_1 (
   end
 
   assign io_wb_cyc = io_wb_stb;
+  assign io_wb_we = 1'b0;
+  assign io_wb_dat_w = 32'h00000000;
   assign fsm_wantExit = 1'b0;
   always @(*) begin
     fsm_wantStart = 1'b0;
@@ -4073,46 +4075,6 @@ module IF_1 (
   end
 
   assign fsm_wantKill = 1'b0;
-  always @(*) begin
-    io_wb_we = 1'b0;
-    case(fsm_stateReg)
-      fsm_enumDef_start : begin
-      end
-      fsm_enumDef_fetch : begin
-        io_wb_we = 1'b0;
-      end
-      default : begin
-      end
-    endcase
-  end
-
-  always @(*) begin
-    io_wb_adr = 32'h00000000;
-    case(fsm_stateReg)
-      fsm_enumDef_start : begin
-      end
-      fsm_enumDef_fetch : begin
-        io_wb_adr = pc;
-      end
-      default : begin
-      end
-    endcase
-  end
-
-  assign io_wb_dat_w = 32'h00000000;
-  always @(*) begin
-    io_wb_sel = 4'b0000;
-    case(fsm_stateReg)
-      fsm_enumDef_start : begin
-      end
-      fsm_enumDef_fetch : begin
-        io_wb_sel = 4'b1111;
-      end
-      default : begin
-      end
-    endcase
-  end
-
   assign _zz_when_StateMachine_l237 = (fsm_stateReg == fsm_enumDef_fetch);
   assign _zz_when_StateMachine_l237_1 = (fsm_stateNext == fsm_enumDef_fetch);
   always @(*) begin
@@ -4126,9 +4088,9 @@ module IF_1 (
         end
       end
       fsm_enumDef_fetch : begin
-        if(when_IF_l129) begin
+        if(when_IF_l127) begin
           if(!io_stall) begin
-            if(when_IF_l140) begin
+            if(when_IF_l138) begin
               fsm_stateNext = fsm_enumDef_start;
             end else begin
               fsm_stateNext = fsm_enumDef_start;
@@ -4147,11 +4109,11 @@ module IF_1 (
     end
   end
 
-  assign when_IF_l111 = (io_br_br || delay_br);
-  assign when_IF_l129 = (io_wb_ack || delay_ack);
-  assign when_IF_l72 = ((io_prv != PrivilegeMode_M) && (interrupt != 32'h00000000));
-  assign when_IF_l76 = interrupt[7];
-  assign when_IF_l140 = (io_br_br || delay_br);
+  assign when_IF_l110 = (io_br_br || delay_br);
+  assign when_IF_l127 = (io_wb_ack || delay_ack);
+  assign when_IF_l76 = ((io_prv != PrivilegeMode_M) && (interrupt != 32'h00000000));
+  assign when_IF_l80 = interrupt[7];
+  assign when_IF_l138 = (io_br_br || delay_br);
   assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_1));
   assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_1);
   always @(posedge sys_clk or posedge sys_reset) begin
@@ -4167,6 +4129,8 @@ module IF_1 (
       io_o_trap_epc <= 32'h00000000;
       io_o_trap_cause <= 32'h00000000;
       io_wb_stb <= 1'b0;
+      io_wb_adr <= 32'h00000000;
+      io_wb_sel <= 4'b0000;
       fsm_stateReg <= fsm_enumDef_BOOT;
     end else begin
       io_o_trap_trap <= io_trap;
@@ -4190,7 +4154,7 @@ module IF_1 (
               io_o_instr <= 32'h00000013;
               io_o_trap_epc <= 32'h00000000;
               io_o_trap_cause <= 32'h00000000;
-              if(when_IF_l111) begin
+              if(when_IF_l110) begin
                 delay_br <= 1'b0;
               end
             end
@@ -4202,7 +4166,7 @@ module IF_1 (
           io_o_instr <= 32'h00000013;
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
-          if(when_IF_l129) begin
+          if(when_IF_l127) begin
             delay_ack <= 1'b0;
             if(io_stall) begin
               delay_ack <= 1'b1;
@@ -4211,12 +4175,12 @@ module IF_1 (
                 delay_instr <= io_wb_dat_r;
               end
             end else begin
-              if(when_IF_l140) begin
+              if(when_IF_l138) begin
                 delay_br <= 1'b0;
               end else begin
-                if(when_IF_l72) begin
+                if(when_IF_l76) begin
                   io_o_trap_epc <= pc;
-                  if(when_IF_l76) begin
+                  if(when_IF_l80) begin
                     io_o_trap_cause <= 32'h80000007;
                   end else begin
                     io_o_trap_cause <= 32'h80000010;
@@ -4239,6 +4203,8 @@ module IF_1 (
       end
       if(when_StateMachine_l253) begin
         io_wb_stb <= 1'b1;
+        io_wb_adr <= pc;
+        io_wb_sel <= 4'b1111;
       end
     end
   end

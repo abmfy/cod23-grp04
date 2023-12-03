@@ -54,9 +54,13 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     io.trap := io.o.trap.trap
     io.o.trap.trap := io.trap
 
-    // To break combinatorial loop
-    io.wb.stb.setAsReg() init(False)
     io.wb.cyc := io.wb.stb
+    io.wb.we := False
+    io.wb.dat_w := 0
+
+    io.wb.stb.setAsReg() init(False)
+    io.wb.adr.setAsReg() init(0)
+    io.wb.sel.setAsReg() init(0)
 
     def bubble(): Unit = {
         io.o.real := False
@@ -88,11 +92,6 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     }
 
     val fsm = new StateMachine {
-        io.wb.we := False
-        io.wb.adr := 0
-        io.wb.dat_w := 0
-        io.wb.sel := 0
-
         // Delayed branching
         when (io.br.br) {
             delay_br := True
@@ -118,12 +117,11 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         val fetch: State = new State {
             onEntry {
                 io.wb.stb := True
+                io.wb.adr := pc
+                io.wb.sel := Sel.WORD
             }
             whenIsActive {
                 bubble()
-                io.wb.we := False
-                io.wb.adr := pc
-                io.wb.sel := Sel.WORD
 
                 // Fetch complete
                 when (io.wb.ack || delay_ack) {
