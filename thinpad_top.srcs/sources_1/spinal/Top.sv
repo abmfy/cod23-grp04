@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : 01ded58323eeac52f8d5e78e3da77ec193ff8b6e
+// Git hash  : be30a498305752bfb38a4f078241380788e282df
 
 `timescale 1ns/1ps
 
@@ -2191,8 +2191,8 @@ module MEM (
   wire                timer_mtimecmp_req;
   wire                timer_mtimecmph_req;
   wire                timer_req;
-  wire                when_MEM_l141;
-  wire                when_MEM_l169;
+  wire                when_MEM_l155;
+  wire                when_MEM_l183;
   wire                fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
@@ -2371,7 +2371,7 @@ module MEM (
   assign timer_req = (((timer_mtime_req || timer_mtimeh_req) || timer_mtimecmp_req) || timer_mtimecmph_req);
   always @(*) begin
     io_timer_mtime_we = 1'b0;
-    if(when_MEM_l141) begin
+    if(when_MEM_l155) begin
       if(timer_mtime_req) begin
         io_timer_mtime_we = 1'b1;
       end
@@ -2380,7 +2380,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimeh_we = 1'b0;
-    if(when_MEM_l141) begin
+    if(when_MEM_l155) begin
       if(timer_mtimeh_req) begin
         io_timer_mtimeh_we = 1'b1;
       end
@@ -2389,7 +2389,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmp_we = 1'b0;
-    if(when_MEM_l141) begin
+    if(when_MEM_l155) begin
       if(timer_mtimecmp_req) begin
         io_timer_mtimecmp_we = 1'b1;
       end
@@ -2398,7 +2398,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmph_we = 1'b0;
-    if(when_MEM_l141) begin
+    if(when_MEM_l155) begin
       if(timer_mtimecmph_req) begin
         io_timer_mtimecmph_we = 1'b1;
       end
@@ -2407,7 +2407,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtime_w = 32'h00000000;
-    if(when_MEM_l141) begin
+    if(when_MEM_l155) begin
       if(timer_mtime_req) begin
         io_timer_mtime_w = mem_data_write;
       end
@@ -2416,7 +2416,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimeh_w = 32'h00000000;
-    if(when_MEM_l141) begin
+    if(when_MEM_l155) begin
       if(timer_mtimeh_req) begin
         io_timer_mtimeh_w = mem_data_write;
       end
@@ -2425,7 +2425,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmp_w = 32'h00000000;
-    if(when_MEM_l141) begin
+    if(when_MEM_l155) begin
       if(timer_mtimecmp_req) begin
         io_timer_mtimecmp_w = mem_data_write;
       end
@@ -2434,17 +2434,17 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmph_w = 32'h00000000;
-    if(when_MEM_l141) begin
+    if(when_MEM_l155) begin
       if(timer_mtimecmph_req) begin
         io_timer_mtimecmph_w = mem_data_write;
       end
     end
   end
 
-  assign when_MEM_l141 = (io_i_mem_en && io_i_mem_we);
+  assign when_MEM_l155 = (io_i_mem_en && io_i_mem_we);
   always @(*) begin
     io_csr_addr = 12'h000;
-    if(when_MEM_l169) begin
+    if(when_MEM_l183) begin
       io_csr_addr = io_i_imm[11 : 0];
     end
   end
@@ -2468,12 +2468,12 @@ module MEM (
 
   always @(*) begin
     io_csr_we = 1'b0;
-    if(when_MEM_l169) begin
+    if(when_MEM_l183) begin
       io_csr_we = 1'b1;
     end
   end
 
-  assign when_MEM_l169 = (io_i_csr_op != CsrOp_N);
+  assign when_MEM_l183 = (io_i_csr_op != CsrOp_N);
   assign io_stall_req = ((io_i_mem_en && (! timer_req)) && (! io_wb_ack));
   assign io_wb_cyc = io_wb_stb;
   assign fsm_wantExit = 1'b0;
@@ -2491,106 +2491,6 @@ module MEM (
   end
 
   assign fsm_wantKill = 1'b0;
-  always @(*) begin
-    io_wb_stb = 1'b0;
-    case(fsm_stateReg)
-      fsm_enumDef_start : begin
-        if(!io_i_trap_trap) begin
-          if(io_i_mem_en) begin
-            if(!timer_req) begin
-              io_wb_stb = 1'b1;
-            end
-          end
-        end
-      end
-      fsm_enumDef_fetch : begin
-        io_wb_stb = 1'b1;
-      end
-      default : begin
-      end
-    endcase
-  end
-
-  always @(*) begin
-    io_wb_we = 1'b0;
-    case(fsm_stateReg)
-      fsm_enumDef_start : begin
-        if(!io_i_trap_trap) begin
-          if(io_i_mem_en) begin
-            if(!timer_req) begin
-              io_wb_we = io_i_mem_we;
-            end
-          end
-        end
-      end
-      fsm_enumDef_fetch : begin
-        io_wb_we = io_i_mem_we;
-      end
-      default : begin
-      end
-    endcase
-  end
-
-  always @(*) begin
-    io_wb_adr = 32'h00000000;
-    case(fsm_stateReg)
-      fsm_enumDef_start : begin
-        if(!io_i_trap_trap) begin
-          if(io_i_mem_en) begin
-            if(!timer_req) begin
-              io_wb_adr = mem_adr;
-            end
-          end
-        end
-      end
-      fsm_enumDef_fetch : begin
-        io_wb_adr = mem_adr;
-      end
-      default : begin
-      end
-    endcase
-  end
-
-  always @(*) begin
-    io_wb_dat_w = 32'h00000000;
-    case(fsm_stateReg)
-      fsm_enumDef_start : begin
-        if(!io_i_trap_trap) begin
-          if(io_i_mem_en) begin
-            if(!timer_req) begin
-              io_wb_dat_w = mem_data_write;
-            end
-          end
-        end
-      end
-      fsm_enumDef_fetch : begin
-        io_wb_dat_w = mem_data_write;
-      end
-      default : begin
-      end
-    endcase
-  end
-
-  always @(*) begin
-    io_wb_sel = 4'b0000;
-    case(fsm_stateReg)
-      fsm_enumDef_start : begin
-        if(!io_i_trap_trap) begin
-          if(io_i_mem_en) begin
-            if(!timer_req) begin
-              io_wb_sel = mem_sel;
-            end
-          end
-        end
-      end
-      fsm_enumDef_fetch : begin
-        io_wb_sel = mem_sel;
-      end
-      default : begin
-      end
-    endcase
-  end
-
   always @(*) begin
     fsm_stateNext = fsm_stateReg;
     case(fsm_stateReg)
@@ -2629,6 +2529,11 @@ module MEM (
       io_o_trap_trap <= 1'b0;
       io_o_trap_epc <= 32'h00000000;
       io_o_trap_cause <= 32'h00000000;
+      io_wb_stb <= 1'b0;
+      io_wb_we <= 1'b0;
+      io_wb_adr <= 32'h00000000;
+      io_wb_dat_w <= 32'h00000000;
+      io_wb_sel <= 4'b0000;
       fsm_stateReg <= fsm_enumDef_BOOT;
     end else begin
       io_o_trap_trap <= io_trap;
@@ -2653,6 +2558,12 @@ module MEM (
                 io_o_reg_data_d <= reg_data;
                 io_o_trap_epc <= 32'h00000000;
                 io_o_trap_cause <= 32'h00000000;
+              end else begin
+                io_wb_stb <= 1'b1;
+                io_wb_we <= io_i_mem_we;
+                io_wb_adr <= mem_adr;
+                io_wb_sel <= mem_sel;
+                io_wb_dat_w <= mem_data_write;
               end
             end else begin
               io_o_real <= io_i_real;
@@ -2679,6 +2590,11 @@ module MEM (
             io_o_reg_data_d <= reg_data;
             io_o_trap_epc <= 32'h00000000;
             io_o_trap_cause <= 32'h00000000;
+            io_wb_stb <= 1'b0;
+            io_wb_we <= 1'b0;
+            io_wb_adr <= 32'h00000000;
+            io_wb_sel <= 4'b0000;
+            io_wb_dat_w <= 32'h00000000;
           end
         end
         default : begin

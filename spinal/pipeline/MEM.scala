@@ -76,6 +76,14 @@ class MEM extends Component {
         io.wb.dat_w := mem_data_write
     }
 
+    def done(): Unit = {
+        io.wb.stb := False
+        io.wb.we := False
+        io.wb.adr := 0
+        io.wb.sel := 0
+        io.wb.dat_w := 0
+    }
+
     def proceed(): Unit = {
         io.o.real := io.i.real
         io.o.pc := io.i.pc
@@ -97,6 +105,12 @@ class MEM extends Component {
     io.o.trap.trap.setAsReg() init(False)
     io.o.trap.epc.setAsReg() init(0)
     io.o.trap.cause.setAsReg() init(0)
+
+    io.wb.stb.setAsReg() init(False)
+    io.wb.we.setAsReg() init(False)
+    io.wb.adr.setAsReg() init(0)
+    io.wb.dat_w.setAsReg() init(0)
+    io.wb.sel.setAsReg() init(0)
 
     io.o.trap.trap := io.trap
     io.trap := io.o.trap.trap
@@ -189,12 +203,6 @@ class MEM extends Component {
     io.wb.cyc := io.wb.stb
 
     val fsm = new StateMachine {
-        io.wb.stb := False
-        io.wb.we := False
-        io.wb.adr := 0
-        io.wb.dat_w := 0
-        io.wb.sel := 0
-
         val start: State = new State with EntryPoint {
             whenIsActive {
                 // Trapped
@@ -219,9 +227,9 @@ class MEM extends Component {
         val fetch: State = new State {
             whenIsActive {
                 bubble()
-                req()
                 when (io.wb.ack) {
                     proceed()
+                    done()
                     goto(start)
                 }
             }
