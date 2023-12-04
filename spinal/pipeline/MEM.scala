@@ -15,15 +15,16 @@ class MEM extends Component {
         // Hazard handling
         val stall_req = out Bool()
 
-        // Wishbone master
-        val wb = master port WishbonePorts()
+        // // Wishbone master
+        // val wb = master port WishbonePorts()
+        val dcache = master port DCachePorts()
     }
 
     val mem_adr = io.i.alu_y.asUInt
     val offset = mem_adr(0, 2 bits)
 
     def mem_sel: Bits = io.i.mem_sel |<< offset
-    def mem_data_read: Bits = io.wb.dat_r |>> (offset * 8)
+    def mem_data_read: Bits = io.dcache.data |>> (offset * 8)
     def mem_data_write: Bits = io.i.reg_data_b |<< (offset * 8)
 
     def reg_data: Bits = {
@@ -47,13 +48,14 @@ class MEM extends Component {
     }
 
     def req(): Unit = {
-        io.wb.stb := True
-        io.wb.we := io.i.mem_we
-        io.wb.adr := mem_adr
-        io.wb.sel := mem_sel
-        io.wb.dat_w := mem_data_write
+        io.dcache.dcache_en := True
+        io.dcache.dcache_we := io.i.mem_we
+        io.dcache.addr := mem_adr
+        io.dcache.dcache_sel := mem_sel
+        io.dcache.data_w := mem_data_write
     }
-
+    val debug_mem_data_read = mem_data_read
+    val debug_reg_data = reg_data
     def proceed(): Unit = {
         io.o.reg_we := io.i.reg_we
         io.o.reg_addr_d := io.i.reg_addr_d
@@ -69,16 +71,20 @@ class MEM extends Component {
     io.forward.addr := io.i.reg_addr_d
     io.forward.data := reg_data
 
-    io.stall_req := io.i.mem_en && !io.wb.ack
+    io.stall_req := io.i.mem_en && !io.dcache.ack
 
-    io.wb.cyc := io.wb.stb
 
     val fsm = new StateMachine {
-        io.wb.stb := False
-        io.wb.we := False
-        io.wb.adr := 0
-        io.wb.dat_w := 0
-        io.wb.sel := 0
+        // io.wb.stb := False
+        // io.wb.we := False
+        // io.wb.adr := 0
+        // io.wb.dat_w := 0
+        // io.wb.sel := 0
+        io.dcache.dcache_en := False
+        io.dcache.dcache_we := False
+        io.dcache.addr := 0
+        io.dcache.dcache_sel := 0
+        io.dcache.data_w := 0
 
         val start: State = new State with EntryPoint {
             whenIsActive {
@@ -95,7 +101,7 @@ class MEM extends Component {
             whenIsActive {
                 bubble()
                 req()
-                when (io.wb.ack) {
+                when (io.dcache.ack) {
                     proceed()
                     goto(start)
                 }

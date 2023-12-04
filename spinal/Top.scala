@@ -21,6 +21,7 @@ class Top (
     val Mem = new MEM
     val Wb = new WB
     val ICache = new ICache
+    val DCache = new DCache
 
     If.io.o <> Id.io.i
     Id.io.o <> Exe.io.i
@@ -56,6 +57,9 @@ class Top (
 
     Exe.io.stall := Mem.io.stall_req
 
+    // MEM
+    Mem.io.dcache <> DCache.io.toMEM
+
     // WB
     Wb.io.reg <> reg_file.io.w
 
@@ -82,7 +86,7 @@ class Top (
     }
 
     // Masters
-    muxes(0).io.wb <> Mem.io.wb
+    muxes(0).io.wb <> DCache.io.wb
     muxes(1).io.wb <> ICache.io.wb
 
     // Slaves

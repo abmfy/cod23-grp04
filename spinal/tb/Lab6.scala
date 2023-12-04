@@ -25,7 +25,10 @@ object Lab6 extends App {
         dut.clockDomain.forkStimulus(100 ns)
         dut.clockDomain.waitSampling()
 
+        // To clear txd buffer
+        dut.clockDomain.assertReset()
         sleep(100 us)
+        dut.clockDomain.deassertReset()
 
         val baud_period = (1 sec) / dut.uart.config.baud
 
@@ -36,6 +39,15 @@ object Lab6 extends App {
         }
 
         // Testbench
+
+        var counter = 0
+
+        fork {
+            while (true) {
+                dut.clockDomain.waitSampling()
+                counter += 1
+            }
+        }
 
         val ADDR = 0x80000100L / 4 % sram.SRAM_SIZE
         waitUntil(sram.mem.getBigInt(ADDR) != 0)
@@ -59,5 +71,7 @@ object Lab6 extends App {
             string_expected == string_received.result,
             f"Expected $string_expected, but get $string_received",
         )
+
+        println(f"Clocks elapsed: $counter")
     }
 }
