@@ -137,7 +137,6 @@ class DCache(
     
     io.toMEM.data := addrCacheLegal ? temp_data | io.wb.dat_r
     // io.toMEM.data := io.wb.dat_r
-
     var fsm = new StateMachine {
         io.wb.stb := False
         io.wb.we := False

@@ -91,6 +91,9 @@ class MEM extends Component {
                 when (io.i.mem_en) {
                     bubble()
                     req()
+                    when (io.dcache.ack) {
+                        proceed(); 
+                    }
                     goto(fetch)
                 } otherwise {
                     proceed()
