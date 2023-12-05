@@ -114,27 +114,7 @@ class DCache(
         }.otherwise{
             temp_data(8*(i+1)-1 downto 8*i) := B"8'h00"
         }
-    }
-
-    // val temp_offset = (data_sel(0) ? U(0, 2 bits) | (data_sel(1) ? U(1, 2 bits) | (data_sel(2) ? U(2, 2 bits) | U(3, 2 bits)))) * 8
-    // val temp_datawidth = (data_sel(0).asUInt.resize(2 bits) + data_sel(1).asUInt.resize(2 bits) + data_sel(2).asUInt.resize(2 bits) + data_sel(3).asUInt.resize(2 bits))
-    // // 获得从 temp_offset 开始的 temp_datawidth 位  
-    // val temp_data = Bits(32 bits)
-    // switch(temp_datawidth){
-    //     is(1){
-    //         temp_data := cachedataraw(temp_offset, 8 bits).resize(32).asBits
-    //     }
-    //     is(2){
-    //         temp_data := cachedataraw(temp_offset, 16 bits).resize(32).asBits
-    //     }
-    //     is(3){
-    //         temp_data := cachedataraw(temp_offset, 24 bits).resize(32).asBits
-    //     }
-    //     default{
-    //         temp_data := cachedataraw(temp_offset, 32 bits).resize(32).asBits
-    //     }
-    // }
-    
+    }    
     io.toMEM.data := addrCacheLegal ? temp_data | io.wb.dat_r
     // io.toMEM.data := io.wb.dat_r
     var fsm = new StateMachine {
@@ -167,23 +147,21 @@ class DCache(
                         // 如果进行的是写入操作
                         when(hit){
                             // 如果命中，更新 Cache 中的数据，然后进行 Wishbone 操作 , 注意 sel 写入使能信号
-                            caches.sets(set_idx).set(idx).valid := False
-                            // val write_be = io.toMEM.dcache_sel
-                            // for (i <- 0 until 4){
-                            //     when(write_be(i)){
-                            //         caches.sets(set_idx).set(idx).data(offset)(8*(i+1)-1 downto 8*i) := io.toMEM.data_w(8*(i+1)-1 downto 8*i)
-                            //     }
-                            // }
-                            // caches.sets(set_idx).set(idx).data(offset) := io.toMEM.data_w
+                            // caches.sets(set_idx).set(idx).valid := False
+                            for (i <- 0 until 4){
+                                when(data_sel(i)){
+                                    caches.sets(set_idx).set(idx).data(offset)(8*(i+1)-1 downto 8*i) := io.toMEM.data_w(8*(i+1)-1 downto 8*i)
+                                }
+                            }
                         }
                         // 进行 Wishbone 操作
                         req()
                         goto(wb_fetch)
                     }
-
+                    // req()
+                    // goto(wb_fetch)
                 }
-                // req()
-                // goto(wb_fetch)
+
             }
         }
         val fetch_0: State = new State {

@@ -93,8 +93,10 @@ class MEM extends Component {
                     req()
                     when (io.dcache.ack) {
                         proceed(); 
+                        
+                    } .otherwise{
+                        goto(fetch) 
                     }
-                    goto(fetch)
                 } otherwise {
                     proceed()
                 }
