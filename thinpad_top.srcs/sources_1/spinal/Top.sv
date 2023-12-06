@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : d56c033ca6e2ab1beb8c55cab5d8d7edb8158096
+// Git hash  : c181c16a6142a350e44e245fc36c4c1cbc26a04b
 
 `timescale 1ns/1ps
 
@@ -49,6 +49,9 @@ module Top (
   localparam PrivilegeMode_U = 2'd0;
   localparam PrivilegeMode_S = 2'd1;
   localparam PrivilegeMode_M = 2'd3;
+  localparam MemAccessType_Store = 2'd0;
+  localparam MemAccessType_Read = 2'd1;
+  localparam MemAccessType_Instruction = 2'd2;
   localparam CsrOp_N = 2'd0;
   localparam CsrOp_W = 2'd1;
   localparam CsrOp_S = 2'd2;
@@ -72,12 +75,20 @@ module Top (
   wire                csr_io_mscratch_we;
   wire       [31:0]   csr_io_mip_w;
   wire                csr_io_mip_we;
+  wire       [31:0]   csr_io_satp_w;
+  wire                csr_io_satp_we;
+  wire                IF_page_table_io_mstatus_SUM;
+  wire                IF_page_table_io_mstatus_MXR;
+  wire                MEM_page_table_io_mstatus_SUM;
+  wire                MEM_page_table_io_mstatus_MXR;
   wire                If_2_io_br_br;
   wire       [31:0]   If_2_io_br_pc;
   wire                If_2_io_stall;
   wire                If_2_io_bubble;
+  wire                If_2_io_satp_mode;
   wire                Id_1_io_stall;
   wire                Id_1_io_bubble;
+  wire                Mem_1_io_satp_mode;
   wire       [3:0]    seg_l_iDIG;
   wire       [3:0]    seg_h_iDIG;
   wire                clkCtrl_pll_clk_out1;
@@ -95,6 +106,7 @@ module Top (
   wire       [31:0]   csr_io_mepc_r;
   wire       [31:0]   csr_io_mcause_r;
   wire       [31:0]   csr_io_mip_r;
+  wire       [31:0]   csr_io_satp_r;
   wire                trap_1_io_flush_req_0;
   wire                trap_1_io_flush_req_1;
   wire                trap_1_io_flush_req_2;
@@ -114,6 +126,28 @@ module Top (
   wire       [31:0]   timer_1_io_timer_mtimecmp_r;
   wire       [31:0]   timer_1_io_timer_mtimecmph_r;
   wire                timer_1_io_timeout;
+  wire       [31:0]   IF_page_table_trans_io_exception_code;
+  wire                IF_page_table_trans_io_exception_we;
+  wire       [31:0]   IF_page_table_trans_io_physical_addr;
+  wire                IF_page_table_trans_io_look_up_ack;
+  wire                IF_page_table_trans_io_look_up_vaild;
+  wire                IF_page_table_wb_cyc;
+  wire                IF_page_table_wb_stb;
+  wire                IF_page_table_wb_we;
+  wire       [31:0]   IF_page_table_wb_adr;
+  wire       [31:0]   IF_page_table_wb_dat_w;
+  wire       [3:0]    IF_page_table_wb_sel;
+  wire       [31:0]   MEM_page_table_trans_io_exception_code;
+  wire                MEM_page_table_trans_io_exception_we;
+  wire       [31:0]   MEM_page_table_trans_io_physical_addr;
+  wire                MEM_page_table_trans_io_look_up_ack;
+  wire                MEM_page_table_trans_io_look_up_vaild;
+  wire                MEM_page_table_wb_cyc;
+  wire                MEM_page_table_wb_stb;
+  wire                MEM_page_table_wb_we;
+  wire       [31:0]   MEM_page_table_wb_adr;
+  wire       [31:0]   MEM_page_table_wb_dat_w;
+  wire       [3:0]    MEM_page_table_wb_sel;
   wire                If_2_io_o_real;
   wire       [31:0]   If_2_io_o_pc;
   wire       [31:0]   If_2_io_o_instr;
@@ -127,6 +161,9 @@ module Top (
   wire       [31:0]   If_2_io_wb_adr;
   wire       [31:0]   If_2_io_wb_dat_w;
   wire       [3:0]    If_2_io_wb_sel;
+  wire       [31:0]   If_2_io_pt_look_up_addr;
+  wire                If_2_io_pt_look_up_req;
+  wire       [1:0]    If_2_io_pt_access_type;
   wire                Id_1_io_o_real;
   wire       [31:0]   Id_1_io_o_pc;
   wire       [31:0]   Id_1_io_o_reg_data_a;
@@ -206,6 +243,9 @@ module Top (
   wire       [31:0]   Mem_1_io_wb_adr;
   wire       [31:0]   Mem_1_io_wb_dat_w;
   wire       [3:0]    Mem_1_io_wb_sel;
+  wire       [31:0]   Mem_1_io_pt_look_up_addr;
+  wire                Mem_1_io_pt_look_up_req;
+  wire       [1:0]    Mem_1_io_pt_access_type;
   wire                Wb_1_io_forward_we;
   wire       [4:0]    Wb_1_io_forward_addr;
   wire       [31:0]   Wb_1_io_forward_data;
@@ -217,6 +257,26 @@ module Top (
   wire                Wb_1_io_reg_we;
   wire       [7:0]    seg_l_oSEG1;
   wire       [7:0]    seg_h_oSEG1;
+  wire                IF_arbiter_io_masters_0_ack;
+  wire       [31:0]   IF_arbiter_io_masters_0_dat_r;
+  wire                IF_arbiter_io_masters_1_ack;
+  wire       [31:0]   IF_arbiter_io_masters_1_dat_r;
+  wire                IF_arbiter_io_wb_cyc;
+  wire                IF_arbiter_io_wb_stb;
+  wire                IF_arbiter_io_wb_we;
+  wire       [31:0]   IF_arbiter_io_wb_adr;
+  wire       [31:0]   IF_arbiter_io_wb_dat_w;
+  wire       [3:0]    IF_arbiter_io_wb_sel;
+  wire                MEM_arbiter_io_masters_0_ack;
+  wire       [31:0]   MEM_arbiter_io_masters_0_dat_r;
+  wire                MEM_arbiter_io_masters_1_ack;
+  wire       [31:0]   MEM_arbiter_io_masters_1_dat_r;
+  wire                MEM_arbiter_io_wb_cyc;
+  wire                MEM_arbiter_io_wb_stb;
+  wire                MEM_arbiter_io_wb_we;
+  wire       [31:0]   MEM_arbiter_io_wb_adr;
+  wire       [31:0]   MEM_arbiter_io_wb_dat_w;
+  wire       [3:0]    MEM_arbiter_io_wb_sel;
   wire                muxes_0_io_wb_ack;
   wire       [31:0]   muxes_0_io_wb_dat_r;
   wire                muxes_0_io_slaves_0_cyc;
@@ -507,6 +567,9 @@ module Top (
     .io_mip_r       (csr_io_mip_r[31:0]       ), //o
     .io_mip_w       (csr_io_mip_w[31:0]       ), //i
     .io_mip_we      (csr_io_mip_we            ), //i
+    .io_satp_r      (csr_io_satp_r[31:0]      ), //o
+    .io_satp_w      (csr_io_satp_w[31:0]      ), //i
+    .io_satp_we     (csr_io_satp_we           ), //i
     .io_timeout     (timer_1_io_timeout       ), //i
     .sys_clk        (sys_clk                  ), //i
     .sys_reset      (sys_reset                )  //i
@@ -556,31 +619,88 @@ module Top (
     .sys_clk               (sys_clk                           ), //i
     .sys_reset             (sys_reset                         )  //i
   );
+  PageTable IF_page_table (
+    .io_satp                 (csr_io_satp_r[31:0]                        ), //i
+    .io_privilege_mode       (trap_1_io_prv[1:0]                         ), //i
+    .io_mstatus_SUM          (IF_page_table_io_mstatus_SUM               ), //i
+    .io_mstatus_MXR          (IF_page_table_io_mstatus_MXR               ), //i
+    .trans_io_look_up_addr   (If_2_io_pt_look_up_addr[31:0]              ), //i
+    .trans_io_look_up_req    (If_2_io_pt_look_up_req                     ), //i
+    .trans_io_access_type    (If_2_io_pt_access_type[1:0]                ), //i
+    .trans_io_physical_addr  (IF_page_table_trans_io_physical_addr[31:0] ), //o
+    .trans_io_look_up_ack    (IF_page_table_trans_io_look_up_ack         ), //o
+    .trans_io_look_up_vaild  (IF_page_table_trans_io_look_up_vaild       ), //o
+    .trans_io_exception_we   (IF_page_table_trans_io_exception_we        ), //o
+    .trans_io_exception_code (IF_page_table_trans_io_exception_code[31:0]), //o
+    .wb_cyc                  (IF_page_table_wb_cyc                       ), //o
+    .wb_stb                  (IF_page_table_wb_stb                       ), //o
+    .wb_ack                  (IF_arbiter_io_masters_0_ack                ), //i
+    .wb_we                   (IF_page_table_wb_we                        ), //o
+    .wb_adr                  (IF_page_table_wb_adr[31:0]                 ), //o
+    .wb_dat_r                (IF_arbiter_io_masters_0_dat_r[31:0]        ), //i
+    .wb_dat_w                (IF_page_table_wb_dat_w[31:0]               ), //o
+    .wb_sel                  (IF_page_table_wb_sel[3:0]                  ), //o
+    .sys_clk                 (sys_clk                                    ), //i
+    .sys_reset               (sys_reset                                  )  //i
+  );
+  PageTable MEM_page_table (
+    .io_satp                 (csr_io_satp_r[31:0]                         ), //i
+    .io_privilege_mode       (trap_1_io_prv[1:0]                          ), //i
+    .io_mstatus_SUM          (MEM_page_table_io_mstatus_SUM               ), //i
+    .io_mstatus_MXR          (MEM_page_table_io_mstatus_MXR               ), //i
+    .trans_io_look_up_addr   (Mem_1_io_pt_look_up_addr[31:0]              ), //i
+    .trans_io_look_up_req    (Mem_1_io_pt_look_up_req                     ), //i
+    .trans_io_access_type    (Mem_1_io_pt_access_type[1:0]                ), //i
+    .trans_io_physical_addr  (MEM_page_table_trans_io_physical_addr[31:0] ), //o
+    .trans_io_look_up_ack    (MEM_page_table_trans_io_look_up_ack         ), //o
+    .trans_io_look_up_vaild  (MEM_page_table_trans_io_look_up_vaild       ), //o
+    .trans_io_exception_we   (MEM_page_table_trans_io_exception_we        ), //o
+    .trans_io_exception_code (MEM_page_table_trans_io_exception_code[31:0]), //o
+    .wb_cyc                  (MEM_page_table_wb_cyc                       ), //o
+    .wb_stb                  (MEM_page_table_wb_stb                       ), //o
+    .wb_ack                  (MEM_arbiter_io_masters_0_ack                ), //i
+    .wb_we                   (MEM_page_table_wb_we                        ), //o
+    .wb_adr                  (MEM_page_table_wb_adr[31:0]                 ), //o
+    .wb_dat_r                (MEM_arbiter_io_masters_0_dat_r[31:0]        ), //i
+    .wb_dat_w                (MEM_page_table_wb_dat_w[31:0]               ), //o
+    .wb_sel                  (MEM_page_table_wb_sel[3:0]                  ), //o
+    .sys_clk                 (sys_clk                                     ), //i
+    .sys_reset               (sys_reset                                   )  //i
+  );
   IF_1 If_2 (
-    .io_o_real       (If_2_io_o_real            ), //o
-    .io_o_pc         (If_2_io_o_pc[31:0]        ), //o
-    .io_o_instr      (If_2_io_o_instr[31:0]     ), //o
-    .io_o_trap_trap  (If_2_io_o_trap_trap       ), //o
-    .io_o_trap_epc   (If_2_io_o_trap_epc[31:0]  ), //o
-    .io_o_trap_cause (If_2_io_o_trap_cause[31:0]), //o
-    .io_br_br        (If_2_io_br_br             ), //i
-    .io_br_pc        (If_2_io_br_pc[31:0]       ), //i
-    .io_stall        (If_2_io_stall             ), //i
-    .io_bubble       (If_2_io_bubble            ), //i
-    .io_trap         (If_2_io_trap              ), //o
-    .io_mie          (csr_io_mie_r[31:0]        ), //i
-    .io_mip          (csr_io_mip_r[31:0]        ), //i
-    .io_prv          (trap_1_io_prv[1:0]        ), //i
-    .io_wb_cyc       (If_2_io_wb_cyc            ), //o
-    .io_wb_stb       (If_2_io_wb_stb            ), //o
-    .io_wb_ack       (muxes_1_io_wb_ack         ), //i
-    .io_wb_we        (If_2_io_wb_we             ), //o
-    .io_wb_adr       (If_2_io_wb_adr[31:0]      ), //o
-    .io_wb_dat_r     (muxes_1_io_wb_dat_r[31:0] ), //i
-    .io_wb_dat_w     (If_2_io_wb_dat_w[31:0]    ), //o
-    .io_wb_sel       (If_2_io_wb_sel[3:0]       ), //o
-    .sys_clk         (sys_clk                   ), //i
-    .sys_reset       (sys_reset                 )  //i
+    .io_o_real            (If_2_io_o_real                             ), //o
+    .io_o_pc              (If_2_io_o_pc[31:0]                         ), //o
+    .io_o_instr           (If_2_io_o_instr[31:0]                      ), //o
+    .io_o_trap_trap       (If_2_io_o_trap_trap                        ), //o
+    .io_o_trap_epc        (If_2_io_o_trap_epc[31:0]                   ), //o
+    .io_o_trap_cause      (If_2_io_o_trap_cause[31:0]                 ), //o
+    .io_br_br             (If_2_io_br_br                              ), //i
+    .io_br_pc             (If_2_io_br_pc[31:0]                        ), //i
+    .io_stall             (If_2_io_stall                              ), //i
+    .io_bubble            (If_2_io_bubble                             ), //i
+    .io_trap              (If_2_io_trap                               ), //o
+    .io_mie               (csr_io_mie_r[31:0]                         ), //i
+    .io_mip               (csr_io_mip_r[31:0]                         ), //i
+    .io_prv               (trap_1_io_prv[1:0]                         ), //i
+    .io_wb_cyc            (If_2_io_wb_cyc                             ), //o
+    .io_wb_stb            (If_2_io_wb_stb                             ), //o
+    .io_wb_ack            (IF_arbiter_io_masters_1_ack                ), //i
+    .io_wb_we             (If_2_io_wb_we                              ), //o
+    .io_wb_adr            (If_2_io_wb_adr[31:0]                       ), //o
+    .io_wb_dat_r          (IF_arbiter_io_masters_1_dat_r[31:0]        ), //i
+    .io_wb_dat_w          (If_2_io_wb_dat_w[31:0]                     ), //o
+    .io_wb_sel            (If_2_io_wb_sel[3:0]                        ), //o
+    .io_pt_look_up_addr   (If_2_io_pt_look_up_addr[31:0]              ), //o
+    .io_pt_look_up_req    (If_2_io_pt_look_up_req                     ), //o
+    .io_pt_access_type    (If_2_io_pt_access_type[1:0]                ), //o
+    .io_pt_physical_addr  (IF_page_table_trans_io_physical_addr[31:0] ), //i
+    .io_pt_look_up_ack    (IF_page_table_trans_io_look_up_ack         ), //i
+    .io_pt_look_up_vaild  (IF_page_table_trans_io_look_up_vaild       ), //i
+    .io_pt_exception_we   (IF_page_table_trans_io_exception_we        ), //i
+    .io_pt_exception_code (IF_page_table_trans_io_exception_code[31:0]), //i
+    .io_satp_mode         (If_2_io_satp_mode                          ), //i
+    .sys_clk              (sys_clk                                    ), //i
+    .sys_reset            (sys_reset                                  )  //i
   );
   ID Id_1 (
     .io_i_real         (If_2_io_o_real            ), //i
@@ -682,61 +802,70 @@ module Top (
     .sys_reset         (sys_reset                  )  //i
   );
   MEM Mem_1 (
-    .io_i_real             (Exe_1_io_o_real                   ), //i
-    .io_i_pc               (Exe_1_io_o_pc[31:0]               ), //i
-    .io_i_reg_data_b       (Exe_1_io_o_reg_data_b[31:0]       ), //i
-    .io_i_reg_addr_d       (Exe_1_io_o_reg_addr_d[4:0]        ), //i
-    .io_i_csr_op           (Exe_1_io_o_csr_op[1:0]            ), //i
-    .io_i_imm              (Exe_1_io_o_imm[31:0]              ), //i
-    .io_i_mem_en           (Exe_1_io_o_mem_en                 ), //i
-    .io_i_mem_we           (Exe_1_io_o_mem_we                 ), //i
-    .io_i_mem_sel          (Exe_1_io_o_mem_sel[3:0]           ), //i
-    .io_i_mem_unsigned     (Exe_1_io_o_mem_unsigned           ), //i
-    .io_i_reg_we           (Exe_1_io_o_reg_we                 ), //i
-    .io_i_reg_sel          (Exe_1_io_o_reg_sel[1:0]           ), //i
-    .io_i_alu_y            (Exe_1_io_o_alu_y[31:0]            ), //i
-    .io_i_trap_trap        (Exe_1_io_o_trap_trap              ), //i
-    .io_i_trap_epc         (Exe_1_io_o_trap_epc[31:0]         ), //i
-    .io_i_trap_cause       (Exe_1_io_o_trap_cause[31:0]       ), //i
-    .io_o_real             (Mem_1_io_o_real                   ), //o
-    .io_o_pc               (Mem_1_io_o_pc[31:0]               ), //o
-    .io_o_reg_we           (Mem_1_io_o_reg_we                 ), //o
-    .io_o_reg_addr_d       (Mem_1_io_o_reg_addr_d[4:0]        ), //o
-    .io_o_reg_data_d       (Mem_1_io_o_reg_data_d[31:0]       ), //o
-    .io_o_trap_trap        (Mem_1_io_o_trap_trap              ), //o
-    .io_o_trap_epc         (Mem_1_io_o_trap_epc[31:0]         ), //o
-    .io_o_trap_cause       (Mem_1_io_o_trap_cause[31:0]       ), //o
-    .io_forward_we         (Mem_1_io_forward_we               ), //o
-    .io_forward_addr       (Mem_1_io_forward_addr[4:0]        ), //o
-    .io_forward_data       (Mem_1_io_forward_data[31:0]       ), //o
-    .io_stall_req          (Mem_1_io_stall_req                ), //o
-    .io_trap               (Mem_1_io_trap                     ), //o
-    .io_csr_addr           (Mem_1_io_csr_addr[11:0]           ), //o
-    .io_csr_r              (csr_io_csr_r[31:0]                ), //i
-    .io_csr_w              (Mem_1_io_csr_w[31:0]              ), //o
-    .io_csr_we             (Mem_1_io_csr_we                   ), //o
-    .io_timer_mtime_r      (timer_1_io_timer_mtime_r[31:0]    ), //i
-    .io_timer_mtime_w      (Mem_1_io_timer_mtime_w[31:0]      ), //o
-    .io_timer_mtime_we     (Mem_1_io_timer_mtime_we           ), //o
-    .io_timer_mtimeh_r     (timer_1_io_timer_mtimeh_r[31:0]   ), //i
-    .io_timer_mtimeh_w     (Mem_1_io_timer_mtimeh_w[31:0]     ), //o
-    .io_timer_mtimeh_we    (Mem_1_io_timer_mtimeh_we          ), //o
-    .io_timer_mtimecmp_r   (timer_1_io_timer_mtimecmp_r[31:0] ), //i
-    .io_timer_mtimecmp_w   (Mem_1_io_timer_mtimecmp_w[31:0]   ), //o
-    .io_timer_mtimecmp_we  (Mem_1_io_timer_mtimecmp_we        ), //o
-    .io_timer_mtimecmph_r  (timer_1_io_timer_mtimecmph_r[31:0]), //i
-    .io_timer_mtimecmph_w  (Mem_1_io_timer_mtimecmph_w[31:0]  ), //o
-    .io_timer_mtimecmph_we (Mem_1_io_timer_mtimecmph_we       ), //o
-    .io_wb_cyc             (Mem_1_io_wb_cyc                   ), //o
-    .io_wb_stb             (Mem_1_io_wb_stb                   ), //o
-    .io_wb_ack             (muxes_0_io_wb_ack                 ), //i
-    .io_wb_we              (Mem_1_io_wb_we                    ), //o
-    .io_wb_adr             (Mem_1_io_wb_adr[31:0]             ), //o
-    .io_wb_dat_r           (muxes_0_io_wb_dat_r[31:0]         ), //i
-    .io_wb_dat_w           (Mem_1_io_wb_dat_w[31:0]           ), //o
-    .io_wb_sel             (Mem_1_io_wb_sel[3:0]              ), //o
-    .sys_clk               (sys_clk                           ), //i
-    .sys_reset             (sys_reset                         )  //i
+    .io_i_real             (Exe_1_io_o_real                             ), //i
+    .io_i_pc               (Exe_1_io_o_pc[31:0]                         ), //i
+    .io_i_reg_data_b       (Exe_1_io_o_reg_data_b[31:0]                 ), //i
+    .io_i_reg_addr_d       (Exe_1_io_o_reg_addr_d[4:0]                  ), //i
+    .io_i_csr_op           (Exe_1_io_o_csr_op[1:0]                      ), //i
+    .io_i_imm              (Exe_1_io_o_imm[31:0]                        ), //i
+    .io_i_mem_en           (Exe_1_io_o_mem_en                           ), //i
+    .io_i_mem_we           (Exe_1_io_o_mem_we                           ), //i
+    .io_i_mem_sel          (Exe_1_io_o_mem_sel[3:0]                     ), //i
+    .io_i_mem_unsigned     (Exe_1_io_o_mem_unsigned                     ), //i
+    .io_i_reg_we           (Exe_1_io_o_reg_we                           ), //i
+    .io_i_reg_sel          (Exe_1_io_o_reg_sel[1:0]                     ), //i
+    .io_i_alu_y            (Exe_1_io_o_alu_y[31:0]                      ), //i
+    .io_i_trap_trap        (Exe_1_io_o_trap_trap                        ), //i
+    .io_i_trap_epc         (Exe_1_io_o_trap_epc[31:0]                   ), //i
+    .io_i_trap_cause       (Exe_1_io_o_trap_cause[31:0]                 ), //i
+    .io_o_real             (Mem_1_io_o_real                             ), //o
+    .io_o_pc               (Mem_1_io_o_pc[31:0]                         ), //o
+    .io_o_reg_we           (Mem_1_io_o_reg_we                           ), //o
+    .io_o_reg_addr_d       (Mem_1_io_o_reg_addr_d[4:0]                  ), //o
+    .io_o_reg_data_d       (Mem_1_io_o_reg_data_d[31:0]                 ), //o
+    .io_o_trap_trap        (Mem_1_io_o_trap_trap                        ), //o
+    .io_o_trap_epc         (Mem_1_io_o_trap_epc[31:0]                   ), //o
+    .io_o_trap_cause       (Mem_1_io_o_trap_cause[31:0]                 ), //o
+    .io_forward_we         (Mem_1_io_forward_we                         ), //o
+    .io_forward_addr       (Mem_1_io_forward_addr[4:0]                  ), //o
+    .io_forward_data       (Mem_1_io_forward_data[31:0]                 ), //o
+    .io_stall_req          (Mem_1_io_stall_req                          ), //o
+    .io_trap               (Mem_1_io_trap                               ), //o
+    .io_csr_addr           (Mem_1_io_csr_addr[11:0]                     ), //o
+    .io_csr_r              (csr_io_csr_r[31:0]                          ), //i
+    .io_csr_w              (Mem_1_io_csr_w[31:0]                        ), //o
+    .io_csr_we             (Mem_1_io_csr_we                             ), //o
+    .io_timer_mtime_r      (timer_1_io_timer_mtime_r[31:0]              ), //i
+    .io_timer_mtime_w      (Mem_1_io_timer_mtime_w[31:0]                ), //o
+    .io_timer_mtime_we     (Mem_1_io_timer_mtime_we                     ), //o
+    .io_timer_mtimeh_r     (timer_1_io_timer_mtimeh_r[31:0]             ), //i
+    .io_timer_mtimeh_w     (Mem_1_io_timer_mtimeh_w[31:0]               ), //o
+    .io_timer_mtimeh_we    (Mem_1_io_timer_mtimeh_we                    ), //o
+    .io_timer_mtimecmp_r   (timer_1_io_timer_mtimecmp_r[31:0]           ), //i
+    .io_timer_mtimecmp_w   (Mem_1_io_timer_mtimecmp_w[31:0]             ), //o
+    .io_timer_mtimecmp_we  (Mem_1_io_timer_mtimecmp_we                  ), //o
+    .io_timer_mtimecmph_r  (timer_1_io_timer_mtimecmph_r[31:0]          ), //i
+    .io_timer_mtimecmph_w  (Mem_1_io_timer_mtimecmph_w[31:0]            ), //o
+    .io_timer_mtimecmph_we (Mem_1_io_timer_mtimecmph_we                 ), //o
+    .io_wb_cyc             (Mem_1_io_wb_cyc                             ), //o
+    .io_wb_stb             (Mem_1_io_wb_stb                             ), //o
+    .io_wb_ack             (MEM_arbiter_io_masters_1_ack                ), //i
+    .io_wb_we              (Mem_1_io_wb_we                              ), //o
+    .io_wb_adr             (Mem_1_io_wb_adr[31:0]                       ), //o
+    .io_wb_dat_r           (MEM_arbiter_io_masters_1_dat_r[31:0]        ), //i
+    .io_wb_dat_w           (Mem_1_io_wb_dat_w[31:0]                     ), //o
+    .io_wb_sel             (Mem_1_io_wb_sel[3:0]                        ), //o
+    .io_pt_look_up_addr    (Mem_1_io_pt_look_up_addr[31:0]              ), //o
+    .io_pt_look_up_req     (Mem_1_io_pt_look_up_req                     ), //o
+    .io_pt_access_type     (Mem_1_io_pt_access_type[1:0]                ), //o
+    .io_pt_physical_addr   (MEM_page_table_trans_io_physical_addr[31:0] ), //i
+    .io_pt_look_up_ack     (MEM_page_table_trans_io_look_up_ack         ), //i
+    .io_pt_look_up_vaild   (MEM_page_table_trans_io_look_up_vaild       ), //i
+    .io_pt_exception_we    (MEM_page_table_trans_io_exception_we        ), //i
+    .io_pt_exception_code  (MEM_page_table_trans_io_exception_code[31:0]), //i
+    .io_satp_mode          (Mem_1_io_satp_mode                          ), //i
+    .sys_clk               (sys_clk                                     ), //i
+    .sys_reset             (sys_reset                                   )  //i
   );
   WB Wb_1 (
     .io_i_real            (Mem_1_io_o_real                ), //i
@@ -765,15 +894,71 @@ module Top (
     .iDIG  (seg_h_iDIG[3:0] ), //i
     .oSEG1 (seg_h_oSEG1[7:0])  //o
   );
+  WbArbiter IF_arbiter (
+    .io_masters_0_cyc   (IF_page_table_wb_cyc               ), //i
+    .io_masters_0_stb   (IF_page_table_wb_stb               ), //i
+    .io_masters_0_ack   (IF_arbiter_io_masters_0_ack        ), //o
+    .io_masters_0_we    (IF_page_table_wb_we                ), //i
+    .io_masters_0_adr   (IF_page_table_wb_adr[31:0]         ), //i
+    .io_masters_0_dat_r (IF_arbiter_io_masters_0_dat_r[31:0]), //o
+    .io_masters_0_dat_w (IF_page_table_wb_dat_w[31:0]       ), //i
+    .io_masters_0_sel   (IF_page_table_wb_sel[3:0]          ), //i
+    .io_masters_1_cyc   (If_2_io_wb_cyc                     ), //i
+    .io_masters_1_stb   (If_2_io_wb_stb                     ), //i
+    .io_masters_1_ack   (IF_arbiter_io_masters_1_ack        ), //o
+    .io_masters_1_we    (If_2_io_wb_we                      ), //i
+    .io_masters_1_adr   (If_2_io_wb_adr[31:0]               ), //i
+    .io_masters_1_dat_r (IF_arbiter_io_masters_1_dat_r[31:0]), //o
+    .io_masters_1_dat_w (If_2_io_wb_dat_w[31:0]             ), //i
+    .io_masters_1_sel   (If_2_io_wb_sel[3:0]                ), //i
+    .io_wb_cyc          (IF_arbiter_io_wb_cyc               ), //o
+    .io_wb_stb          (IF_arbiter_io_wb_stb               ), //o
+    .io_wb_ack          (muxes_1_io_wb_ack                  ), //i
+    .io_wb_we           (IF_arbiter_io_wb_we                ), //o
+    .io_wb_adr          (IF_arbiter_io_wb_adr[31:0]         ), //o
+    .io_wb_dat_r        (muxes_1_io_wb_dat_r[31:0]          ), //i
+    .io_wb_dat_w        (IF_arbiter_io_wb_dat_w[31:0]       ), //o
+    .io_wb_sel          (IF_arbiter_io_wb_sel[3:0]          ), //o
+    .sys_reset          (sys_reset                          ), //i
+    .sys_clk            (sys_clk                            )  //i
+  );
+  WbArbiter MEM_arbiter (
+    .io_masters_0_cyc   (MEM_page_table_wb_cyc               ), //i
+    .io_masters_0_stb   (MEM_page_table_wb_stb               ), //i
+    .io_masters_0_ack   (MEM_arbiter_io_masters_0_ack        ), //o
+    .io_masters_0_we    (MEM_page_table_wb_we                ), //i
+    .io_masters_0_adr   (MEM_page_table_wb_adr[31:0]         ), //i
+    .io_masters_0_dat_r (MEM_arbiter_io_masters_0_dat_r[31:0]), //o
+    .io_masters_0_dat_w (MEM_page_table_wb_dat_w[31:0]       ), //i
+    .io_masters_0_sel   (MEM_page_table_wb_sel[3:0]          ), //i
+    .io_masters_1_cyc   (Mem_1_io_wb_cyc                     ), //i
+    .io_masters_1_stb   (Mem_1_io_wb_stb                     ), //i
+    .io_masters_1_ack   (MEM_arbiter_io_masters_1_ack        ), //o
+    .io_masters_1_we    (Mem_1_io_wb_we                      ), //i
+    .io_masters_1_adr   (Mem_1_io_wb_adr[31:0]               ), //i
+    .io_masters_1_dat_r (MEM_arbiter_io_masters_1_dat_r[31:0]), //o
+    .io_masters_1_dat_w (Mem_1_io_wb_dat_w[31:0]             ), //i
+    .io_masters_1_sel   (Mem_1_io_wb_sel[3:0]                ), //i
+    .io_wb_cyc          (MEM_arbiter_io_wb_cyc               ), //o
+    .io_wb_stb          (MEM_arbiter_io_wb_stb               ), //o
+    .io_wb_ack          (muxes_0_io_wb_ack                   ), //i
+    .io_wb_we           (MEM_arbiter_io_wb_we                ), //o
+    .io_wb_adr          (MEM_arbiter_io_wb_adr[31:0]         ), //o
+    .io_wb_dat_r        (muxes_0_io_wb_dat_r[31:0]           ), //i
+    .io_wb_dat_w        (MEM_arbiter_io_wb_dat_w[31:0]       ), //o
+    .io_wb_sel          (MEM_arbiter_io_wb_sel[3:0]          ), //o
+    .sys_reset          (sys_reset                           ), //i
+    .sys_clk            (sys_clk                             )  //i
+  );
   WbMux muxes_0 (
-    .io_wb_cyc         (Mem_1_io_wb_cyc                    ), //i
-    .io_wb_stb         (Mem_1_io_wb_stb                    ), //i
+    .io_wb_cyc         (MEM_arbiter_io_wb_cyc              ), //i
+    .io_wb_stb         (MEM_arbiter_io_wb_stb              ), //i
     .io_wb_ack         (muxes_0_io_wb_ack                  ), //o
-    .io_wb_we          (Mem_1_io_wb_we                     ), //i
-    .io_wb_adr         (Mem_1_io_wb_adr[31:0]              ), //i
+    .io_wb_we          (MEM_arbiter_io_wb_we               ), //i
+    .io_wb_adr         (MEM_arbiter_io_wb_adr[31:0]        ), //i
     .io_wb_dat_r       (muxes_0_io_wb_dat_r[31:0]          ), //o
-    .io_wb_dat_w       (Mem_1_io_wb_dat_w[31:0]            ), //i
-    .io_wb_sel         (Mem_1_io_wb_sel[3:0]               ), //i
+    .io_wb_dat_w       (MEM_arbiter_io_wb_dat_w[31:0]      ), //i
+    .io_wb_sel         (MEM_arbiter_io_wb_sel[3:0]         ), //i
     .io_slaves_0_cyc   (muxes_0_io_slaves_0_cyc            ), //o
     .io_slaves_0_stb   (muxes_0_io_slaves_0_stb            ), //o
     .io_slaves_0_ack   (arbiters_0_io_masters_0_ack        ), //i
@@ -800,14 +985,14 @@ module Top (
     .io_slaves_2_sel   (muxes_0_io_slaves_2_sel[3:0]       )  //o
   );
   WbMux muxes_1 (
-    .io_wb_cyc         (If_2_io_wb_cyc                     ), //i
-    .io_wb_stb         (If_2_io_wb_stb                     ), //i
+    .io_wb_cyc         (IF_arbiter_io_wb_cyc               ), //i
+    .io_wb_stb         (IF_arbiter_io_wb_stb               ), //i
     .io_wb_ack         (muxes_1_io_wb_ack                  ), //o
-    .io_wb_we          (If_2_io_wb_we                      ), //i
-    .io_wb_adr         (If_2_io_wb_adr[31:0]               ), //i
+    .io_wb_we          (IF_arbiter_io_wb_we                ), //i
+    .io_wb_adr         (IF_arbiter_io_wb_adr[31:0]         ), //i
     .io_wb_dat_r       (muxes_1_io_wb_dat_r[31:0]          ), //o
-    .io_wb_dat_w       (If_2_io_wb_dat_w[31:0]             ), //i
-    .io_wb_sel         (If_2_io_wb_sel[3:0]                ), //i
+    .io_wb_dat_w       (IF_arbiter_io_wb_dat_w[31:0]       ), //i
+    .io_wb_sel         (IF_arbiter_io_wb_sel[3:0]          ), //i
     .io_slaves_0_cyc   (muxes_1_io_slaves_0_cyc            ), //o
     .io_slaves_0_stb   (muxes_1_io_slaves_0_stb            ), //o
     .io_slaves_0_ack   (arbiters_0_io_masters_1_ack        ), //i
@@ -1500,14 +1685,22 @@ module Top (
   assign If_2_io_br_pc = (trap_1_io_br_br ? trap_1_io_br_pc : Exe_1_io_br_pc);
   assign If_2_io_stall = (((! trap_1_io_flush_req_0) && (! Exe_1_io_flush_req)) && Mem_1_io_stall_req);
   assign If_2_io_bubble = (trap_1_io_flush_req_0 || Exe_1_io_flush_req);
+  assign If_2_io_satp_mode = csr_io_satp_r[31];
+  assign IF_page_table_io_mstatus_SUM = csr_io_mstatus_r[18];
+  assign IF_page_table_io_mstatus_MXR = csr_io_mstatus_r[19];
   assign Id_1_io_stall = (((! trap_1_io_flush_req_1) && (! Exe_1_io_flush_req)) && Mem_1_io_stall_req);
   assign Id_1_io_bubble = (trap_1_io_flush_req_1 || Exe_1_io_flush_req);
+  assign Mem_1_io_satp_mode = csr_io_satp_r[31];
+  assign MEM_page_table_io_mstatus_SUM = csr_io_mstatus_r[18];
+  assign MEM_page_table_io_mstatus_MXR = csr_io_mstatus_r[19];
   assign csr_io_mscratch_we = 1'b0;
   assign csr_io_mscratch_w = 32'h00000000;
   assign csr_io_mip_we = 1'b0;
   assign csr_io_mip_w = 32'h00000000;
   assign csr_io_mie_we = 1'b0;
   assign csr_io_mie_w = 32'h00000000;
+  assign csr_io_satp_we = 1'b0;
+  assign csr_io_satp_w = 32'h00000000;
   assign _zz_base_ram_data_32 = base_ram_io_sram_data_write;
   assign _zz_when_InOutWrapper_l13 = base_ram_io_sram_data_writeEnable;
   assign base_ram_addr = base_ram_io_sram_addr;
@@ -1688,11 +1881,11 @@ module SramController (
   input  wire          sys_clk,
   input  wire          sys_reset
 );
-  localparam fsm_enumDef_1_BOOT = 3'd0;
-  localparam fsm_enumDef_1_idle = 3'd1;
-  localparam fsm_enumDef_1_read = 3'd2;
-  localparam fsm_enumDef_1_write = 3'd3;
-  localparam fsm_enumDef_1_write_2 = 3'd4;
+  localparam fsm_enumDef_2_BOOT = 3'd0;
+  localparam fsm_enumDef_2_idle = 3'd1;
+  localparam fsm_enumDef_2_read = 3'd2;
+  localparam fsm_enumDef_2_write = 3'd3;
+  localparam fsm_enumDef_2_write_2 = 3'd4;
 
   reg                 fsm_wantExit;
   reg                 fsm_wantStart;
@@ -1711,21 +1904,21 @@ module SramController (
   `ifndef SYNTHESIS
   always @(*) begin
     case(fsm_stateReg)
-      fsm_enumDef_1_BOOT : fsm_stateReg_string = "BOOT   ";
-      fsm_enumDef_1_idle : fsm_stateReg_string = "idle   ";
-      fsm_enumDef_1_read : fsm_stateReg_string = "read   ";
-      fsm_enumDef_1_write : fsm_stateReg_string = "write  ";
-      fsm_enumDef_1_write_2 : fsm_stateReg_string = "write_2";
+      fsm_enumDef_2_BOOT : fsm_stateReg_string = "BOOT   ";
+      fsm_enumDef_2_idle : fsm_stateReg_string = "idle   ";
+      fsm_enumDef_2_read : fsm_stateReg_string = "read   ";
+      fsm_enumDef_2_write : fsm_stateReg_string = "write  ";
+      fsm_enumDef_2_write_2 : fsm_stateReg_string = "write_2";
       default : fsm_stateReg_string = "???????";
     endcase
   end
   always @(*) begin
     case(fsm_stateNext)
-      fsm_enumDef_1_BOOT : fsm_stateNext_string = "BOOT   ";
-      fsm_enumDef_1_idle : fsm_stateNext_string = "idle   ";
-      fsm_enumDef_1_read : fsm_stateNext_string = "read   ";
-      fsm_enumDef_1_write : fsm_stateNext_string = "write  ";
-      fsm_enumDef_1_write_2 : fsm_stateNext_string = "write_2";
+      fsm_enumDef_2_BOOT : fsm_stateNext_string = "BOOT   ";
+      fsm_enumDef_2_idle : fsm_stateNext_string = "idle   ";
+      fsm_enumDef_2_read : fsm_stateNext_string = "read   ";
+      fsm_enumDef_2_write : fsm_stateNext_string = "write  ";
+      fsm_enumDef_2_write_2 : fsm_stateNext_string = "write_2";
       default : fsm_stateNext_string = "???????";
     endcase
   end
@@ -1739,14 +1932,14 @@ module SramController (
   always @(*) begin
     fsm_wantExit = 1'b0;
     case(fsm_stateReg)
-      fsm_enumDef_1_idle : begin
+      fsm_enumDef_2_idle : begin
       end
-      fsm_enumDef_1_read : begin
+      fsm_enumDef_2_read : begin
         fsm_wantExit = 1'b1;
       end
-      fsm_enumDef_1_write : begin
+      fsm_enumDef_2_write : begin
       end
-      fsm_enumDef_1_write_2 : begin
+      fsm_enumDef_2_write_2 : begin
         fsm_wantExit = 1'b1;
       end
       default : begin
@@ -1757,13 +1950,13 @@ module SramController (
   always @(*) begin
     fsm_wantStart = 1'b0;
     case(fsm_stateReg)
-      fsm_enumDef_1_idle : begin
+      fsm_enumDef_2_idle : begin
       end
-      fsm_enumDef_1_read : begin
+      fsm_enumDef_2_read : begin
       end
-      fsm_enumDef_1_write : begin
+      fsm_enumDef_2_write : begin
       end
-      fsm_enumDef_1_write_2 : begin
+      fsm_enumDef_2_write_2 : begin
       end
       default : begin
         fsm_wantStart = 1'b1;
@@ -1782,14 +1975,14 @@ module SramController (
   always @(*) begin
     io_sram_oe_n = 1'b0;
     case(fsm_stateReg)
-      fsm_enumDef_1_idle : begin
+      fsm_enumDef_2_idle : begin
       end
-      fsm_enumDef_1_read : begin
+      fsm_enumDef_2_read : begin
       end
-      fsm_enumDef_1_write : begin
+      fsm_enumDef_2_write : begin
         io_sram_oe_n = 1'b1;
       end
-      fsm_enumDef_1_write_2 : begin
+      fsm_enumDef_2_write_2 : begin
         io_sram_oe_n = 1'b1;
       end
       default : begin
@@ -1803,14 +1996,14 @@ module SramController (
   always @(*) begin
     io_sram_we_n = 1'b1;
     case(fsm_stateReg)
-      fsm_enumDef_1_idle : begin
+      fsm_enumDef_2_idle : begin
       end
-      fsm_enumDef_1_read : begin
+      fsm_enumDef_2_read : begin
       end
-      fsm_enumDef_1_write : begin
+      fsm_enumDef_2_write : begin
         io_sram_we_n = 1'b0;
       end
-      fsm_enumDef_1_write_2 : begin
+      fsm_enumDef_2_write_2 : begin
       end
       default : begin
       end
@@ -1820,14 +2013,14 @@ module SramController (
   always @(*) begin
     io_sram_data_writeEnable = 1'b0;
     case(fsm_stateReg)
-      fsm_enumDef_1_idle : begin
+      fsm_enumDef_2_idle : begin
       end
-      fsm_enumDef_1_read : begin
+      fsm_enumDef_2_read : begin
       end
-      fsm_enumDef_1_write : begin
+      fsm_enumDef_2_write : begin
         io_sram_data_writeEnable = 1'b1;
       end
-      fsm_enumDef_1_write_2 : begin
+      fsm_enumDef_2_write_2 : begin
         io_sram_data_writeEnable = 1'b1;
       end
       default : begin
@@ -1841,41 +2034,41 @@ module SramController (
   always @(*) begin
     fsm_stateNext = fsm_stateReg;
     case(fsm_stateReg)
-      fsm_enumDef_1_idle : begin
+      fsm_enumDef_2_idle : begin
         if(when_SramController_l33) begin
           if(io_wb_we) begin
-            fsm_stateNext = fsm_enumDef_1_write;
+            fsm_stateNext = fsm_enumDef_2_write;
           end else begin
-            fsm_stateNext = fsm_enumDef_1_read;
+            fsm_stateNext = fsm_enumDef_2_read;
           end
         end
       end
-      fsm_enumDef_1_read : begin
-        fsm_stateNext = fsm_enumDef_1_BOOT;
+      fsm_enumDef_2_read : begin
+        fsm_stateNext = fsm_enumDef_2_BOOT;
       end
-      fsm_enumDef_1_write : begin
-        fsm_stateNext = fsm_enumDef_1_write_2;
+      fsm_enumDef_2_write : begin
+        fsm_stateNext = fsm_enumDef_2_write_2;
       end
-      fsm_enumDef_1_write_2 : begin
-        fsm_stateNext = fsm_enumDef_1_BOOT;
+      fsm_enumDef_2_write_2 : begin
+        fsm_stateNext = fsm_enumDef_2_BOOT;
       end
       default : begin
       end
     endcase
     if(fsm_wantStart) begin
-      fsm_stateNext = fsm_enumDef_1_idle;
+      fsm_stateNext = fsm_enumDef_2_idle;
     end
     if(fsm_wantKill) begin
-      fsm_stateNext = fsm_enumDef_1_BOOT;
+      fsm_stateNext = fsm_enumDef_2_BOOT;
     end
   end
 
   assign when_SramController_l33 = (io_wb_cyc && io_wb_stb);
-  assign when_StateMachine_l253 = ((! (fsm_stateReg == fsm_enumDef_1_idle)) && (fsm_stateNext == fsm_enumDef_1_idle));
-  assign when_StateMachine_l253_1 = ((! (fsm_stateReg == fsm_enumDef_1_write)) && (fsm_stateNext == fsm_enumDef_1_write));
+  assign when_StateMachine_l253 = ((! (fsm_stateReg == fsm_enumDef_2_idle)) && (fsm_stateNext == fsm_enumDef_2_idle));
+  assign when_StateMachine_l253_1 = ((! (fsm_stateReg == fsm_enumDef_2_write)) && (fsm_stateNext == fsm_enumDef_2_write));
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
-      fsm_stateReg <= fsm_enumDef_1_BOOT;
+      fsm_stateReg <= fsm_enumDef_2_BOOT;
     end else begin
       fsm_stateReg <= fsm_stateNext;
     end
@@ -1884,7 +2077,84 @@ module SramController (
 
 endmodule
 
+//WbArbiter_4 replaced by WbArbiter
+
+//WbArbiter_3 replaced by WbArbiter
+
 //WbArbiter_2 replaced by WbArbiter
+
+//WbMux_1 replaced by WbMux
+
+module WbMux (
+  input  wire          io_wb_cyc,
+  input  wire          io_wb_stb,
+  output wire          io_wb_ack,
+  input  wire          io_wb_we,
+  input  wire [31:0]   io_wb_adr,
+  output wire [31:0]   io_wb_dat_r,
+  input  wire [31:0]   io_wb_dat_w,
+  input  wire [3:0]    io_wb_sel,
+  output wire          io_slaves_0_cyc,
+  output wire          io_slaves_0_stb,
+  input  wire          io_slaves_0_ack,
+  output wire          io_slaves_0_we,
+  output wire [31:0]   io_slaves_0_adr,
+  input  wire [31:0]   io_slaves_0_dat_r,
+  output wire [31:0]   io_slaves_0_dat_w,
+  output wire [3:0]    io_slaves_0_sel,
+  output wire          io_slaves_1_cyc,
+  output wire          io_slaves_1_stb,
+  input  wire          io_slaves_1_ack,
+  output wire          io_slaves_1_we,
+  output wire [31:0]   io_slaves_1_adr,
+  input  wire [31:0]   io_slaves_1_dat_r,
+  output wire [31:0]   io_slaves_1_dat_w,
+  output wire [3:0]    io_slaves_1_sel,
+  output wire          io_slaves_2_cyc,
+  output wire          io_slaves_2_stb,
+  input  wire          io_slaves_2_ack,
+  output wire          io_slaves_2_we,
+  output wire [31:0]   io_slaves_2_adr,
+  input  wire [31:0]   io_slaves_2_dat_r,
+  output wire [31:0]   io_slaves_2_dat_w,
+  output wire [3:0]    io_slaves_2_sel
+);
+
+  wire                slave_match_0;
+  wire                slave_match_1;
+  wire                slave_match_2;
+  wire                slave_sel_0;
+  wire                slave_sel_1;
+  wire                slave_sel_2;
+
+  assign slave_match_0 = (((io_wb_adr ^ 32'h80000000) & 32'hffc00000) == 32'h00000000);
+  assign slave_match_1 = (((io_wb_adr ^ 32'h80400000) & 32'hffc00000) == 32'h00000000);
+  assign slave_match_2 = (((io_wb_adr ^ 32'h10000000) & 32'hffff0000) == 32'h00000000);
+  assign slave_sel_0 = (slave_match_0 && (1'b0 == 1'b0));
+  assign slave_sel_1 = (slave_match_1 && ((1'b0 || slave_match_0) == 1'b0));
+  assign slave_sel_2 = (slave_match_2 && (((1'b0 || slave_match_0) || slave_match_1) == 1'b0));
+  assign io_wb_dat_r = (slave_sel_0 ? io_slaves_0_dat_r : (slave_sel_1 ? io_slaves_1_dat_r : io_slaves_2_dat_r));
+  assign io_wb_ack = ((io_slaves_0_ack || io_slaves_1_ack) || io_slaves_2_ack);
+  assign io_slaves_0_cyc = (io_wb_cyc && slave_sel_0);
+  assign io_slaves_0_stb = (io_wb_stb && slave_sel_0);
+  assign io_slaves_0_we = (io_wb_we && slave_sel_0);
+  assign io_slaves_0_adr = io_wb_adr;
+  assign io_slaves_0_dat_w = io_wb_dat_w;
+  assign io_slaves_0_sel = io_wb_sel;
+  assign io_slaves_1_cyc = (io_wb_cyc && slave_sel_1);
+  assign io_slaves_1_stb = (io_wb_stb && slave_sel_1);
+  assign io_slaves_1_we = (io_wb_we && slave_sel_1);
+  assign io_slaves_1_adr = io_wb_adr;
+  assign io_slaves_1_dat_w = io_wb_dat_w;
+  assign io_slaves_1_sel = io_wb_sel;
+  assign io_slaves_2_cyc = (io_wb_cyc && slave_sel_2);
+  assign io_slaves_2_stb = (io_wb_stb && slave_sel_2);
+  assign io_slaves_2_we = (io_wb_we && slave_sel_2);
+  assign io_slaves_2_adr = io_wb_adr;
+  assign io_slaves_2_dat_w = io_wb_dat_w;
+  assign io_slaves_2_sel = io_wb_sel;
+
+endmodule
 
 //WbArbiter_1 replaced by WbArbiter
 
@@ -1958,79 +2228,6 @@ module WbArbiter (
   assign io_wb_sel = (enable ? (wbm_sel_0 ? io_masters_0_sel : io_masters_1_sel) : 4'b0000);
   assign io_wb_stb = (enable ? (wbm_sel_0 ? io_masters_0_stb : io_masters_1_stb) : 1'b0);
   assign io_wb_cyc = (enable ? (wbm_sel_0 ? 1'b1 : 1'b1) : 1'b0);
-
-endmodule
-
-//WbMux_1 replaced by WbMux
-
-module WbMux (
-  input  wire          io_wb_cyc,
-  input  wire          io_wb_stb,
-  output wire          io_wb_ack,
-  input  wire          io_wb_we,
-  input  wire [31:0]   io_wb_adr,
-  output wire [31:0]   io_wb_dat_r,
-  input  wire [31:0]   io_wb_dat_w,
-  input  wire [3:0]    io_wb_sel,
-  output wire          io_slaves_0_cyc,
-  output wire          io_slaves_0_stb,
-  input  wire          io_slaves_0_ack,
-  output wire          io_slaves_0_we,
-  output wire [31:0]   io_slaves_0_adr,
-  input  wire [31:0]   io_slaves_0_dat_r,
-  output wire [31:0]   io_slaves_0_dat_w,
-  output wire [3:0]    io_slaves_0_sel,
-  output wire          io_slaves_1_cyc,
-  output wire          io_slaves_1_stb,
-  input  wire          io_slaves_1_ack,
-  output wire          io_slaves_1_we,
-  output wire [31:0]   io_slaves_1_adr,
-  input  wire [31:0]   io_slaves_1_dat_r,
-  output wire [31:0]   io_slaves_1_dat_w,
-  output wire [3:0]    io_slaves_1_sel,
-  output wire          io_slaves_2_cyc,
-  output wire          io_slaves_2_stb,
-  input  wire          io_slaves_2_ack,
-  output wire          io_slaves_2_we,
-  output wire [31:0]   io_slaves_2_adr,
-  input  wire [31:0]   io_slaves_2_dat_r,
-  output wire [31:0]   io_slaves_2_dat_w,
-  output wire [3:0]    io_slaves_2_sel
-);
-
-  wire                slave_match_0;
-  wire                slave_match_1;
-  wire                slave_match_2;
-  wire                slave_sel_0;
-  wire                slave_sel_1;
-  wire                slave_sel_2;
-
-  assign slave_match_0 = (((io_wb_adr ^ 32'h80000000) & 32'hffc00000) == 32'h00000000);
-  assign slave_match_1 = (((io_wb_adr ^ 32'h80400000) & 32'hffc00000) == 32'h00000000);
-  assign slave_match_2 = (((io_wb_adr ^ 32'h10000000) & 32'hffff0000) == 32'h00000000);
-  assign slave_sel_0 = (slave_match_0 && (1'b0 == 1'b0));
-  assign slave_sel_1 = (slave_match_1 && ((1'b0 || slave_match_0) == 1'b0));
-  assign slave_sel_2 = (slave_match_2 && (((1'b0 || slave_match_0) || slave_match_1) == 1'b0));
-  assign io_wb_dat_r = (slave_sel_0 ? io_slaves_0_dat_r : (slave_sel_1 ? io_slaves_1_dat_r : io_slaves_2_dat_r));
-  assign io_wb_ack = ((io_slaves_0_ack || io_slaves_1_ack) || io_slaves_2_ack);
-  assign io_slaves_0_cyc = (io_wb_cyc && slave_sel_0);
-  assign io_slaves_0_stb = (io_wb_stb && slave_sel_0);
-  assign io_slaves_0_we = (io_wb_we && slave_sel_0);
-  assign io_slaves_0_adr = io_wb_adr;
-  assign io_slaves_0_dat_w = io_wb_dat_w;
-  assign io_slaves_0_sel = io_wb_sel;
-  assign io_slaves_1_cyc = (io_wb_cyc && slave_sel_1);
-  assign io_slaves_1_stb = (io_wb_stb && slave_sel_1);
-  assign io_slaves_1_we = (io_wb_we && slave_sel_1);
-  assign io_slaves_1_adr = io_wb_adr;
-  assign io_slaves_1_dat_w = io_wb_dat_w;
-  assign io_slaves_1_sel = io_wb_sel;
-  assign io_slaves_2_cyc = (io_wb_cyc && slave_sel_2);
-  assign io_slaves_2_stb = (io_wb_stb && slave_sel_2);
-  assign io_slaves_2_we = (io_wb_we && slave_sel_2);
-  assign io_slaves_2_adr = io_wb_adr;
-  assign io_slaves_2_dat_w = io_wb_dat_w;
-  assign io_slaves_2_sel = io_wb_sel;
 
 endmodule
 
@@ -2148,6 +2345,15 @@ module MEM (
   input  wire [31:0]   io_wb_dat_r,
   output reg  [31:0]   io_wb_dat_w,
   output reg  [3:0]    io_wb_sel,
+  output reg  [31:0]   io_pt_look_up_addr,
+  output reg           io_pt_look_up_req,
+  output wire [1:0]    io_pt_access_type,
+  input  wire [31:0]   io_pt_physical_addr,
+  input  wire          io_pt_look_up_ack,
+  input  wire          io_pt_look_up_vaild,
+  input  wire          io_pt_exception_we,
+  input  wire [31:0]   io_pt_exception_code,
+  input  wire          io_satp_mode,
   input  wire          sys_clk,
   input  wire          sys_reset
 );
@@ -2158,9 +2364,13 @@ module MEM (
   localparam RegSel_ALU = 2'd0;
   localparam RegSel_MEM = 2'd1;
   localparam RegSel_PC = 2'd2;
-  localparam fsm_enumDef_BOOT = 2'd0;
-  localparam fsm_enumDef_start = 2'd1;
-  localparam fsm_enumDef_fetch = 2'd2;
+  localparam MemAccessType_Store = 2'd0;
+  localparam MemAccessType_Read = 2'd1;
+  localparam MemAccessType_Instruction = 2'd2;
+  localparam fsm_enumDef_1_BOOT = 2'd0;
+  localparam fsm_enumDef_1_start = 2'd1;
+  localparam fsm_enumDef_1_translate = 2'd2;
+  localparam fsm_enumDef_1_fetch = 2'd3;
 
   wire       [5:0]    _zz_mem_data_read;
   wire       [5:0]    _zz_mem_data_write;
@@ -2185,24 +2395,33 @@ module MEM (
   reg        [31:0]   reg_data;
   reg        [31:0]   _zz_reg_data;
   reg        [31:0]   _zz_reg_data_1;
-  wire                when_MEM_l55;
+  wire                when_MEM_l60;
   wire                timer_mtime_req;
   wire                timer_mtimeh_req;
   wire                timer_mtimecmp_req;
   wire                timer_mtimecmph_req;
   wire                timer_req;
-  wire                when_MEM_l155;
-  wire                when_MEM_l183;
+  wire                when_MEM_l160;
+  wire                when_MEM_l188;
+  reg        [31:0]   pa;
   wire                fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
+  wire       [1:0]    _zz_io_pt_access_type;
   reg        [1:0]    fsm_stateReg;
   reg        [1:0]    fsm_stateNext;
+  wire                _zz_when_StateMachine_l237;
+  wire                _zz_when_StateMachine_l237_1;
+  wire                when_MEM_l255;
+  wire                when_StateMachine_l237;
+  wire                when_StateMachine_l253;
   `ifndef SYNTHESIS
   reg [7:0] io_i_csr_op_string;
   reg [23:0] io_i_reg_sel_string;
-  reg [39:0] fsm_stateReg_string;
-  reg [39:0] fsm_stateNext_string;
+  reg [87:0] io_pt_access_type_string;
+  reg [87:0] _zz_io_pt_access_type_string;
+  reg [71:0] fsm_stateReg_string;
+  reg [71:0] fsm_stateNext_string;
   `endif
 
 
@@ -2240,19 +2459,37 @@ module MEM (
     endcase
   end
   always @(*) begin
+    case(io_pt_access_type)
+      MemAccessType_Store : io_pt_access_type_string = "Store      ";
+      MemAccessType_Read : io_pt_access_type_string = "Read       ";
+      MemAccessType_Instruction : io_pt_access_type_string = "Instruction";
+      default : io_pt_access_type_string = "???????????";
+    endcase
+  end
+  always @(*) begin
+    case(_zz_io_pt_access_type)
+      MemAccessType_Store : _zz_io_pt_access_type_string = "Store      ";
+      MemAccessType_Read : _zz_io_pt_access_type_string = "Read       ";
+      MemAccessType_Instruction : _zz_io_pt_access_type_string = "Instruction";
+      default : _zz_io_pt_access_type_string = "???????????";
+    endcase
+  end
+  always @(*) begin
     case(fsm_stateReg)
-      fsm_enumDef_BOOT : fsm_stateReg_string = "BOOT ";
-      fsm_enumDef_start : fsm_stateReg_string = "start";
-      fsm_enumDef_fetch : fsm_stateReg_string = "fetch";
-      default : fsm_stateReg_string = "?????";
+      fsm_enumDef_1_BOOT : fsm_stateReg_string = "BOOT     ";
+      fsm_enumDef_1_start : fsm_stateReg_string = "start    ";
+      fsm_enumDef_1_translate : fsm_stateReg_string = "translate";
+      fsm_enumDef_1_fetch : fsm_stateReg_string = "fetch    ";
+      default : fsm_stateReg_string = "?????????";
     endcase
   end
   always @(*) begin
     case(fsm_stateNext)
-      fsm_enumDef_BOOT : fsm_stateNext_string = "BOOT ";
-      fsm_enumDef_start : fsm_stateNext_string = "start";
-      fsm_enumDef_fetch : fsm_stateNext_string = "fetch";
-      default : fsm_stateNext_string = "?????";
+      fsm_enumDef_1_BOOT : fsm_stateNext_string = "BOOT     ";
+      fsm_enumDef_1_start : fsm_stateNext_string = "start    ";
+      fsm_enumDef_1_translate : fsm_stateNext_string = "translate";
+      fsm_enumDef_1_fetch : fsm_stateNext_string = "fetch    ";
+      default : fsm_stateNext_string = "?????????";
     endcase
   end
   `endif
@@ -2293,7 +2530,7 @@ module MEM (
         reg_data = _zz_reg_data_2;
       end
     endcase
-    if(when_MEM_l55) begin
+    if(when_MEM_l60) begin
       reg_data = io_csr_r;
     end
   end
@@ -2332,11 +2569,14 @@ module MEM (
     endcase
   end
 
-  assign when_MEM_l55 = (io_i_csr_op != CsrOp_N);
+  assign when_MEM_l60 = (io_i_csr_op != CsrOp_N);
   always @(*) begin
     io_trap = io_o_trap_trap;
+    if(io_pt_exception_we) begin
+      io_trap = 1'b1;
+    end
     case(fsm_stateReg)
-      fsm_enumDef_start : begin
+      fsm_enumDef_1_start : begin
         if(io_i_trap_trap) begin
           io_trap = 1'b1;
         end else begin
@@ -2350,7 +2590,9 @@ module MEM (
           end
         end
       end
-      fsm_enumDef_fetch : begin
+      fsm_enumDef_1_translate : begin
+      end
+      fsm_enumDef_1_fetch : begin
         io_trap = 1'b0;
         if(io_wb_ack) begin
           io_trap = 1'b0;
@@ -2371,7 +2613,7 @@ module MEM (
   assign timer_req = (((timer_mtime_req || timer_mtimeh_req) || timer_mtimecmp_req) || timer_mtimecmph_req);
   always @(*) begin
     io_timer_mtime_we = 1'b0;
-    if(when_MEM_l155) begin
+    if(when_MEM_l160) begin
       if(timer_mtime_req) begin
         io_timer_mtime_we = 1'b1;
       end
@@ -2380,7 +2622,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimeh_we = 1'b0;
-    if(when_MEM_l155) begin
+    if(when_MEM_l160) begin
       if(timer_mtimeh_req) begin
         io_timer_mtimeh_we = 1'b1;
       end
@@ -2389,7 +2631,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmp_we = 1'b0;
-    if(when_MEM_l155) begin
+    if(when_MEM_l160) begin
       if(timer_mtimecmp_req) begin
         io_timer_mtimecmp_we = 1'b1;
       end
@@ -2398,7 +2640,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmph_we = 1'b0;
-    if(when_MEM_l155) begin
+    if(when_MEM_l160) begin
       if(timer_mtimecmph_req) begin
         io_timer_mtimecmph_we = 1'b1;
       end
@@ -2407,7 +2649,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtime_w = 32'h00000000;
-    if(when_MEM_l155) begin
+    if(when_MEM_l160) begin
       if(timer_mtime_req) begin
         io_timer_mtime_w = mem_data_write;
       end
@@ -2416,7 +2658,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimeh_w = 32'h00000000;
-    if(when_MEM_l155) begin
+    if(when_MEM_l160) begin
       if(timer_mtimeh_req) begin
         io_timer_mtimeh_w = mem_data_write;
       end
@@ -2425,7 +2667,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmp_w = 32'h00000000;
-    if(when_MEM_l155) begin
+    if(when_MEM_l160) begin
       if(timer_mtimecmp_req) begin
         io_timer_mtimecmp_w = mem_data_write;
       end
@@ -2434,17 +2676,17 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmph_w = 32'h00000000;
-    if(when_MEM_l155) begin
+    if(when_MEM_l160) begin
       if(timer_mtimecmph_req) begin
         io_timer_mtimecmph_w = mem_data_write;
       end
     end
   end
 
-  assign when_MEM_l155 = (io_i_mem_en && io_i_mem_we);
+  assign when_MEM_l160 = (io_i_mem_en && io_i_mem_we);
   always @(*) begin
     io_csr_addr = 12'h000;
-    if(when_MEM_l183) begin
+    if(when_MEM_l188) begin
       io_csr_addr = io_i_imm[11 : 0];
     end
   end
@@ -2468,21 +2710,40 @@ module MEM (
 
   always @(*) begin
     io_csr_we = 1'b0;
-    if(when_MEM_l183) begin
+    if(when_MEM_l188) begin
       io_csr_we = 1'b1;
     end
   end
 
-  assign when_MEM_l183 = (io_i_csr_op != CsrOp_N);
+  assign when_MEM_l188 = (io_i_csr_op != CsrOp_N);
   assign io_stall_req = ((io_i_mem_en && (! timer_req)) && (! io_wb_ack));
   assign io_wb_cyc = io_wb_stb;
+  always @(*) begin
+    pa = 32'h00000000;
+    case(fsm_stateReg)
+      fsm_enumDef_1_start : begin
+      end
+      fsm_enumDef_1_translate : begin
+        if(when_MEM_l255) begin
+          pa = io_pt_physical_addr;
+        end
+      end
+      fsm_enumDef_1_fetch : begin
+      end
+      default : begin
+      end
+    endcase
+  end
+
   assign fsm_wantExit = 1'b0;
   always @(*) begin
     fsm_wantStart = 1'b0;
     case(fsm_stateReg)
-      fsm_enumDef_start : begin
+      fsm_enumDef_1_start : begin
       end
-      fsm_enumDef_fetch : begin
+      fsm_enumDef_1_translate : begin
+      end
+      fsm_enumDef_1_fetch : begin
       end
       default : begin
         fsm_wantStart = 1'b1;
@@ -2491,34 +2752,50 @@ module MEM (
   end
 
   assign fsm_wantKill = 1'b0;
+  assign _zz_io_pt_access_type = (io_i_mem_we ? MemAccessType_Store : MemAccessType_Read);
+  assign io_pt_access_type = _zz_io_pt_access_type;
+  assign _zz_when_StateMachine_l237 = (fsm_stateReg == fsm_enumDef_1_translate);
+  assign _zz_when_StateMachine_l237_1 = (fsm_stateNext == fsm_enumDef_1_translate);
   always @(*) begin
     fsm_stateNext = fsm_stateReg;
     case(fsm_stateReg)
-      fsm_enumDef_start : begin
+      fsm_enumDef_1_start : begin
         if(!io_i_trap_trap) begin
           if(io_i_mem_en) begin
             if(!timer_req) begin
-              fsm_stateNext = fsm_enumDef_fetch;
+              if(io_satp_mode) begin
+                fsm_stateNext = fsm_enumDef_1_translate;
+              end else begin
+                fsm_stateNext = fsm_enumDef_1_fetch;
+              end
             end
           end
         end
       end
-      fsm_enumDef_fetch : begin
+      fsm_enumDef_1_translate : begin
+        if(when_MEM_l255) begin
+          fsm_stateNext = fsm_enumDef_1_fetch;
+        end
+      end
+      fsm_enumDef_1_fetch : begin
         if(io_wb_ack) begin
-          fsm_stateNext = fsm_enumDef_start;
+          fsm_stateNext = fsm_enumDef_1_start;
         end
       end
       default : begin
       end
     endcase
     if(fsm_wantStart) begin
-      fsm_stateNext = fsm_enumDef_start;
+      fsm_stateNext = fsm_enumDef_1_start;
     end
     if(fsm_wantKill) begin
-      fsm_stateNext = fsm_enumDef_BOOT;
+      fsm_stateNext = fsm_enumDef_1_BOOT;
     end
   end
 
+  assign when_MEM_l255 = (io_pt_look_up_ack && io_pt_look_up_vaild);
+  assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_1));
+  assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_1);
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       io_o_real <= 1'b0;
@@ -2534,12 +2811,18 @@ module MEM (
       io_wb_adr <= 32'h00000000;
       io_wb_dat_w <= 32'h00000000;
       io_wb_sel <= 4'b0000;
-      fsm_stateReg <= fsm_enumDef_BOOT;
+      io_pt_look_up_addr <= 32'h00000000;
+      io_pt_look_up_req <= 1'b0;
+      fsm_stateReg <= fsm_enumDef_1_BOOT;
     end else begin
       io_o_trap_trap <= io_trap;
+      if(io_pt_exception_we) begin
+        io_o_trap_epc <= io_i_pc;
+        io_o_trap_cause <= io_pt_exception_code;
+      end
       fsm_stateReg <= fsm_stateNext;
       case(fsm_stateReg)
-        fsm_enumDef_start : begin
+        fsm_enumDef_1_start : begin
           if(io_i_trap_trap) begin
             io_o_trap_epc <= io_i_trap_epc;
             io_o_trap_cause <= io_i_trap_cause;
@@ -2559,11 +2842,13 @@ module MEM (
                 io_o_trap_epc <= 32'h00000000;
                 io_o_trap_cause <= 32'h00000000;
               end else begin
-                io_wb_stb <= 1'b1;
-                io_wb_we <= io_i_mem_we;
-                io_wb_adr <= mem_adr;
-                io_wb_sel <= mem_sel;
-                io_wb_dat_w <= mem_data_write;
+                if(!io_satp_mode) begin
+                  io_wb_stb <= 1'b1;
+                  io_wb_we <= io_i_mem_we;
+                  io_wb_adr <= (io_satp_mode ? pa : mem_adr);
+                  io_wb_sel <= mem_sel;
+                  io_wb_dat_w <= mem_data_write;
+                end
               end
             end else begin
               io_o_real <= io_i_real;
@@ -2576,7 +2861,16 @@ module MEM (
             end
           end
         end
-        fsm_enumDef_fetch : begin
+        fsm_enumDef_1_translate : begin
+          if(when_MEM_l255) begin
+            io_wb_stb <= 1'b1;
+            io_wb_we <= io_i_mem_we;
+            io_wb_adr <= (io_satp_mode ? pa : mem_adr);
+            io_wb_sel <= mem_sel;
+            io_wb_dat_w <= mem_data_write;
+          end
+        end
+        fsm_enumDef_1_fetch : begin
           io_o_real <= 1'b0;
           io_o_pc <= 32'h00000000;
           io_o_reg_we <= 1'b0;
@@ -2600,6 +2894,13 @@ module MEM (
         default : begin
         end
       endcase
+      if(when_StateMachine_l237) begin
+        io_pt_look_up_req <= 1'b0;
+      end
+      if(when_StateMachine_l253) begin
+        io_pt_look_up_addr <= mem_adr;
+        io_pt_look_up_req <= 1'b1;
+      end
     end
   end
 
@@ -3962,17 +4263,31 @@ module IF_1 (
   input  wire [31:0]   io_wb_dat_r,
   output wire [31:0]   io_wb_dat_w,
   output reg  [3:0]    io_wb_sel,
+  output reg  [31:0]   io_pt_look_up_addr,
+  output reg           io_pt_look_up_req,
+  output wire [1:0]    io_pt_access_type,
+  input  wire [31:0]   io_pt_physical_addr,
+  input  wire          io_pt_look_up_ack,
+  input  wire          io_pt_look_up_vaild,
+  input  wire          io_pt_exception_we,
+  input  wire [31:0]   io_pt_exception_code,
+  input  wire          io_satp_mode,
   input  wire          sys_clk,
   input  wire          sys_reset
 );
   localparam PrivilegeMode_U = 2'd0;
   localparam PrivilegeMode_S = 2'd1;
   localparam PrivilegeMode_M = 2'd3;
-  localparam fsm_enumDef_BOOT = 2'd0;
-  localparam fsm_enumDef_start = 2'd1;
-  localparam fsm_enumDef_fetch = 2'd2;
+  localparam MemAccessType_Store = 2'd0;
+  localparam MemAccessType_Read = 2'd1;
+  localparam MemAccessType_Instruction = 2'd2;
+  localparam fsm_enumDef_1_BOOT = 2'd0;
+  localparam fsm_enumDef_1_start = 2'd1;
+  localparam fsm_enumDef_1_translate = 2'd2;
+  localparam fsm_enumDef_1_fetch = 2'd3;
 
   reg        [31:0]   pc;
+  reg        [31:0]   pa;
   reg                 delay_br;
   reg                 delay_ack;
   reg        [31:0]   delay_instr;
@@ -3984,17 +4299,24 @@ module IF_1 (
   reg        [1:0]    fsm_stateNext;
   wire                _zz_when_StateMachine_l237;
   wire                _zz_when_StateMachine_l237_1;
-  wire                when_IF_l110;
-  wire                when_IF_l127;
-  wire                when_IF_l76;
-  wire                when_IF_l80;
-  wire                when_IF_l138;
+  wire                _zz_when_StateMachine_l237_2;
+  wire                _zz_when_StateMachine_l237_3;
+  wire                when_IF_l128;
+  wire                when_IF_l131;
+  wire                when_IF_l145;
+  wire                when_IF_l165;
+  wire                when_IF_l94;
+  wire                when_IF_l98;
+  wire                when_IF_l176;
   wire                when_StateMachine_l237;
+  wire                when_StateMachine_l237_1;
   wire                when_StateMachine_l253;
+  wire                when_StateMachine_l253_1;
   `ifndef SYNTHESIS
   reg [7:0] io_prv_string;
-  reg [39:0] fsm_stateReg_string;
-  reg [39:0] fsm_stateNext_string;
+  reg [87:0] io_pt_access_type_string;
+  reg [71:0] fsm_stateReg_string;
+  reg [71:0] fsm_stateNext_string;
   `endif
 
 
@@ -4008,19 +4330,29 @@ module IF_1 (
     endcase
   end
   always @(*) begin
+    case(io_pt_access_type)
+      MemAccessType_Store : io_pt_access_type_string = "Store      ";
+      MemAccessType_Read : io_pt_access_type_string = "Read       ";
+      MemAccessType_Instruction : io_pt_access_type_string = "Instruction";
+      default : io_pt_access_type_string = "???????????";
+    endcase
+  end
+  always @(*) begin
     case(fsm_stateReg)
-      fsm_enumDef_BOOT : fsm_stateReg_string = "BOOT ";
-      fsm_enumDef_start : fsm_stateReg_string = "start";
-      fsm_enumDef_fetch : fsm_stateReg_string = "fetch";
-      default : fsm_stateReg_string = "?????";
+      fsm_enumDef_1_BOOT : fsm_stateReg_string = "BOOT     ";
+      fsm_enumDef_1_start : fsm_stateReg_string = "start    ";
+      fsm_enumDef_1_translate : fsm_stateReg_string = "translate";
+      fsm_enumDef_1_fetch : fsm_stateReg_string = "fetch    ";
+      default : fsm_stateReg_string = "?????????";
     endcase
   end
   always @(*) begin
     case(fsm_stateNext)
-      fsm_enumDef_BOOT : fsm_stateNext_string = "BOOT ";
-      fsm_enumDef_start : fsm_stateNext_string = "start";
-      fsm_enumDef_fetch : fsm_stateNext_string = "fetch";
-      default : fsm_stateNext_string = "?????";
+      fsm_enumDef_1_BOOT : fsm_stateNext_string = "BOOT     ";
+      fsm_enumDef_1_start : fsm_stateNext_string = "start    ";
+      fsm_enumDef_1_translate : fsm_stateNext_string = "translate";
+      fsm_enumDef_1_fetch : fsm_stateNext_string = "fetch    ";
+      default : fsm_stateNext_string = "?????????";
     endcase
   end
   `endif
@@ -4028,8 +4360,11 @@ module IF_1 (
   assign interrupt = (io_mie & io_mip);
   always @(*) begin
     io_trap = io_o_trap_trap;
+    if(io_pt_exception_we) begin
+      io_trap = 1'b1;
+    end
     case(fsm_stateReg)
-      fsm_enumDef_start : begin
+      fsm_enumDef_1_start : begin
         if(!io_stall) begin
           if(io_bubble) begin
             io_trap = 1'b0;
@@ -4038,12 +4373,14 @@ module IF_1 (
           end
         end
       end
-      fsm_enumDef_fetch : begin
+      fsm_enumDef_1_translate : begin
+      end
+      fsm_enumDef_1_fetch : begin
         io_trap = 1'b0;
-        if(when_IF_l127) begin
+        if(when_IF_l165) begin
           if(!io_stall) begin
-            if(!when_IF_l138) begin
-              if(when_IF_l76) begin
+            if(!when_IF_l176) begin
+              if(when_IF_l94) begin
                 io_trap = 1'b1;
               end else begin
                 io_trap = 1'b0;
@@ -4060,13 +4397,16 @@ module IF_1 (
   assign io_wb_cyc = io_wb_stb;
   assign io_wb_we = 1'b0;
   assign io_wb_dat_w = 32'h00000000;
+  assign io_pt_access_type = MemAccessType_Instruction;
   assign fsm_wantExit = 1'b0;
   always @(*) begin
     fsm_wantStart = 1'b0;
     case(fsm_stateReg)
-      fsm_enumDef_start : begin
+      fsm_enumDef_1_start : begin
       end
-      fsm_enumDef_fetch : begin
+      fsm_enumDef_1_translate : begin
+      end
+      fsm_enumDef_1_fetch : begin
       end
       default : begin
         fsm_wantStart = 1'b1;
@@ -4075,25 +4415,36 @@ module IF_1 (
   end
 
   assign fsm_wantKill = 1'b0;
-  assign _zz_when_StateMachine_l237 = (fsm_stateReg == fsm_enumDef_fetch);
-  assign _zz_when_StateMachine_l237_1 = (fsm_stateNext == fsm_enumDef_fetch);
+  assign _zz_when_StateMachine_l237 = (fsm_stateReg == fsm_enumDef_1_translate);
+  assign _zz_when_StateMachine_l237_1 = (fsm_stateReg == fsm_enumDef_1_fetch);
+  assign _zz_when_StateMachine_l237_2 = (fsm_stateNext == fsm_enumDef_1_translate);
+  assign _zz_when_StateMachine_l237_3 = (fsm_stateNext == fsm_enumDef_1_fetch);
   always @(*) begin
     fsm_stateNext = fsm_stateReg;
     case(fsm_stateReg)
-      fsm_enumDef_start : begin
+      fsm_enumDef_1_start : begin
         if(!io_stall) begin
           if(!io_bubble) begin
-            fsm_stateNext = fsm_enumDef_fetch;
+            if(when_IF_l131) begin
+              fsm_stateNext = fsm_enumDef_1_fetch;
+            end else begin
+              fsm_stateNext = fsm_enumDef_1_translate;
+            end
           end
         end
       end
-      fsm_enumDef_fetch : begin
-        if(when_IF_l127) begin
+      fsm_enumDef_1_translate : begin
+        if(when_IF_l145) begin
+          fsm_stateNext = fsm_enumDef_1_fetch;
+        end
+      end
+      fsm_enumDef_1_fetch : begin
+        if(when_IF_l165) begin
           if(!io_stall) begin
-            if(when_IF_l138) begin
-              fsm_stateNext = fsm_enumDef_start;
+            if(when_IF_l176) begin
+              fsm_stateNext = fsm_enumDef_1_start;
             end else begin
-              fsm_stateNext = fsm_enumDef_start;
+              fsm_stateNext = fsm_enumDef_1_start;
             end
           end
         end
@@ -4102,23 +4453,28 @@ module IF_1 (
       end
     endcase
     if(fsm_wantStart) begin
-      fsm_stateNext = fsm_enumDef_start;
+      fsm_stateNext = fsm_enumDef_1_start;
     end
     if(fsm_wantKill) begin
-      fsm_stateNext = fsm_enumDef_BOOT;
+      fsm_stateNext = fsm_enumDef_1_BOOT;
     end
   end
 
-  assign when_IF_l110 = (io_br_br || delay_br);
-  assign when_IF_l127 = (io_wb_ack || delay_ack);
-  assign when_IF_l76 = ((io_prv != PrivilegeMode_M) && (interrupt != 32'h00000000));
-  assign when_IF_l80 = interrupt[7];
-  assign when_IF_l138 = (io_br_br || delay_br);
-  assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_1));
-  assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_1);
+  assign when_IF_l128 = (io_br_br || delay_br);
+  assign when_IF_l131 = (! io_satp_mode);
+  assign when_IF_l145 = (io_pt_look_up_ack && io_pt_look_up_vaild);
+  assign when_IF_l165 = (io_wb_ack || delay_ack);
+  assign when_IF_l94 = ((io_prv != PrivilegeMode_M) && (interrupt != 32'h00000000));
+  assign when_IF_l98 = interrupt[7];
+  assign when_IF_l176 = (io_br_br || delay_br);
+  assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_2));
+  assign when_StateMachine_l237_1 = (_zz_when_StateMachine_l237_1 && (! _zz_when_StateMachine_l237_3));
+  assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_2);
+  assign when_StateMachine_l253_1 = ((! _zz_when_StateMachine_l237_1) && _zz_when_StateMachine_l237_3);
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       pc <= 32'h80000000;
+      pa <= 32'h00000000;
       delay_br <= 1'b0;
       delay_ack <= 1'b0;
       delay_instr <= 32'h00000013;
@@ -4131,16 +4487,22 @@ module IF_1 (
       io_wb_stb <= 1'b0;
       io_wb_adr <= 32'h00000000;
       io_wb_sel <= 4'b0000;
-      fsm_stateReg <= fsm_enumDef_BOOT;
+      io_pt_look_up_req <= 1'b0;
+      io_pt_look_up_addr <= 32'h00000000;
+      fsm_stateReg <= fsm_enumDef_1_BOOT;
     end else begin
       io_o_trap_trap <= io_trap;
+      if(io_pt_exception_we) begin
+        io_o_trap_epc <= pc;
+        io_o_trap_cause <= io_pt_exception_code;
+      end
       if(io_br_br) begin
         delay_br <= 1'b1;
         pc <= io_br_pc;
       end
       fsm_stateReg <= fsm_stateNext;
       case(fsm_stateReg)
-        fsm_enumDef_start : begin
+        fsm_enumDef_1_start : begin
           if(!io_stall) begin
             if(io_bubble) begin
               io_o_real <= 1'b0;
@@ -4154,19 +4516,24 @@ module IF_1 (
               io_o_instr <= 32'h00000013;
               io_o_trap_epc <= 32'h00000000;
               io_o_trap_cause <= 32'h00000000;
-              if(when_IF_l110) begin
+              if(when_IF_l128) begin
                 delay_br <= 1'b0;
               end
             end
           end
         end
-        fsm_enumDef_fetch : begin
+        fsm_enumDef_1_translate : begin
+          if(when_IF_l145) begin
+            pa <= io_pt_physical_addr;
+          end
+        end
+        fsm_enumDef_1_fetch : begin
           io_o_real <= 1'b0;
           io_o_pc <= 32'h00000000;
           io_o_instr <= 32'h00000013;
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
-          if(when_IF_l127) begin
+          if(when_IF_l165) begin
             delay_ack <= 1'b0;
             if(io_stall) begin
               delay_ack <= 1'b1;
@@ -4175,12 +4542,12 @@ module IF_1 (
                 delay_instr <= io_wb_dat_r;
               end
             end else begin
-              if(when_IF_l138) begin
+              if(when_IF_l176) begin
                 delay_br <= 1'b0;
               end else begin
-                if(when_IF_l76) begin
+                if(when_IF_l94) begin
                   io_o_trap_epc <= pc;
-                  if(when_IF_l80) begin
+                  if(when_IF_l98) begin
                     io_o_trap_cause <= 32'h80000007;
                   end else begin
                     io_o_trap_cause <= 32'h80000010;
@@ -4199,12 +4566,539 @@ module IF_1 (
         end
       endcase
       if(when_StateMachine_l237) begin
+        io_pt_look_up_req <= 1'b0;
+      end
+      if(when_StateMachine_l237_1) begin
         io_wb_stb <= 1'b0;
       end
       if(when_StateMachine_l253) begin
+        io_pt_look_up_addr <= pc;
+        io_pt_look_up_req <= 1'b1;
+      end
+      if(when_StateMachine_l253_1) begin
         io_wb_stb <= 1'b1;
-        io_wb_adr <= pc;
+        io_wb_adr <= (io_satp_mode ? pa : pc);
         io_wb_sel <= 4'b1111;
+      end
+    end
+  end
+
+
+endmodule
+
+//PageTable_1 replaced by PageTable
+
+module PageTable (
+  input  wire [31:0]   io_satp,
+  input  wire [1:0]    io_privilege_mode,
+  input  wire          io_mstatus_SUM,
+  input  wire          io_mstatus_MXR,
+  input  wire [31:0]   trans_io_look_up_addr,
+  input  wire          trans_io_look_up_req,
+  input  wire [1:0]    trans_io_access_type,
+  output reg  [31:0]   trans_io_physical_addr,
+  output reg           trans_io_look_up_ack,
+  output reg           trans_io_look_up_vaild,
+  output reg           trans_io_exception_we,
+  output reg  [31:0]   trans_io_exception_code,
+  output wire          wb_cyc,
+  output reg           wb_stb,
+  input  wire          wb_ack,
+  output wire          wb_we,
+  output reg  [31:0]   wb_adr,
+  input  wire [31:0]   wb_dat_r,
+  output wire [31:0]   wb_dat_w,
+  output reg  [3:0]    wb_sel,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+  localparam PrivilegeMode_U = 2'd0;
+  localparam PrivilegeMode_S = 2'd1;
+  localparam PrivilegeMode_M = 2'd3;
+  localparam MemAccessType_Store = 2'd0;
+  localparam MemAccessType_Read = 2'd1;
+  localparam MemAccessType_Instruction = 2'd2;
+  localparam fsm_enumDef_BOOT = 2'd0;
+  localparam fsm_enumDef_idle = 2'd1;
+  localparam fsm_enumDef_read = 2'd2;
+
+  wire       [9:0]    _zz__zz_trans_io_physical_addr;
+  reg        [11:0]   _zz_when_PageTable_l172;
+  wire       [24:0]   _zz_a;
+  reg        [11:0]   _zz_a_1;
+  wire       [0:0]    _zz_a_2;
+  wire       [34:0]   _zz_a_3;
+  wire       [31:0]   _zz_wb_adr;
+  wire       [31:0]   _zz_wb_adr_1;
+  wire       [12:0]   _zz_wb_adr_2;
+  reg        [9:0]    _zz_wb_adr_3;
+  wire       [21:0]   satp_ppn;
+  wire                satp_mode;
+  reg        [31:0]   a;
+  wire       [9:0]    va_ppn_0;
+  wire       [9:0]    va_ppn_1;
+  reg        [0:0]    i;
+  wire                fsm_wantExit;
+  reg                 fsm_wantStart;
+  wire                fsm_wantKill;
+  reg        [1:0]    fsm_stateReg;
+  reg        [1:0]    fsm_stateNext;
+  wire                when_PageTable_l135;
+  wire                when_PageTable_l137;
+  wire       [0:0]    _zz_when_PageTable_l157;
+  wire       [0:0]    _zz_when_PageTable_l164;
+  wire       [11:0]   _zz_trans_io_physical_addr;
+  wire       [11:0]   _zz_trans_io_physical_addr_1;
+  wire                when_PageTable_l157;
+  wire                when_PageTable_l164;
+  wire                when_PageTable_l169;
+  wire                when_PageTable_l172;
+  wire                when_PageTable_l175;
+  wire                when_PageTable_l196;
+  wire                when_StateMachine_l253;
+  wire                when_StateMachine_l253_1;
+  `ifndef SYNTHESIS
+  reg [7:0] io_privilege_mode_string;
+  reg [87:0] trans_io_access_type_string;
+  reg [31:0] fsm_stateReg_string;
+  reg [31:0] fsm_stateNext_string;
+  `endif
+
+
+  assign _zz__zz_trans_io_physical_addr = wb_dat_r[19 : 10];
+  assign _zz_a = (_zz_a_1 * 13'h1000);
+  assign _zz_a_2 = (i - 1'b1);
+  assign _zz_a_3 = (satp_ppn * 13'h1000);
+  assign _zz_wb_adr = (a + _zz_wb_adr_1);
+  assign _zz_wb_adr_2 = (_zz_wb_adr_3 * 3'b100);
+  assign _zz_wb_adr_1 = {19'd0, _zz_wb_adr_2};
+  always @(*) begin
+    case(i)
+      1'b0 : begin
+        _zz_when_PageTable_l172 = _zz_trans_io_physical_addr;
+        _zz_wb_adr_3 = va_ppn_0;
+      end
+      default : begin
+        _zz_when_PageTable_l172 = _zz_trans_io_physical_addr_1;
+        _zz_wb_adr_3 = va_ppn_1;
+      end
+    endcase
+  end
+
+  always @(*) begin
+    case(_zz_a_2)
+      1'b0 : _zz_a_1 = _zz_trans_io_physical_addr;
+      default : _zz_a_1 = _zz_trans_io_physical_addr_1;
+    endcase
+  end
+
+  `ifndef SYNTHESIS
+  always @(*) begin
+    case(io_privilege_mode)
+      PrivilegeMode_U : io_privilege_mode_string = "U";
+      PrivilegeMode_S : io_privilege_mode_string = "S";
+      PrivilegeMode_M : io_privilege_mode_string = "M";
+      default : io_privilege_mode_string = "?";
+    endcase
+  end
+  always @(*) begin
+    case(trans_io_access_type)
+      MemAccessType_Store : trans_io_access_type_string = "Store      ";
+      MemAccessType_Read : trans_io_access_type_string = "Read       ";
+      MemAccessType_Instruction : trans_io_access_type_string = "Instruction";
+      default : trans_io_access_type_string = "???????????";
+    endcase
+  end
+  always @(*) begin
+    case(fsm_stateReg)
+      fsm_enumDef_BOOT : fsm_stateReg_string = "BOOT";
+      fsm_enumDef_idle : fsm_stateReg_string = "idle";
+      fsm_enumDef_read : fsm_stateReg_string = "read";
+      default : fsm_stateReg_string = "????";
+    endcase
+  end
+  always @(*) begin
+    case(fsm_stateNext)
+      fsm_enumDef_BOOT : fsm_stateNext_string = "BOOT";
+      fsm_enumDef_idle : fsm_stateNext_string = "idle";
+      fsm_enumDef_read : fsm_stateNext_string = "read";
+      default : fsm_stateNext_string = "????";
+    endcase
+  end
+  `endif
+
+  assign satp_ppn = io_satp[21 : 0];
+  assign satp_mode = io_satp[31];
+  assign va_ppn_1 = trans_io_look_up_addr[31 : 22];
+  assign va_ppn_0 = trans_io_look_up_addr[21 : 12];
+  assign wb_cyc = wb_stb;
+  assign wb_we = 1'b0;
+  assign wb_dat_w = 32'h00000000;
+  assign fsm_wantExit = 1'b0;
+  always @(*) begin
+    fsm_wantStart = 1'b0;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+      end
+      fsm_enumDef_read : begin
+      end
+      default : begin
+        fsm_wantStart = 1'b1;
+      end
+    endcase
+  end
+
+  assign fsm_wantKill = 1'b0;
+  always @(*) begin
+    trans_io_exception_code = 32'h00000000;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+      end
+      fsm_enumDef_read : begin
+        if(wb_ack) begin
+          if(when_PageTable_l157) begin
+            case(trans_io_access_type)
+              MemAccessType_Store : begin
+                trans_io_exception_code = 32'h0000000f;
+              end
+              MemAccessType_Read : begin
+                trans_io_exception_code = 32'h0000000d;
+              end
+              default : begin
+                trans_io_exception_code = 32'h0000000c;
+              end
+            endcase
+          end else begin
+            if(when_PageTable_l164) begin
+              if(when_PageTable_l169) begin
+                case(trans_io_access_type)
+                  MemAccessType_Store : begin
+                    trans_io_exception_code = 32'h0000000f;
+                  end
+                  MemAccessType_Read : begin
+                    trans_io_exception_code = 32'h0000000d;
+                  end
+                  default : begin
+                    trans_io_exception_code = 32'h0000000c;
+                  end
+                endcase
+              end else begin
+                if(when_PageTable_l172) begin
+                  case(trans_io_access_type)
+                    MemAccessType_Store : begin
+                      trans_io_exception_code = 32'h0000000f;
+                    end
+                    MemAccessType_Read : begin
+                      trans_io_exception_code = 32'h0000000d;
+                    end
+                    default : begin
+                      trans_io_exception_code = 32'h0000000c;
+                    end
+                  endcase
+                end else begin
+                  if(when_PageTable_l175) begin
+                    case(trans_io_access_type)
+                      MemAccessType_Store : begin
+                        trans_io_exception_code = 32'h0000000f;
+                      end
+                      MemAccessType_Read : begin
+                        trans_io_exception_code = 32'h0000000d;
+                      end
+                      default : begin
+                        trans_io_exception_code = 32'h0000000c;
+                      end
+                    endcase
+                  end
+                end
+              end
+            end else begin
+              if(!when_PageTable_l196) begin
+                case(trans_io_access_type)
+                  MemAccessType_Store : begin
+                    trans_io_exception_code = 32'h0000000f;
+                  end
+                  MemAccessType_Read : begin
+                    trans_io_exception_code = 32'h0000000d;
+                  end
+                  default : begin
+                    trans_io_exception_code = 32'h0000000c;
+                  end
+                endcase
+              end
+            end
+          end
+        end
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  always @(*) begin
+    trans_io_exception_we = 1'b0;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+        trans_io_exception_we = 1'b0;
+      end
+      fsm_enumDef_read : begin
+        if(wb_ack) begin
+          if(when_PageTable_l157) begin
+            trans_io_exception_we = 1'b1;
+          end else begin
+            if(when_PageTable_l164) begin
+              if(when_PageTable_l169) begin
+                trans_io_exception_we = 1'b1;
+              end else begin
+                if(when_PageTable_l172) begin
+                  trans_io_exception_we = 1'b1;
+                end else begin
+                  if(when_PageTable_l175) begin
+                    trans_io_exception_we = 1'b1;
+                  end
+                end
+              end
+            end else begin
+              if(!when_PageTable_l196) begin
+                trans_io_exception_we = 1'b1;
+              end
+            end
+          end
+        end
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  always @(*) begin
+    trans_io_look_up_vaild = 1'b0;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+        if(when_PageTable_l135) begin
+          if(when_PageTable_l137) begin
+            trans_io_look_up_vaild = 1'b1;
+          end
+        end
+      end
+      fsm_enumDef_read : begin
+        if(wb_ack) begin
+          if(when_PageTable_l157) begin
+            trans_io_look_up_vaild = 1'b0;
+          end else begin
+            if(when_PageTable_l164) begin
+              if(when_PageTable_l169) begin
+                trans_io_look_up_vaild = 1'b0;
+              end else begin
+                if(when_PageTable_l172) begin
+                  trans_io_look_up_vaild = 1'b0;
+                end else begin
+                  if(when_PageTable_l175) begin
+                    trans_io_look_up_vaild = 1'b0;
+                  end else begin
+                    trans_io_look_up_vaild = 1'b1;
+                  end
+                end
+              end
+            end else begin
+              if(!when_PageTable_l196) begin
+                trans_io_look_up_vaild = 1'b0;
+              end
+            end
+          end
+        end
+      end
+      default : begin
+      end
+    endcase
+    if(when_StateMachine_l253) begin
+      trans_io_look_up_vaild = 1'b0;
+    end
+  end
+
+  always @(*) begin
+    trans_io_look_up_ack = 1'b0;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+        if(when_PageTable_l135) begin
+          if(when_PageTable_l137) begin
+            trans_io_look_up_ack = 1'b1;
+          end
+        end
+      end
+      fsm_enumDef_read : begin
+        if(wb_ack) begin
+          if(when_PageTable_l157) begin
+            trans_io_look_up_ack = 1'b1;
+          end else begin
+            if(when_PageTable_l164) begin
+              if(when_PageTable_l169) begin
+                trans_io_look_up_ack = 1'b1;
+              end else begin
+                if(when_PageTable_l172) begin
+                  trans_io_look_up_ack = 1'b1;
+                end else begin
+                  if(when_PageTable_l175) begin
+                    trans_io_look_up_ack = 1'b1;
+                  end else begin
+                    trans_io_look_up_ack = 1'b1;
+                  end
+                end
+              end
+            end else begin
+              if(!when_PageTable_l196) begin
+                trans_io_look_up_ack = 1'b1;
+              end
+            end
+          end
+        end
+      end
+      default : begin
+      end
+    endcase
+    if(when_StateMachine_l253) begin
+      trans_io_look_up_ack = 1'b0;
+    end
+  end
+
+  always @(*) begin
+    trans_io_physical_addr = 32'h00000000;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+        if(when_PageTable_l135) begin
+          if(when_PageTable_l137) begin
+            trans_io_physical_addr = trans_io_look_up_addr;
+          end
+        end
+      end
+      fsm_enumDef_read : begin
+        if(wb_ack) begin
+          if(!when_PageTable_l157) begin
+            if(when_PageTable_l164) begin
+              if(!when_PageTable_l169) begin
+                if(!when_PageTable_l172) begin
+                  if(!when_PageTable_l175) begin
+                    trans_io_physical_addr[11 : 0] = trans_io_look_up_addr[11 : 0];
+                    case(i)
+                      1'b1 : begin
+                        trans_io_physical_addr[21 : 12] = trans_io_look_up_addr[21 : 12];
+                        trans_io_physical_addr[31 : 22] = _zz_trans_io_physical_addr_1[9 : 0];
+                      end
+                      default : begin
+                        trans_io_physical_addr[21 : 12] = _zz_trans_io_physical_addr[9 : 0];
+                        trans_io_physical_addr[31 : 22] = _zz_trans_io_physical_addr_1[9 : 0];
+                      end
+                    endcase
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  always @(*) begin
+    fsm_stateNext = fsm_stateReg;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+        if(when_PageTable_l135) begin
+          if(!when_PageTable_l137) begin
+            fsm_stateNext = fsm_enumDef_read;
+          end
+        end
+      end
+      fsm_enumDef_read : begin
+        if(wb_ack) begin
+          if(when_PageTable_l157) begin
+            fsm_stateNext = fsm_enumDef_idle;
+          end else begin
+            if(when_PageTable_l164) begin
+              if(when_PageTable_l169) begin
+                fsm_stateNext = fsm_enumDef_idle;
+              end else begin
+                if(when_PageTable_l172) begin
+                  fsm_stateNext = fsm_enumDef_idle;
+                end else begin
+                  if(when_PageTable_l175) begin
+                    fsm_stateNext = fsm_enumDef_idle;
+                  end
+                end
+              end
+            end else begin
+              if(when_PageTable_l196) begin
+                fsm_stateNext = fsm_enumDef_read;
+              end else begin
+                fsm_stateNext = fsm_enumDef_idle;
+              end
+            end
+          end
+        end
+      end
+      default : begin
+      end
+    endcase
+    if(fsm_wantStart) begin
+      fsm_stateNext = fsm_enumDef_idle;
+    end
+    if(fsm_wantKill) begin
+      fsm_stateNext = fsm_enumDef_BOOT;
+    end
+  end
+
+  assign when_PageTable_l135 = (trans_io_look_up_req && satp_mode);
+  assign when_PageTable_l137 = (trans_io_look_up_req && (! satp_mode));
+  assign _zz_when_PageTable_l157 = wb_dat_r[1 : 1];
+  assign _zz_when_PageTable_l164 = wb_dat_r[3 : 3];
+  assign _zz_trans_io_physical_addr = {2'd0, _zz__zz_trans_io_physical_addr};
+  assign _zz_trans_io_physical_addr_1 = wb_dat_r[31 : 20];
+  assign when_PageTable_l157 = ((wb_dat_r[0 : 0] == 1'b0) || ((_zz_when_PageTable_l157 == 1'b0) && (wb_dat_r[2 : 2] == 1'b1)));
+  assign when_PageTable_l164 = ((_zz_when_PageTable_l157 == 1'b1) || (_zz_when_PageTable_l164 == 1'b1));
+  assign when_PageTable_l169 = (((((! io_mstatus_SUM) && (io_privilege_mode == PrivilegeMode_U)) && (wb_dat_r[4 : 4] == 1'b0)) || ((! io_mstatus_MXR) && (_zz_when_PageTable_l157 == 1'b0))) || ((io_mstatus_MXR && (_zz_when_PageTable_l157 == 1'b0)) && (_zz_when_PageTable_l164 == 1'b0)));
+  assign when_PageTable_l172 = ((1'b0 < i) && (_zz_when_PageTable_l172 != 12'h000));
+  assign when_PageTable_l175 = ((wb_dat_r[6 : 6] == 1'b0) || ((trans_io_access_type == MemAccessType_Store) && (wb_dat_r[7 : 7] == 1'b0)));
+  assign when_PageTable_l196 = (1'b0 < i);
+  assign when_StateMachine_l253 = ((! (fsm_stateReg == fsm_enumDef_idle)) && (fsm_stateNext == fsm_enumDef_idle));
+  assign when_StateMachine_l253_1 = ((! (fsm_stateReg == fsm_enumDef_read)) && (fsm_stateNext == fsm_enumDef_read));
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      a <= 32'h00000000;
+      i <= 1'b0;
+      wb_stb <= 1'b0;
+      wb_adr <= 32'h00000000;
+      wb_sel <= 4'b0000;
+      fsm_stateReg <= fsm_enumDef_BOOT;
+    end else begin
+      fsm_stateReg <= fsm_stateNext;
+      case(fsm_stateReg)
+        fsm_enumDef_idle : begin
+        end
+        fsm_enumDef_read : begin
+          if(wb_ack) begin
+            wb_stb <= 1'b0;
+            if(!when_PageTable_l157) begin
+              if(!when_PageTable_l164) begin
+                if(when_PageTable_l196) begin
+                  a <= {7'd0, _zz_a};
+                  i <= 1'b0;
+                end
+              end
+            end
+          end
+        end
+        default : begin
+        end
+      endcase
+      if(when_StateMachine_l253) begin
+        i <= 1'b1;
+        a <= _zz_a_3[31:0];
+      end
+      if(when_StateMachine_l253_1) begin
+        wb_adr <= _zz_wb_adr;
+        wb_stb <= 1'b1;
+        wb_sel <= 4'b1111;
       end
     end
   end
@@ -4525,6 +5419,9 @@ module CsrFile (
   output wire [31:0]   io_mip_r,
   input  wire [31:0]   io_mip_w,
   input  wire          io_mip_we,
+  output wire [31:0]   io_satp_r,
+  input  wire [31:0]   io_satp_w,
+  input  wire          io_satp_we,
   input  wire          io_timeout,
   input  wire          sys_clk,
   input  wire          sys_reset
@@ -4544,6 +5441,8 @@ module CsrFile (
   reg                 mcause_1_io_we;
   reg        [31:0]   mip_1_io_w;
   reg                 mip_1_io_we;
+  reg        [31:0]   satp_1_io_w;
+  reg                 satp_1_io_we;
   wire       [31:0]   mstatus_1_io_r;
   wire       [31:0]   mie_1_io_r;
   wire       [31:0]   mtvec_1_io_r;
@@ -4551,13 +5450,15 @@ module CsrFile (
   wire       [31:0]   mepc_1_io_r;
   wire       [31:0]   mcause_1_io_r;
   wire       [31:0]   mip_1_io_r;
-  wire                when_Csr_l74;
-  wire                when_Csr_l74_1;
-  wire                when_Csr_l74_2;
-  wire                when_Csr_l74_3;
-  wire                when_Csr_l74_4;
-  wire                when_Csr_l74_5;
-  wire                when_Csr_l74_6;
+  wire       [31:0]   satp_1_io_r;
+  wire                when_Csr_l77;
+  wire                when_Csr_l77_1;
+  wire                when_Csr_l77_2;
+  wire                when_Csr_l77_3;
+  wire                when_Csr_l77_4;
+  wire                when_Csr_l77_5;
+  wire                when_Csr_l77_6;
+  wire                when_Csr_l77_7;
 
   Mstatus mstatus_1 (
     .io_r      (mstatus_1_io_r[31:0]), //o
@@ -4609,41 +5510,53 @@ module CsrFile (
     .sys_clk   (sys_clk         ), //i
     .sys_reset (sys_reset       )  //i
   );
+  Satp satp_1 (
+    .io_r      (satp_1_io_r[31:0]), //o
+    .io_w      (satp_1_io_w[31:0]), //i
+    .io_we     (satp_1_io_we     ), //i
+    .sys_clk   (sys_clk          ), //i
+    .sys_reset (sys_reset        )  //i
+  );
   always @(*) begin
     io_csr_r = 32'h00000000;
     if(!io_mstatus_we) begin
-      if(when_Csr_l74) begin
+      if(when_Csr_l77) begin
         io_csr_r = mstatus_1_io_r;
       end
     end
     if(!io_mie_we) begin
-      if(when_Csr_l74_1) begin
+      if(when_Csr_l77_1) begin
         io_csr_r = mie_1_io_r;
       end
     end
     if(!io_mtvec_we) begin
-      if(when_Csr_l74_2) begin
+      if(when_Csr_l77_2) begin
         io_csr_r = mtvec_1_io_r;
       end
     end
     if(!io_mscratch_we) begin
-      if(when_Csr_l74_3) begin
+      if(when_Csr_l77_3) begin
         io_csr_r = mscratch_1_io_r;
       end
     end
     if(!io_mepc_we) begin
-      if(when_Csr_l74_4) begin
+      if(when_Csr_l77_4) begin
         io_csr_r = mepc_1_io_r;
       end
     end
     if(!io_mcause_we) begin
-      if(when_Csr_l74_5) begin
+      if(when_Csr_l77_5) begin
         io_csr_r = mcause_1_io_r;
       end
     end
     if(!io_mip_we) begin
-      if(when_Csr_l74_6) begin
+      if(when_Csr_l77_6) begin
         io_csr_r = mip_1_io_r;
+      end
+    end
+    if(!io_satp_we) begin
+      if(when_Csr_l77_7) begin
+        io_csr_r = satp_1_io_r;
       end
     end
   end
@@ -4653,7 +5566,7 @@ module CsrFile (
     if(io_mstatus_we) begin
       mstatus_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l74) begin
+      if(when_Csr_l77) begin
         mstatus_1_io_we = io_csr_we;
       end else begin
         mstatus_1_io_we = 1'b0;
@@ -4665,7 +5578,7 @@ module CsrFile (
     if(io_mstatus_we) begin
       mstatus_1_io_w = io_mstatus_w;
     end else begin
-      if(when_Csr_l74) begin
+      if(when_Csr_l77) begin
         mstatus_1_io_w = io_csr_w;
       end else begin
         mstatus_1_io_w = 32'h00000000;
@@ -4673,13 +5586,13 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l74 = (io_csr_addr == 12'h300);
+  assign when_Csr_l77 = (io_csr_addr == 12'h300);
   assign io_mie_r = mie_1_io_r;
   always @(*) begin
     if(io_mie_we) begin
       mie_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l74_1) begin
+      if(when_Csr_l77_1) begin
         mie_1_io_we = io_csr_we;
       end else begin
         mie_1_io_we = 1'b0;
@@ -4691,7 +5604,7 @@ module CsrFile (
     if(io_mie_we) begin
       mie_1_io_w = io_mie_w;
     end else begin
-      if(when_Csr_l74_1) begin
+      if(when_Csr_l77_1) begin
         mie_1_io_w = io_csr_w;
       end else begin
         mie_1_io_w = 32'h00000000;
@@ -4699,13 +5612,13 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l74_1 = (io_csr_addr == 12'h304);
+  assign when_Csr_l77_1 = (io_csr_addr == 12'h304);
   assign io_mtvec_r = mtvec_1_io_r;
   always @(*) begin
     if(io_mtvec_we) begin
       mtvec_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l74_2) begin
+      if(when_Csr_l77_2) begin
         mtvec_1_io_we = io_csr_we;
       end else begin
         mtvec_1_io_we = 1'b0;
@@ -4717,7 +5630,7 @@ module CsrFile (
     if(io_mtvec_we) begin
       mtvec_1_io_w = io_mtvec_w;
     end else begin
-      if(when_Csr_l74_2) begin
+      if(when_Csr_l77_2) begin
         mtvec_1_io_w = io_csr_w;
       end else begin
         mtvec_1_io_w = 32'h00000000;
@@ -4725,13 +5638,13 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l74_2 = (io_csr_addr == 12'h305);
+  assign when_Csr_l77_2 = (io_csr_addr == 12'h305);
   assign io_mscratch_r = mscratch_1_io_r;
   always @(*) begin
     if(io_mscratch_we) begin
       mscratch_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l74_3) begin
+      if(when_Csr_l77_3) begin
         mscratch_1_io_we = io_csr_we;
       end else begin
         mscratch_1_io_we = 1'b0;
@@ -4743,7 +5656,7 @@ module CsrFile (
     if(io_mscratch_we) begin
       mscratch_1_io_w = io_mscratch_w;
     end else begin
-      if(when_Csr_l74_3) begin
+      if(when_Csr_l77_3) begin
         mscratch_1_io_w = io_csr_w;
       end else begin
         mscratch_1_io_w = 32'h00000000;
@@ -4751,13 +5664,13 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l74_3 = (io_csr_addr == 12'h340);
+  assign when_Csr_l77_3 = (io_csr_addr == 12'h340);
   assign io_mepc_r = mepc_1_io_r;
   always @(*) begin
     if(io_mepc_we) begin
       mepc_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l74_4) begin
+      if(when_Csr_l77_4) begin
         mepc_1_io_we = io_csr_we;
       end else begin
         mepc_1_io_we = 1'b0;
@@ -4769,7 +5682,7 @@ module CsrFile (
     if(io_mepc_we) begin
       mepc_1_io_w = io_mepc_w;
     end else begin
-      if(when_Csr_l74_4) begin
+      if(when_Csr_l77_4) begin
         mepc_1_io_w = io_csr_w;
       end else begin
         mepc_1_io_w = 32'h00000000;
@@ -4777,13 +5690,13 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l74_4 = (io_csr_addr == 12'h341);
+  assign when_Csr_l77_4 = (io_csr_addr == 12'h341);
   assign io_mcause_r = mcause_1_io_r;
   always @(*) begin
     if(io_mcause_we) begin
       mcause_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l74_5) begin
+      if(when_Csr_l77_5) begin
         mcause_1_io_we = io_csr_we;
       end else begin
         mcause_1_io_we = 1'b0;
@@ -4795,7 +5708,7 @@ module CsrFile (
     if(io_mcause_we) begin
       mcause_1_io_w = io_mcause_w;
     end else begin
-      if(when_Csr_l74_5) begin
+      if(when_Csr_l77_5) begin
         mcause_1_io_w = io_csr_w;
       end else begin
         mcause_1_io_w = 32'h00000000;
@@ -4803,13 +5716,13 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l74_5 = (io_csr_addr == 12'h342);
+  assign when_Csr_l77_5 = (io_csr_addr == 12'h342);
   assign io_mip_r = mip_1_io_r;
   always @(*) begin
     if(io_mip_we) begin
       mip_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l74_6) begin
+      if(when_Csr_l77_6) begin
         mip_1_io_we = io_csr_we;
       end else begin
         mip_1_io_we = 1'b0;
@@ -4821,7 +5734,7 @@ module CsrFile (
     if(io_mip_we) begin
       mip_1_io_w = io_mip_w;
     end else begin
-      if(when_Csr_l74_6) begin
+      if(when_Csr_l77_6) begin
         mip_1_io_w = io_csr_w;
       end else begin
         mip_1_io_w = 32'h00000000;
@@ -4829,7 +5742,33 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l74_6 = (io_csr_addr == 12'h344);
+  assign when_Csr_l77_6 = (io_csr_addr == 12'h344);
+  assign io_satp_r = satp_1_io_r;
+  always @(*) begin
+    if(io_satp_we) begin
+      satp_1_io_we = 1'b1;
+    end else begin
+      if(when_Csr_l77_7) begin
+        satp_1_io_we = io_csr_we;
+      end else begin
+        satp_1_io_we = 1'b0;
+      end
+    end
+  end
+
+  always @(*) begin
+    if(io_satp_we) begin
+      satp_1_io_w = io_satp_w;
+    end else begin
+      if(when_Csr_l77_7) begin
+        satp_1_io_w = io_csr_w;
+      end else begin
+        satp_1_io_w = 32'h00000000;
+      end
+    end
+  end
+
+  assign when_Csr_l77_7 = (io_csr_addr == 12'h180);
 
 endmodule
 
@@ -5340,6 +6279,48 @@ module BufferCC (
 
 endmodule
 
+module Satp (
+  output wire [31:0]   io_r,
+  input  wire [31:0]   io_w,
+  input  wire          io_we,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+
+  reg        [31:0]   reg_1;
+  wire       [21:0]   ppn;
+  wire       [21:0]   ppn_w;
+  wire       [8:0]    asid;
+  wire       [8:0]    asid_w;
+  wire       [0:0]    mode;
+  wire       [0:0]    mode_w;
+  wire                when_Csr_l108;
+
+  assign io_r = reg_1;
+  assign ppn = reg_1[21 : 0];
+  assign ppn_w = io_w[21 : 0];
+  assign asid = reg_1[30 : 22];
+  assign asid_w = io_w[30 : 22];
+  assign mode = reg_1[31 : 31];
+  assign mode_w = io_w[31 : 31];
+  assign when_Csr_l108 = ((mode_w == 1'b1) || ((mode_w == 1'b0) && (ppn_w == 22'h000000)));
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      reg_1 <= 32'h00000000;
+    end else begin
+      if(io_we) begin
+        if(when_Csr_l108) begin
+          reg_1[21 : 0] <= ppn_w;
+          reg_1[31 : 31] <= mode_w;
+          reg_1[30 : 22] <= asid_w;
+        end
+      end
+    end
+  end
+
+
+endmodule
+
 module Mip (
   output reg  [31:0]   io_r,
   input  wire [31:0]   io_w,
@@ -5531,10 +6512,18 @@ module Mstatus (
   reg        [31:0]   reg_1;
   wire       [1:0]    mpp;
   wire       [1:0]    mpp_w;
+  wire       [0:0]    sum;
+  wire       [0:0]    sum_w;
+  wire       [0:0]    mxr;
+  wire       [0:0]    mxr_w;
 
   assign io_r = reg_1;
   assign mpp = reg_1[12 : 11];
   assign mpp_w = io_w[12 : 11];
+  assign sum = reg_1[18 : 18];
+  assign sum_w = io_w[18 : 18];
+  assign mxr = reg_1[19 : 19];
+  assign mxr_w = io_w[19 : 19];
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       reg_1 <= 32'h00000000;
@@ -5543,6 +6532,8 @@ module Mstatus (
         if((mpp_w == PrivilegeMode_U) || (mpp_w == PrivilegeMode_S) || (mpp_w == PrivilegeMode_M)) begin
             reg_1[12 : 11] <= mpp_w;
         end
+        reg_1[18 : 18] <= sum_w;
+        reg_1[19 : 19] <= mxr_w;
       end
     end
   end

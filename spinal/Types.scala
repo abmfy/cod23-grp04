@@ -126,6 +126,10 @@ object InstrType extends SpinalEnum {
     val R, I, S, B, U, J = newElement()
 }
 
+object MemAccessType extends SpinalEnum {
+    val Store, Read, Instruction = newElement()
+}
+
 object PrivilegeMode extends SpinalEnum {
     val U, S, M = newElement()
     defaultEncoding = SpinalEnumEncoding("staticEncoding")(
@@ -159,4 +163,7 @@ object TrapCause {
     val BREAKPOINT = EXCEPTION | 3
     val ENVIRONMENT_CALL_FROM_U_MODE = EXCEPTION | 8
     val RETURN_FROM_M_MODE = EXCEPTION | 24
+    val INSTRUCTION_PAGE_FAULT = EXCEPTION | 12
+    val LOAD_PAGE_FAULT = EXCEPTION | 13
+    val STORE_PAGE_FAULT = EXCEPTION | 15
 }

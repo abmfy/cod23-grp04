@@ -16,7 +16,11 @@ class Top (
     val csr = new CsrFile
     val trap = new Trap
     val timer = new Timer
+    val IF_page_table = new PageTable
+    val MEM_page_table = new PageTable
+    // TODO: add wishbone arbiter for page table and IF/MEM
     
+
     // Pipelines
     val If = new IF
     val Id = new ID
@@ -48,6 +52,15 @@ class Top (
     If.io.mip := csr.io.mip.r
 
     If.io.prv := trap.io.prv
+    
+    If.io.satp_mode := csr.io.satp.r(31, 1 bits).asBool
+    
+    If.io.pt <> IF_page_table.trans_io
+
+    IF_page_table.io.satp := csr.io.satp.r
+    IF_page_table.io.privilege_mode := trap.io.prv
+    IF_page_table.io.mstatus_SUM := csr.io.mstatus.r(18, 1 bits).asBool
+    IF_page_table.io.mstatus_MXR := csr.io.mstatus.r(19, 1 bits).asBool
 
     // ID
     Id.io.reg <> reg_file.io.r
@@ -74,6 +87,14 @@ class Top (
     trap.io.trap(2) := Mem.io.trap
 
     Mem.io.timer <> timer.io.timer
+    Mem.io.pt <> MEM_page_table.trans_io
+
+    Mem.io.satp_mode := csr.io.satp.r(31, 1 bits).asBool
+
+    MEM_page_table.io.satp := csr.io.satp.r
+    MEM_page_table.io.privilege_mode := trap.io.prv
+    MEM_page_table.io.mstatus_SUM := csr.io.mstatus.r(18, 1 bits).asBool
+    MEM_page_table.io.mstatus_MXR := csr.io.mstatus.r(19, 1 bits).asBool
 
     // WB
     Wb.io.reg <> reg_file.io.w
@@ -96,8 +117,22 @@ class Top (
     csr.io.mie.we := False
     csr.io.mie.w := 0
 
+    csr.io.satp.we := False
+    csr.io.satp.w := 0
+
     csr.io.timeout := timer.io.timeout
 
+    val IF_arbiter = new WbArbiter(WbArbiterConfig(
+        master_count = 2
+    ))
+    IF_arbiter.io.masters(0) <> IF_page_table.wb
+    IF_arbiter.io.masters(1) <> If.io.wb 
+
+    val MEM_arbiter = new WbArbiter(WbArbiterConfig(
+        master_count = 2
+    ))
+    MEM_arbiter.io.masters(0) <> MEM_page_table.wb
+    MEM_arbiter.io.masters(1) <> Mem.io.wb
     // Wishbone IO
     val muxes = List.fill(2)(new WbMux(WbMuxConfig(
         slave_count = 3,
@@ -121,8 +156,8 @@ class Top (
     }
 
     // Masters
-    muxes(0).io.wb <> Mem.io.wb
-    muxes(1).io.wb <> If.io.wb
+    muxes(0).io.wb <> MEM_arbiter.io.wb
+    muxes(1).io.wb <> IF_arbiter.io.wb
 
     // Slaves
     val (base_ram, ext_ram) = if (simulation) {

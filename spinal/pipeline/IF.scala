@@ -11,7 +11,6 @@ case class IFConfig (
 class IF(config: IFConfig = IFConfig()) extends Component {
     val io = new Bundle {
         val o = master port IF_ID()
-
         // Branching
         val br = slave port BranchPorts()
         
@@ -29,10 +28,18 @@ class IF(config: IFConfig = IFConfig()) extends Component {
 
         // Wishbone master
         val wb = master port WishbonePorts()
+
+        // pagetable master
+        val pt = master port PageTableTranslatePorts()
+        // TODO: add pagetable logic
+        val satp_mode = in Bool()
     }
 
     val pc = Reg(Types.addr) init(config.start)
 
+    val va = pc
+
+    val pa = Reg(Types.addr) init(0)
     // Delayed branch signal
     val delay_br = Reg(Bool()) init(False)
 
@@ -62,6 +69,11 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     io.wb.adr.setAsReg() init(0)
     io.wb.sel.setAsReg() init(0)
 
+    io.pt.look_up_req.setAsReg() init(False)
+    io.pt.look_up_addr.setAsReg() init(0)
+    
+    io.pt.access_type := MemAccessType.Instruction
+
     def bubble(): Unit = {
         io.o.real := False
         io.o.pc := 0
@@ -70,6 +82,12 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         io.trap := False
         io.o.trap.epc := 0
         io.o.trap.cause := 0
+    }
+
+    when (io.pt.exception_we) {
+        io.trap := True
+        io.o.trap.epc := pc
+        io.o.trap.cause := io.pt.exception_code
     }
 
     def output(instr: Bits): Unit = {
@@ -110,14 +128,34 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                     when (io.br.br || delay_br) {
                         delay_br := False
                     }
+                    when (!io.satp_mode) {
+                        goto(fetch)
+                    } otherwise {
+                        goto(translate)
+                    }
+                }
+            }
+        }
+        val translate: State = new State {
+            onEntry {
+                io.pt.look_up_addr := va
+                io.pt.look_up_req := True
+            }
+            whenIsActive {
+                when (io.pt.look_up_ack && io.pt.look_up_vaild) {
+                    pa := io.pt.physical_addr
                     goto(fetch)
                 }
+            }
+            onExit {
+                io.pt.look_up_req := False
+
             }
         }
         val fetch: State = new State {
             onEntry {
                 io.wb.stb := True
-                io.wb.adr := pc
+                io.wb.adr := io.satp_mode ? pa | pc
                 io.wb.sel := Sel.WORD
             }
             whenIsActive {

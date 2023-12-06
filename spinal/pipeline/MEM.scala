@@ -26,6 +26,11 @@ class MEM extends Component {
 
         // Wishbone master
         val wb = master port WishbonePorts()
+
+        // PageTable master
+        val pt = master port PageTableTranslatePorts()
+
+        val satp_mode = in Bool()
     }
 
     val mem_adr = io.i.alu_y.asUInt
@@ -71,7 +76,7 @@ class MEM extends Component {
     def req(): Unit = {
         io.wb.stb := True
         io.wb.we := io.i.mem_we
-        io.wb.adr := mem_adr
+        io.wb.adr := io.satp_mode ? pa | mem_adr
         io.wb.sel := mem_sel
         io.wb.dat_w := mem_data_write
     }
@@ -202,7 +207,20 @@ class MEM extends Component {
 
     io.wb.cyc := io.wb.stb
 
+    val va = mem_adr
+    val pa = Types.addr
+    pa := 0
+
+    io.pt.look_up_addr.setAsReg() init(0)
+    io.pt.look_up_req.setAsReg() init(False)
+
+    when (io.pt.exception_we) { // ! TODO: check exception
+        io.trap := True
+        io.o.trap.epc := io.i.pc
+        io.o.trap.cause := io.pt.exception_code
+    }
     val fsm = new StateMachine {
+        io.pt.access_type := io.i.mem_we ? MemAccessType.Store | MemAccessType.Read
         val start: State = new State with EntryPoint {
             whenIsActive {
                 // Trapped
@@ -216,12 +234,32 @@ class MEM extends Component {
                     when (timer.req) {
                         proceed()
                     } otherwise {
-                        req()
-                        goto(fetch)
+                        when (io.satp_mode) {
+                            goto(translate)
+                        } otherwise {
+                            req()
+                            goto(fetch)
+                        }
                     }
                 } otherwise {
                     proceed()
                 }
+            }
+        }
+        val translate : State = new State {
+              onEntry {
+                io.pt.look_up_addr := va
+                io.pt.look_up_req := True
+            }
+            whenIsActive {
+                when (io.pt.look_up_ack && io.pt.look_up_vaild) {
+                    pa := io.pt.physical_addr
+                    req()
+                    goto(fetch)
+                }
+            }
+            onExit {
+                io.pt.look_up_req := False
             }
         }
         val fetch: State = new State {
