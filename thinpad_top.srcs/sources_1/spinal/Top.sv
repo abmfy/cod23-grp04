@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : e95ee24b7c41ad1f1b19211c9b39ace650e3afa3
+// Git hash  : 7c53264a72d5a03e58e7065787edf164c805f973
 
 `timescale 1ns/1ps
 
@@ -831,6 +831,7 @@ module Top (
     .io_forward_data       (Mem_1_io_forward_data[31:0]                 ), //o
     .io_stall_req          (Mem_1_io_stall_req                          ), //o
     .io_trap               (Mem_1_io_trap                               ), //o
+    .io_prv                (trap_1_io_prv[1:0]                          ), //i
     .io_csr_addr           (Mem_1_io_csr_addr[11:0]                     ), //o
     .io_csr_r              (csr_io_csr_r[31:0]                          ), //i
     .io_csr_w              (Mem_1_io_csr_w[31:0]                        ), //o
@@ -2321,6 +2322,7 @@ module MEM (
   output wire [31:0]   io_forward_data,
   output wire          io_stall_req,
   output reg           io_trap,
+  input  wire [1:0]    io_prv,
   output reg  [11:0]   io_csr_addr,
   input  wire [31:0]   io_csr_r,
   output reg  [31:0]   io_csr_w,
@@ -2364,6 +2366,9 @@ module MEM (
   localparam RegSel_ALU = 2'd0;
   localparam RegSel_MEM = 2'd1;
   localparam RegSel_PC = 2'd2;
+  localparam PrivilegeMode_U = 2'd0;
+  localparam PrivilegeMode_S = 2'd1;
+  localparam PrivilegeMode_M = 2'd3;
   localparam MemAccessType_Store = 2'd0;
   localparam MemAccessType_Read = 2'd1;
   localparam MemAccessType_Instruction = 2'd2;
@@ -2392,17 +2397,18 @@ module MEM (
   wire       [3:0]    mem_sel;
   reg        [31:0]   mem_data_read;
   wire       [31:0]   mem_data_write;
+  wire                page_en;
   reg        [31:0]   reg_data;
   reg        [31:0]   _zz_reg_data;
   reg        [31:0]   _zz_reg_data_1;
-  wire                when_MEM_l60;
+  wire                when_MEM_l66;
   wire                timer_mtime_req;
   wire                timer_mtimeh_req;
   wire                timer_mtimecmp_req;
   wire                timer_mtimecmph_req;
   wire                timer_req;
-  wire                when_MEM_l160;
-  wire                when_MEM_l188;
+  wire                when_MEM_l166;
+  wire                when_MEM_l194;
   reg        [31:0]   pa;
   wire                fsm_wantExit;
   reg                 fsm_wantStart;
@@ -2412,12 +2418,13 @@ module MEM (
   reg        [1:0]    fsm_stateNext;
   wire                _zz_when_StateMachine_l237;
   wire                _zz_when_StateMachine_l237_1;
-  wire                when_MEM_l255;
+  wire                when_MEM_l261;
   wire                when_StateMachine_l237;
   wire                when_StateMachine_l253;
   `ifndef SYNTHESIS
   reg [7:0] io_i_csr_op_string;
   reg [23:0] io_i_reg_sel_string;
+  reg [7:0] io_prv_string;
   reg [87:0] io_pt_access_type_string;
   reg [87:0] _zz_io_pt_access_type_string;
   reg [71:0] fsm_stateReg_string;
@@ -2456,6 +2463,14 @@ module MEM (
       RegSel_MEM : io_i_reg_sel_string = "MEM";
       RegSel_PC : io_i_reg_sel_string = "PC ";
       default : io_i_reg_sel_string = "???";
+    endcase
+  end
+  always @(*) begin
+    case(io_prv)
+      PrivilegeMode_U : io_prv_string = "U";
+      PrivilegeMode_S : io_prv_string = "S";
+      PrivilegeMode_M : io_prv_string = "M";
+      default : io_prv_string = "?";
     endcase
   end
   always @(*) begin
@@ -2514,6 +2529,7 @@ module MEM (
   end
 
   assign mem_data_write = (io_i_reg_data_b <<< _zz_mem_data_write);
+  assign page_en = ((io_prv != PrivilegeMode_M) && io_satp_mode);
   always @(*) begin
     case(io_i_reg_sel)
       RegSel_ALU : begin
@@ -2530,7 +2546,7 @@ module MEM (
         reg_data = _zz_reg_data_2;
       end
     endcase
-    if(when_MEM_l60) begin
+    if(when_MEM_l66) begin
       reg_data = io_csr_r;
     end
   end
@@ -2569,7 +2585,7 @@ module MEM (
     endcase
   end
 
-  assign when_MEM_l60 = (io_i_csr_op != CsrOp_N);
+  assign when_MEM_l66 = (io_i_csr_op != CsrOp_N);
   always @(*) begin
     io_trap = io_o_trap_trap;
     if(io_pt_exception_we) begin
@@ -2613,7 +2629,7 @@ module MEM (
   assign timer_req = (((timer_mtime_req || timer_mtimeh_req) || timer_mtimecmp_req) || timer_mtimecmph_req);
   always @(*) begin
     io_timer_mtime_we = 1'b0;
-    if(when_MEM_l160) begin
+    if(when_MEM_l166) begin
       if(timer_mtime_req) begin
         io_timer_mtime_we = 1'b1;
       end
@@ -2622,7 +2638,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimeh_we = 1'b0;
-    if(when_MEM_l160) begin
+    if(when_MEM_l166) begin
       if(timer_mtimeh_req) begin
         io_timer_mtimeh_we = 1'b1;
       end
@@ -2631,7 +2647,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmp_we = 1'b0;
-    if(when_MEM_l160) begin
+    if(when_MEM_l166) begin
       if(timer_mtimecmp_req) begin
         io_timer_mtimecmp_we = 1'b1;
       end
@@ -2640,7 +2656,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmph_we = 1'b0;
-    if(when_MEM_l160) begin
+    if(when_MEM_l166) begin
       if(timer_mtimecmph_req) begin
         io_timer_mtimecmph_we = 1'b1;
       end
@@ -2649,7 +2665,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtime_w = 32'h00000000;
-    if(when_MEM_l160) begin
+    if(when_MEM_l166) begin
       if(timer_mtime_req) begin
         io_timer_mtime_w = mem_data_write;
       end
@@ -2658,7 +2674,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimeh_w = 32'h00000000;
-    if(when_MEM_l160) begin
+    if(when_MEM_l166) begin
       if(timer_mtimeh_req) begin
         io_timer_mtimeh_w = mem_data_write;
       end
@@ -2667,7 +2683,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmp_w = 32'h00000000;
-    if(when_MEM_l160) begin
+    if(when_MEM_l166) begin
       if(timer_mtimecmp_req) begin
         io_timer_mtimecmp_w = mem_data_write;
       end
@@ -2676,17 +2692,17 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmph_w = 32'h00000000;
-    if(when_MEM_l160) begin
+    if(when_MEM_l166) begin
       if(timer_mtimecmph_req) begin
         io_timer_mtimecmph_w = mem_data_write;
       end
     end
   end
 
-  assign when_MEM_l160 = (io_i_mem_en && io_i_mem_we);
+  assign when_MEM_l166 = (io_i_mem_en && io_i_mem_we);
   always @(*) begin
     io_csr_addr = 12'h000;
-    if(when_MEM_l188) begin
+    if(when_MEM_l194) begin
       io_csr_addr = io_i_imm[11 : 0];
     end
   end
@@ -2710,12 +2726,12 @@ module MEM (
 
   always @(*) begin
     io_csr_we = 1'b0;
-    if(when_MEM_l188) begin
+    if(when_MEM_l194) begin
       io_csr_we = 1'b1;
     end
   end
 
-  assign when_MEM_l188 = (io_i_csr_op != CsrOp_N);
+  assign when_MEM_l194 = (io_i_csr_op != CsrOp_N);
   assign io_stall_req = ((io_i_mem_en && (! timer_req)) && (! io_wb_ack));
   assign io_wb_cyc = io_wb_stb;
   always @(*) begin
@@ -2724,7 +2740,7 @@ module MEM (
       fsm_enumDef_1_start : begin
       end
       fsm_enumDef_1_translate : begin
-        if(when_MEM_l255) begin
+        if(when_MEM_l261) begin
           pa = io_pt_physical_addr;
         end
       end
@@ -2763,7 +2779,7 @@ module MEM (
         if(!io_i_trap_trap) begin
           if(io_i_mem_en) begin
             if(!timer_req) begin
-              if(io_satp_mode) begin
+              if(page_en) begin
                 fsm_stateNext = fsm_enumDef_1_translate;
               end else begin
                 fsm_stateNext = fsm_enumDef_1_fetch;
@@ -2773,7 +2789,7 @@ module MEM (
         end
       end
       fsm_enumDef_1_translate : begin
-        if(when_MEM_l255) begin
+        if(when_MEM_l261) begin
           fsm_stateNext = fsm_enumDef_1_fetch;
         end
       end
@@ -2793,7 +2809,7 @@ module MEM (
     end
   end
 
-  assign when_MEM_l255 = (io_pt_look_up_ack && io_pt_look_up_vaild);
+  assign when_MEM_l261 = (io_pt_look_up_ack && io_pt_look_up_vaild);
   assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_1));
   assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_1);
   always @(posedge sys_clk or posedge sys_reset) begin
@@ -2842,10 +2858,10 @@ module MEM (
                 io_o_trap_epc <= 32'h00000000;
                 io_o_trap_cause <= 32'h00000000;
               end else begin
-                if(!io_satp_mode) begin
+                if(!page_en) begin
                   io_wb_stb <= 1'b1;
                   io_wb_we <= io_i_mem_we;
-                  io_wb_adr <= (io_satp_mode ? pa : mem_adr);
+                  io_wb_adr <= (page_en ? pa : mem_adr);
                   io_wb_sel <= mem_sel;
                   io_wb_dat_w <= mem_data_write;
                 end
@@ -2862,10 +2878,10 @@ module MEM (
           end
         end
         fsm_enumDef_1_translate : begin
-          if(when_MEM_l255) begin
+          if(when_MEM_l261) begin
             io_wb_stb <= 1'b1;
             io_wb_we <= io_i_mem_we;
-            io_wb_adr <= (io_satp_mode ? pa : mem_adr);
+            io_wb_adr <= (page_en ? pa : mem_adr);
             io_wb_sel <= mem_sel;
             io_wb_dat_w <= mem_data_write;
           end
@@ -3430,9 +3446,9 @@ module ID (
   reg                 mem_unsigned;
   reg                 reg_we;
   reg        [1:0]    reg_sel;
-  wire                when_ID_l803;
-  wire                when_ID_l807;
-  wire                when_ID_l811;
+  wire                when_ID_l800;
+  wire                when_ID_l804;
+  wire                when_ID_l808;
   `ifndef SYNTHESIS
   reg [39:0] io_o_alu_op_string;
   reg [7:0] io_o_csr_op_string;
@@ -3880,7 +3896,7 @@ module ID (
   always @(*) begin
     instr_type = InstrType_I;
     case(instr_kind)
-      Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_CLZ, Instr_PACK, Instr_SFENCE_VMA : begin
+      Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
         instr_type = InstrType_R;
       end
       Instr_JALR, Instr_ADDI, Instr_SLTI, Instr_SLTIU, Instr_XORI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_SRAI, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_ECALL, Instr_EBREAK, Instr_CSRRW, Instr_CSRRS, Instr_CSRRC, Instr_CSRRWI, Instr_CSRRSI, Instr_CSRRCI, Instr_MRET : begin
@@ -3929,7 +3945,7 @@ module ID (
   always @(*) begin
     alu_op = AluOp_ADD;
     case(instr_kind)
-      Instr_CSRRW, Instr_CSRRS, Instr_CSRRC, Instr_CSRRWI, Instr_CSRRSI, Instr_CSRRCI, Instr_SFENCE_VMA : begin
+      Instr_CSRRW, Instr_CSRRS, Instr_CSRRC, Instr_CSRRWI, Instr_CSRRSI, Instr_CSRRCI : begin
         alu_op = AluOp_OP1;
       end
       Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_BEQ, Instr_BNE, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_SB, Instr_SH, Instr_SW, Instr_ADDI, Instr_ADD : begin
@@ -4111,7 +4127,7 @@ module ID (
   always @(*) begin
     reg_we = 1'b0;
     case(instr_kind)
-      Instr_LUI, Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_ADDI, Instr_SLTI, Instr_SLTIU, Instr_XORI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_SRAI, Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_CSRRW, Instr_CSRRS, Instr_CSRRC, Instr_CSRRWI, Instr_CSRRSI, Instr_CSRRCI, Instr_ANDN, Instr_CLZ, Instr_PACK, Instr_SFENCE_VMA : begin
+      Instr_LUI, Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_ADDI, Instr_SLTI, Instr_SLTIU, Instr_XORI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_SRAI, Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_CSRRW, Instr_CSRRS, Instr_CSRRC, Instr_CSRRWI, Instr_CSRRSI, Instr_CSRRCI, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
         reg_we = 1'b1;
       end
       default : begin
@@ -4142,13 +4158,13 @@ module ID (
         if(io_i_trap_trap) begin
           io_trap = 1'b1;
         end else begin
-          if(when_ID_l803) begin
+          if(when_ID_l800) begin
             io_trap = 1'b1;
           end else begin
-            if(when_ID_l807) begin
+            if(when_ID_l804) begin
               io_trap = 1'b1;
             end else begin
-              if(when_ID_l811) begin
+              if(when_ID_l808) begin
                 io_trap = 1'b1;
               end
             end
@@ -4160,9 +4176,9 @@ module ID (
 
   assign io_reg_addr_a = rs1;
   assign io_reg_addr_b = rs2;
-  assign when_ID_l803 = (instr_kind == Instr_EBREAK);
-  assign when_ID_l807 = (instr_kind == Instr_ECALL);
-  assign when_ID_l811 = (instr_kind == Instr_MRET);
+  assign when_ID_l800 = (instr_kind == Instr_EBREAK);
+  assign when_ID_l804 = (instr_kind == Instr_ECALL);
+  assign when_ID_l808 = (instr_kind == Instr_MRET);
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       io_o_real <= 1'b0;
@@ -4205,15 +4221,15 @@ module ID (
             io_o_trap_epc <= io_i_trap_epc;
             io_o_trap_cause <= io_i_trap_cause;
           end else begin
-            if(when_ID_l803) begin
+            if(when_ID_l800) begin
               io_o_trap_epc <= io_i_pc;
               io_o_trap_cause <= 32'h00000003;
             end else begin
-              if(when_ID_l807) begin
+              if(when_ID_l804) begin
                 io_o_trap_epc <= io_i_pc;
                 io_o_trap_cause <= 32'h00000008;
               end else begin
-                if(when_ID_l811) begin
+                if(when_ID_l808) begin
                   io_o_trap_epc <= io_i_pc;
                   io_o_trap_cause <= 32'h00000018;
                 end else begin
@@ -4301,6 +4317,7 @@ module IF_1 (
   reg                 delay_ack;
   reg        [31:0]   delay_instr;
   wire       [31:0]   interrupt;
+  wire                page_en;
   wire                fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
@@ -4310,13 +4327,12 @@ module IF_1 (
   wire                _zz_when_StateMachine_l237_1;
   wire                _zz_when_StateMachine_l237_2;
   wire                _zz_when_StateMachine_l237_3;
-  wire                when_IF_l128;
   wire                when_IF_l131;
-  wire                when_IF_l145;
-  wire                when_IF_l165;
-  wire                when_IF_l94;
-  wire                when_IF_l98;
-  wire                when_IF_l176;
+  wire                when_IF_l148;
+  wire                when_IF_l168;
+  wire                when_IF_l97;
+  wire                when_IF_l101;
+  wire                when_IF_l179;
   wire                when_StateMachine_l237;
   wire                when_StateMachine_l237_1;
   wire                when_StateMachine_l253;
@@ -4367,6 +4383,7 @@ module IF_1 (
   `endif
 
   assign interrupt = (io_mie & io_mip);
+  assign page_en = ((io_prv != PrivilegeMode_M) && io_satp_mode);
   always @(*) begin
     io_trap = io_o_trap_trap;
     if(io_pt_exception_we) begin
@@ -4386,10 +4403,10 @@ module IF_1 (
       end
       fsm_enumDef_1_fetch : begin
         io_trap = 1'b0;
-        if(when_IF_l165) begin
+        if(when_IF_l168) begin
           if(!io_stall) begin
-            if(!when_IF_l176) begin
-              if(when_IF_l94) begin
+            if(!when_IF_l179) begin
+              if(when_IF_l97) begin
                 io_trap = 1'b1;
               end else begin
                 io_trap = 1'b0;
@@ -4434,23 +4451,23 @@ module IF_1 (
       fsm_enumDef_1_start : begin
         if(!io_stall) begin
           if(!io_bubble) begin
-            if(when_IF_l131) begin
-              fsm_stateNext = fsm_enumDef_1_fetch;
-            end else begin
+            if(page_en) begin
               fsm_stateNext = fsm_enumDef_1_translate;
+            end else begin
+              fsm_stateNext = fsm_enumDef_1_fetch;
             end
           end
         end
       end
       fsm_enumDef_1_translate : begin
-        if(when_IF_l145) begin
+        if(when_IF_l148) begin
           fsm_stateNext = fsm_enumDef_1_fetch;
         end
       end
       fsm_enumDef_1_fetch : begin
-        if(when_IF_l165) begin
+        if(when_IF_l168) begin
           if(!io_stall) begin
-            if(when_IF_l176) begin
+            if(when_IF_l179) begin
               fsm_stateNext = fsm_enumDef_1_start;
             end else begin
               fsm_stateNext = fsm_enumDef_1_start;
@@ -4469,13 +4486,12 @@ module IF_1 (
     end
   end
 
-  assign when_IF_l128 = (io_br_br || delay_br);
-  assign when_IF_l131 = (! io_satp_mode);
-  assign when_IF_l145 = (io_pt_look_up_ack && io_pt_look_up_vaild);
-  assign when_IF_l165 = (io_wb_ack || delay_ack);
-  assign when_IF_l94 = ((io_prv != PrivilegeMode_M) && (interrupt != 32'h00000000));
-  assign when_IF_l98 = interrupt[7];
-  assign when_IF_l176 = (io_br_br || delay_br);
+  assign when_IF_l131 = (io_br_br || delay_br);
+  assign when_IF_l148 = (io_pt_look_up_ack && io_pt_look_up_vaild);
+  assign when_IF_l168 = (io_wb_ack || delay_ack);
+  assign when_IF_l97 = ((io_prv != PrivilegeMode_M) && (interrupt != 32'h00000000));
+  assign when_IF_l101 = interrupt[7];
+  assign when_IF_l179 = (io_br_br || delay_br);
   assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_2));
   assign when_StateMachine_l237_1 = (_zz_when_StateMachine_l237_1 && (! _zz_when_StateMachine_l237_3));
   assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_2);
@@ -4525,14 +4541,14 @@ module IF_1 (
               io_o_instr <= 32'h00000013;
               io_o_trap_epc <= 32'h00000000;
               io_o_trap_cause <= 32'h00000000;
-              if(when_IF_l128) begin
+              if(when_IF_l131) begin
                 delay_br <= 1'b0;
               end
             end
           end
         end
         fsm_enumDef_1_translate : begin
-          if(when_IF_l145) begin
+          if(when_IF_l148) begin
             pa <= io_pt_physical_addr;
           end
         end
@@ -4542,7 +4558,7 @@ module IF_1 (
           io_o_instr <= 32'h00000013;
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
-          if(when_IF_l165) begin
+          if(when_IF_l168) begin
             delay_ack <= 1'b0;
             if(io_stall) begin
               delay_ack <= 1'b1;
@@ -4551,12 +4567,12 @@ module IF_1 (
                 delay_instr <= io_wb_dat_r;
               end
             end else begin
-              if(when_IF_l176) begin
+              if(when_IF_l179) begin
                 delay_br <= 1'b0;
               end else begin
-                if(when_IF_l94) begin
+                if(when_IF_l97) begin
                   io_o_trap_epc <= pc;
-                  if(when_IF_l98) begin
+                  if(when_IF_l101) begin
                     io_o_trap_cause <= 32'h80000007;
                   end else begin
                     io_o_trap_cause <= 32'h80000010;
@@ -4586,7 +4602,7 @@ module IF_1 (
       end
       if(when_StateMachine_l253_1) begin
         io_wb_stb <= 1'b1;
-        io_wb_adr <= (io_satp_mode ? pa : pc);
+        io_wb_adr <= (page_en ? pa : pc);
         io_wb_sel <= 4'b1111;
       end
     end

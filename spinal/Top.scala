@@ -89,6 +89,8 @@ class Top (
     Mem.io.timer <> timer.io.timer
     Mem.io.pt <> MEM_page_table.trans_io
 
+    Mem.io.prv := trap.io.prv
+
     Mem.io.satp_mode := csr.io.satp.r(31, 1 bits).asBool
 
     MEM_page_table.io.satp := csr.io.satp.r

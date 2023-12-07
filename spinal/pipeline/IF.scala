@@ -29,7 +29,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         // Wishbone master
         val wb = master port WishbonePorts()
 
-        // pagetable master
+        // Page table master
         val pt = master port PageTableTranslatePorts()
         // TODO: add pagetable logic
         val satp_mode = in Bool()
@@ -49,6 +49,9 @@ class IF(config: IFConfig = IFConfig()) extends Component {
 
     // Interrupt
     val interrupt = io.mie & io.mip
+
+    // Paging enabled
+    val page_en = io.prv =/= PrivilegeMode.M && io.satp_mode
 
     io.o.real.setAsReg() init(False)
     io.o.pc.setAsReg() init(config.start)
@@ -128,10 +131,10 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                     when (io.br.br || delay_br) {
                         delay_br := False
                     }
-                    when (!io.satp_mode) {
-                        goto(fetch)
-                    } otherwise {
+                    when (page_en) {
                         goto(translate)
+                    } otherwise {
+                        goto(fetch)
                     }
                 }
             }
@@ -155,7 +158,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         val fetch: State = new State {
             onEntry {
                 io.wb.stb := True
-                io.wb.adr := io.satp_mode ? pa | pc
+                io.wb.adr := page_en ? pa | pc
                 io.wb.sel := Sel.WORD
             }
             whenIsActive {

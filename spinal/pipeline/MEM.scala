@@ -18,6 +18,9 @@ class MEM extends Component {
         // Trap
         val trap = out Bool()
 
+        // Privilege mode
+        val prv = in port PrivilegeMode()
+
         // Csr file
         val csr = master port CsrFilePorts()
 
@@ -39,6 +42,9 @@ class MEM extends Component {
     val mem_sel: Bits = io.i.mem_sel |<< offset
     val mem_data_read: Bits = io.wb.dat_r |>> (offset * 8)
     val mem_data_write: Bits = io.i.reg_data_b |<< (offset * 8)
+
+    // Paging enable
+    val page_en = io.prv =/= PrivilegeMode.M && io.satp_mode
 
     val reg_data: Bits = {
         val res = Types.data
@@ -76,7 +82,7 @@ class MEM extends Component {
     def req(): Unit = {
         io.wb.stb := True
         io.wb.we := io.i.mem_we
-        io.wb.adr := io.satp_mode ? pa | mem_adr
+        io.wb.adr := page_en ? pa | mem_adr
         io.wb.sel := mem_sel
         io.wb.dat_w := mem_data_write
     }
@@ -234,7 +240,7 @@ class MEM extends Component {
                     when (timer.req) {
                         proceed()
                     } otherwise {
-                        when (io.satp_mode) {
+                        when (page_en) {
                             goto(translate)
                         } otherwise {
                             req()

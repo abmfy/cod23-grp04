@@ -268,7 +268,6 @@ class ID extends Component {
                 ANDN,
                 CLZ,
                 PACK,
-                SFENCE_VMA,
             ) {
                 res := R
             }
@@ -380,7 +379,6 @@ class ID extends Component {
                 CSRRWI,
                 CSRRSI,
                 CSRRCI,
-                SFENCE_VMA,
             ) {
                 res := AluOp.OP1
             }
@@ -718,7 +716,6 @@ class ID extends Component {
                 ANDN,
                 CLZ,
                 PACK,
-                SFENCE_VMA,
             ) {
                 res := True
             }
