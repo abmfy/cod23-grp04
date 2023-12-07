@@ -21,6 +21,9 @@ class MEM extends Component {
         // Privilege mode
         val prv = in port PrivilegeMode()
 
+        // Address translation mode
+        val satp_mode = in Bool()
+
         // Csr file
         val csr = master port CsrFilePorts()
 
@@ -32,8 +35,6 @@ class MEM extends Component {
 
         // PageTable master
         val pt = master port PageTableTranslatePorts()
-
-        val satp_mode = in Bool()
     }
 
     val mem_adr = io.i.alu_y.asUInt
@@ -214,19 +215,19 @@ class MEM extends Component {
     io.wb.cyc := io.wb.stb
 
     val va = mem_adr
-    val pa = Types.addr
-    pa := 0
+    val pa = io.pt.physical_addr
 
     io.pt.look_up_addr.setAsReg() init(0)
     io.pt.look_up_req.setAsReg() init(False)
 
-    when (io.pt.exception_we) { // ! TODO: check exception
+    def raise_page_fault(): Unit = {
         io.trap := True
         io.o.trap.epc := io.i.pc
         io.o.trap.cause := io.pt.exception_code
     }
+
     val fsm = new StateMachine {
-        io.pt.access_type := io.i.mem_we ? MemAccessType.Store | MemAccessType.Read
+        io.pt.access_type := io.i.mem_we ? MemAccessType.Store | MemAccessType.Load
         val start: State = new State with EntryPoint {
             whenIsActive {
                 // Trapped
@@ -253,15 +254,19 @@ class MEM extends Component {
             }
         }
         val translate : State = new State {
-              onEntry {
+            onEntry {
                 io.pt.look_up_addr := va
                 io.pt.look_up_req := True
             }
             whenIsActive {
-                when (io.pt.look_up_ack && io.pt.look_up_vaild) {
-                    pa := io.pt.physical_addr
-                    req()
-                    goto(fetch)
+                when (io.pt.look_up_ack) {
+                    when (io.pt.look_up_valid) {
+                        req()
+                        goto(fetch)
+                    } otherwise {
+                        raise_page_fault()
+                        exit()
+                    }
                 }
             }
             onExit {

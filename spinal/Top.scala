@@ -4,6 +4,7 @@ import cod.sim._
 import spinal.core._
 import spinal.lib._
 import spinal.lib.io._
+import java.io.ObjectInputFilter.Status
 
 class Top (
     simulation: Boolean = false,
@@ -17,9 +18,7 @@ class Top (
     val trap = new Trap
     val timer = new Timer
     val IF_page_table = new PageTable
-    val MEM_page_table = new PageTable
-    // TODO: add wishbone arbiter for page table and IF/MEM
-    
+    val MEM_page_table = new PageTable    
 
     // Pipelines
     val If = new IF
@@ -52,15 +51,14 @@ class Top (
     If.io.mip := csr.io.mip.r
 
     If.io.prv := trap.io.prv
-    
-    If.io.satp_mode := csr.io.satp.r(31, 1 bits).asBool
+    If.io.satp_mode := csr.io.satp.r.msb
     
     If.io.pt <> IF_page_table.trans_io
 
     IF_page_table.io.satp := csr.io.satp.r
     IF_page_table.io.privilege_mode := trap.io.prv
-    IF_page_table.io.mstatus_SUM := csr.io.mstatus.r(18, 1 bits).asBool
-    IF_page_table.io.mstatus_MXR := csr.io.mstatus.r(19, 1 bits).asBool
+    IF_page_table.io.mstatus_SUM := csr.io.mstatus.r(StatusField.SUM)
+    IF_page_table.io.mstatus_MXR := csr.io.mstatus.r(StatusField.MXR)
 
     // ID
     Id.io.reg <> reg_file.io.r
@@ -87,16 +85,16 @@ class Top (
     trap.io.trap(2) := Mem.io.trap
 
     Mem.io.timer <> timer.io.timer
-    Mem.io.pt <> MEM_page_table.trans_io
 
     Mem.io.prv := trap.io.prv
+    Mem.io.satp_mode := csr.io.satp.r.msb
 
-    Mem.io.satp_mode := csr.io.satp.r(31, 1 bits).asBool
+    Mem.io.pt <> MEM_page_table.trans_io
 
     MEM_page_table.io.satp := csr.io.satp.r
     MEM_page_table.io.privilege_mode := trap.io.prv
-    MEM_page_table.io.mstatus_SUM := csr.io.mstatus.r(18, 1 bits).asBool
-    MEM_page_table.io.mstatus_MXR := csr.io.mstatus.r(19, 1 bits).asBool
+    MEM_page_table.io.mstatus_SUM := csr.io.mstatus.r(StatusField.SUM)
+    MEM_page_table.io.mstatus_MXR := csr.io.mstatus.r(StatusField.MXR)
 
     // WB
     Wb.io.reg <> reg_file.io.w
@@ -128,13 +126,14 @@ class Top (
         master_count = 2
     ))
     IF_arbiter.io.masters(0) <> IF_page_table.wb
-    IF_arbiter.io.masters(1) <> If.io.wb 
+    IF_arbiter.io.masters(1) <> If.io.wb
 
     val MEM_arbiter = new WbArbiter(WbArbiterConfig(
         master_count = 2
     ))
     MEM_arbiter.io.masters(0) <> MEM_page_table.wb
     MEM_arbiter.io.masters(1) <> Mem.io.wb
+
     // Wishbone IO
     val muxes = List.fill(2)(new WbMux(WbMuxConfig(
         slave_count = 3,

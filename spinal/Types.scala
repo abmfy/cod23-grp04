@@ -102,8 +102,6 @@ object Instr extends SpinalEnum {
         AND,
         ECALL,
         EBREAK,
-        // sfence.vma
-        SFENCE_VMA,
         // Zifencei
         FENCE_I,
         // Zicsr,
@@ -115,6 +113,8 @@ object Instr extends SpinalEnum {
         CSRRCI,
         // Trap-Return
         MRET,
+        // Supervisor Memory-Management
+        SFENCE_VMA,
         // Extra
         ANDN,
         CLZ,
@@ -129,7 +129,7 @@ object InstrType extends SpinalEnum {
 }
 
 object MemAccessType extends SpinalEnum {
-    val Store, Read, Instruction = newElement()
+    val Store, Load, Fetch = newElement()
 }
 
 object PrivilegeMode extends SpinalEnum {
@@ -139,6 +139,17 @@ object PrivilegeMode extends SpinalEnum {
         S -> 1,
         M -> 3,
     )
+}
+
+object StatusField {
+    val SIE = 1
+    val MIE = 3
+    val SPIE = 5
+    val MPIE = 7
+    val SPP = 8
+    val MPP = 11
+    val SUM = 18
+    val MXR = 19
 }
 
 object TrapVectorMode {
@@ -164,8 +175,8 @@ object TrapCause {
 
     val BREAKPOINT = EXCEPTION | 3
     val ENVIRONMENT_CALL_FROM_U_MODE = EXCEPTION | 8
-    val RETURN_FROM_M_MODE = EXCEPTION | 24
     val INSTRUCTION_PAGE_FAULT = EXCEPTION | 12
     val LOAD_PAGE_FAULT = EXCEPTION | 13
-    val STORE_PAGE_FAULT = EXCEPTION | 15
+    val STORE_AMO_PAGE_FAULT = EXCEPTION | 15
+    val RETURN_FROM_M_MODE = EXCEPTION | 24
 }

@@ -11,6 +11,7 @@ case class IFConfig (
 class IF(config: IFConfig = IFConfig()) extends Component {
     val io = new Bundle {
         val o = master port IF_ID()
+
         // Branching
         val br = slave port BranchPorts()
         
@@ -26,21 +27,21 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         // Privilege mode
         val prv = in port PrivilegeMode()
 
+        // Address translation mode
+        val satp_mode = in Bool()
+
         // Wishbone master
         val wb = master port WishbonePorts()
 
         // Page table master
         val pt = master port PageTableTranslatePorts()
-        // TODO: add pagetable logic
-        val satp_mode = in Bool()
     }
 
     val pc = Reg(Types.addr) init(config.start)
 
     val va = pc
+    val pa = io.pt.physical_addr
 
-    val pa = Types.addr
-    pa := io.pt.physical_addr
     // Delayed branch signal
     val delay_br = Reg(Bool()) init(False)
 
@@ -76,7 +77,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     io.pt.look_up_req.setAsReg() init(False)
     io.pt.look_up_addr.setAsReg() init(0)
     
-    io.pt.access_type := MemAccessType.Instruction
+    io.pt.access_type := MemAccessType.Fetch
 
     def bubble(): Unit = {
         io.o.real := False
@@ -86,12 +87,6 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         io.trap := False
         io.o.trap.epc := 0
         io.o.trap.cause := 0
-    }
-
-    when (io.pt.exception_we) {
-        io.trap := True
-        io.o.trap.epc := pc
-        io.o.trap.cause := io.pt.exception_code
     }
 
     def output(instr: Bits): Unit = {
@@ -111,6 +106,12 @@ class IF(config: IFConfig = IFConfig()) extends Component {
             io.o.instr := instr
             pc := pc + 4
         }
+    }
+
+    def raise_page_fault(): Unit = {
+        io.trap := True
+        io.o.trap.epc := pc
+        io.o.trap.cause := io.pt.exception_code
     }
 
     val fsm = new StateMachine {
@@ -146,13 +147,17 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                 io.pt.look_up_req := True
             }
             whenIsActive {
-                when (io.pt.look_up_ack && io.pt.look_up_vaild) {
-                    goto(fetch)
+                when (io.pt.look_up_ack) {
+                    when (io.pt.look_up_valid) {
+                        goto(fetch)
+                    } otherwise {
+                        raise_page_fault()
+                        exit()
+                    }
                 }
             }
             onExit {
                 io.pt.look_up_req := False
-
             }
         }
         val fetch: State = new State {

@@ -35,6 +35,7 @@ class CsrFile extends Component {
         val mscratch, mepc, mcause, mip = slave port CsrPorts()
         
         val satp = slave port CsrPorts()
+
         // Timer
         val timeout = in Bool()
     }
@@ -47,6 +48,7 @@ class CsrFile extends Component {
     val mepc = new Mepc
     val mcause = new Mcause
     val mip = new Mip
+
     val satp = new Satp
 
     mip.timeout := io.timeout
@@ -60,6 +62,7 @@ class CsrFile extends Component {
         mepc -> io.mepc,
         mcause -> io.mcause,
         mip -> io.mip,
+
         satp -> io.satp,
     )
 
@@ -91,7 +94,7 @@ class Csr(val addr: Int) extends Component {
     io.r := reg
 }
 
-// Machine Trap Setup
+// Supervisor Protection and Translation
 
 class Satp extends Csr(0x180) {
     val ppn = reg(0, 22 bits) allowPruning()
@@ -113,14 +116,18 @@ class Satp extends Csr(0x180) {
     }
 }
 
+// Machine Trap Setup
+
 class Mstatus extends Csr(0x300) {
     // WARL
     val mpp = reg(11, 2 bits) allowPruning()
     val mpp_w = io.w(11, 2 bits)
-    val sum = reg(18, 1 bits) allowPruning()
-    val sum_w = io.w(18, 1 bits)
-    val mxr = reg(19, 1 bits) allowPruning()
-    val mxr_w = io.w(19, 1 bits)
+    // RW
+    val sum = reg(18) allowPruning()
+    val sum_w = io.w(18)
+    // RW
+    val mxr = reg(19) allowPruning()
+    val mxr_w = io.w(19)
     when (io.we) {
         switch (mpp_w) {
             is (

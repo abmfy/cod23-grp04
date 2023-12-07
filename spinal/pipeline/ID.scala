@@ -221,7 +221,6 @@ class ID extends Component {
                                  }
                             }
                         }
-                        
                     }
                     is (B"001") {
                         res := CSRRW
