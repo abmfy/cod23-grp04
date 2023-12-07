@@ -102,6 +102,8 @@ object Instr extends SpinalEnum {
         AND,
         ECALL,
         EBREAK,
+        // sfence.vma
+        SFENCE_VMA,
         // Zifencei
         FENCE_I,
         // Zicsr,

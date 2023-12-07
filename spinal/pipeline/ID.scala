@@ -203,17 +203,25 @@ class ID extends Component {
             is (B"1110011") {
                 switch (funct3) {
                     is (B"000") {
-                        switch (rs2) {
-                            is (U"00000") {
-                                res := ECALL
+                        switch (funct7) {
+                            is (B"0001001") {
+                                res := SFENCE_VMA
                             }
-                            is (U"00001") {
-                                res := EBREAK
-                            }
-                            is (U"00010") {
-                                res := MRET
+                            default {
+                                switch (rs2) {
+                                    is (U"00000") {
+                                        res := ECALL
+                                    }
+                                    is (U"00001") {
+                                        res := EBREAK
+                                    }
+                                    is (U"00010") {
+                                        res := MRET
+                                    }
+                                 }
                             }
                         }
+                        
                     }
                     is (B"001") {
                         res := CSRRW
@@ -260,6 +268,7 @@ class ID extends Component {
                 ANDN,
                 CLZ,
                 PACK,
+                SFENCE_VMA,
             ) {
                 res := R
             }
@@ -371,6 +380,7 @@ class ID extends Component {
                 CSRRWI,
                 CSRRSI,
                 CSRRCI,
+                SFENCE_VMA,
             ) {
                 res := AluOp.OP1
             }
@@ -708,6 +718,7 @@ class ID extends Component {
                 ANDN,
                 CLZ,
                 PACK,
+                SFENCE_VMA,
             ) {
                 res := True
             }

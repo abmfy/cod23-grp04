@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : c181c16a6142a350e44e245fc36c4c1cbc26a04b
+// Git hash  : e95ee24b7c41ad1f1b19211c9b39ace650e3afa3
 
 `timescale 1ns/1ps
 
@@ -3380,17 +3380,18 @@ module ID (
   localparam Instr_AND_1 = 6'd37;
   localparam Instr_ECALL = 6'd38;
   localparam Instr_EBREAK = 6'd39;
-  localparam Instr_FENCE_I = 6'd40;
-  localparam Instr_CSRRW = 6'd41;
-  localparam Instr_CSRRS = 6'd42;
-  localparam Instr_CSRRC = 6'd43;
-  localparam Instr_CSRRWI = 6'd44;
-  localparam Instr_CSRRSI = 6'd45;
-  localparam Instr_CSRRCI = 6'd46;
-  localparam Instr_MRET = 6'd47;
-  localparam Instr_ANDN = 6'd48;
-  localparam Instr_CLZ = 6'd49;
-  localparam Instr_PACK = 6'd50;
+  localparam Instr_SFENCE_VMA = 6'd40;
+  localparam Instr_FENCE_I = 6'd41;
+  localparam Instr_CSRRW = 6'd42;
+  localparam Instr_CSRRS = 6'd43;
+  localparam Instr_CSRRC = 6'd44;
+  localparam Instr_CSRRWI = 6'd45;
+  localparam Instr_CSRRSI = 6'd46;
+  localparam Instr_CSRRCI = 6'd47;
+  localparam Instr_MRET = 6'd48;
+  localparam Instr_ANDN = 6'd49;
+  localparam Instr_CLZ = 6'd50;
+  localparam Instr_PACK = 6'd51;
   localparam InstrType_R = 3'd0;
   localparam InstrType_I = 3'd1;
   localparam InstrType_S = 3'd2;
@@ -3429,15 +3430,15 @@ module ID (
   reg                 mem_unsigned;
   reg                 reg_we;
   reg        [1:0]    reg_sel;
-  wire                when_ID_l792;
-  wire                when_ID_l796;
-  wire                when_ID_l800;
+  wire                when_ID_l803;
+  wire                when_ID_l807;
+  wire                when_ID_l811;
   `ifndef SYNTHESIS
   reg [39:0] io_o_alu_op_string;
   reg [7:0] io_o_csr_op_string;
   reg [23:0] io_o_br_type_string;
   reg [23:0] io_o_reg_sel_string;
-  reg [55:0] instr_kind_string;
+  reg [79:0] instr_kind_string;
   reg [7:0] instr_type_string;
   reg [39:0] alu_op_string;
   reg [7:0] csr_op_string;
@@ -3511,58 +3512,59 @@ module ID (
   end
   always @(*) begin
     case(instr_kind)
-      Instr_UNK : instr_kind_string = "UNK    ";
-      Instr_LUI : instr_kind_string = "LUI    ";
-      Instr_AUIPC : instr_kind_string = "AUIPC  ";
-      Instr_JAL : instr_kind_string = "JAL    ";
-      Instr_JALR : instr_kind_string = "JALR   ";
-      Instr_BEQ : instr_kind_string = "BEQ    ";
-      Instr_BNE : instr_kind_string = "BNE    ";
-      Instr_BLT : instr_kind_string = "BLT    ";
-      Instr_BGE : instr_kind_string = "BGE    ";
-      Instr_BLTU : instr_kind_string = "BLTU   ";
-      Instr_BGEU : instr_kind_string = "BGEU   ";
-      Instr_LB : instr_kind_string = "LB     ";
-      Instr_LH : instr_kind_string = "LH     ";
-      Instr_LW : instr_kind_string = "LW     ";
-      Instr_LBU : instr_kind_string = "LBU    ";
-      Instr_LHU : instr_kind_string = "LHU    ";
-      Instr_SB : instr_kind_string = "SB     ";
-      Instr_SH : instr_kind_string = "SH     ";
-      Instr_SW : instr_kind_string = "SW     ";
-      Instr_ADDI : instr_kind_string = "ADDI   ";
-      Instr_SLTI : instr_kind_string = "SLTI   ";
-      Instr_SLTIU : instr_kind_string = "SLTIU  ";
-      Instr_XORI : instr_kind_string = "XORI   ";
-      Instr_ORI : instr_kind_string = "ORI    ";
-      Instr_ANDI : instr_kind_string = "ANDI   ";
-      Instr_SLLI : instr_kind_string = "SLLI   ";
-      Instr_SRLI : instr_kind_string = "SRLI   ";
-      Instr_SRAI : instr_kind_string = "SRAI   ";
-      Instr_ADD : instr_kind_string = "ADD    ";
-      Instr_SUB : instr_kind_string = "SUB    ";
-      Instr_SLL_1 : instr_kind_string = "SLL_1  ";
-      Instr_SLT : instr_kind_string = "SLT    ";
-      Instr_SLTU : instr_kind_string = "SLTU   ";
-      Instr_XOR_1 : instr_kind_string = "XOR_1  ";
-      Instr_SRL_1 : instr_kind_string = "SRL_1  ";
-      Instr_SRA_1 : instr_kind_string = "SRA_1  ";
-      Instr_OR_1 : instr_kind_string = "OR_1   ";
-      Instr_AND_1 : instr_kind_string = "AND_1  ";
-      Instr_ECALL : instr_kind_string = "ECALL  ";
-      Instr_EBREAK : instr_kind_string = "EBREAK ";
-      Instr_FENCE_I : instr_kind_string = "FENCE_I";
-      Instr_CSRRW : instr_kind_string = "CSRRW  ";
-      Instr_CSRRS : instr_kind_string = "CSRRS  ";
-      Instr_CSRRC : instr_kind_string = "CSRRC  ";
-      Instr_CSRRWI : instr_kind_string = "CSRRWI ";
-      Instr_CSRRSI : instr_kind_string = "CSRRSI ";
-      Instr_CSRRCI : instr_kind_string = "CSRRCI ";
-      Instr_MRET : instr_kind_string = "MRET   ";
-      Instr_ANDN : instr_kind_string = "ANDN   ";
-      Instr_CLZ : instr_kind_string = "CLZ    ";
-      Instr_PACK : instr_kind_string = "PACK   ";
-      default : instr_kind_string = "???????";
+      Instr_UNK : instr_kind_string = "UNK       ";
+      Instr_LUI : instr_kind_string = "LUI       ";
+      Instr_AUIPC : instr_kind_string = "AUIPC     ";
+      Instr_JAL : instr_kind_string = "JAL       ";
+      Instr_JALR : instr_kind_string = "JALR      ";
+      Instr_BEQ : instr_kind_string = "BEQ       ";
+      Instr_BNE : instr_kind_string = "BNE       ";
+      Instr_BLT : instr_kind_string = "BLT       ";
+      Instr_BGE : instr_kind_string = "BGE       ";
+      Instr_BLTU : instr_kind_string = "BLTU      ";
+      Instr_BGEU : instr_kind_string = "BGEU      ";
+      Instr_LB : instr_kind_string = "LB        ";
+      Instr_LH : instr_kind_string = "LH        ";
+      Instr_LW : instr_kind_string = "LW        ";
+      Instr_LBU : instr_kind_string = "LBU       ";
+      Instr_LHU : instr_kind_string = "LHU       ";
+      Instr_SB : instr_kind_string = "SB        ";
+      Instr_SH : instr_kind_string = "SH        ";
+      Instr_SW : instr_kind_string = "SW        ";
+      Instr_ADDI : instr_kind_string = "ADDI      ";
+      Instr_SLTI : instr_kind_string = "SLTI      ";
+      Instr_SLTIU : instr_kind_string = "SLTIU     ";
+      Instr_XORI : instr_kind_string = "XORI      ";
+      Instr_ORI : instr_kind_string = "ORI       ";
+      Instr_ANDI : instr_kind_string = "ANDI      ";
+      Instr_SLLI : instr_kind_string = "SLLI      ";
+      Instr_SRLI : instr_kind_string = "SRLI      ";
+      Instr_SRAI : instr_kind_string = "SRAI      ";
+      Instr_ADD : instr_kind_string = "ADD       ";
+      Instr_SUB : instr_kind_string = "SUB       ";
+      Instr_SLL_1 : instr_kind_string = "SLL_1     ";
+      Instr_SLT : instr_kind_string = "SLT       ";
+      Instr_SLTU : instr_kind_string = "SLTU      ";
+      Instr_XOR_1 : instr_kind_string = "XOR_1     ";
+      Instr_SRL_1 : instr_kind_string = "SRL_1     ";
+      Instr_SRA_1 : instr_kind_string = "SRA_1     ";
+      Instr_OR_1 : instr_kind_string = "OR_1      ";
+      Instr_AND_1 : instr_kind_string = "AND_1     ";
+      Instr_ECALL : instr_kind_string = "ECALL     ";
+      Instr_EBREAK : instr_kind_string = "EBREAK    ";
+      Instr_SFENCE_VMA : instr_kind_string = "SFENCE_VMA";
+      Instr_FENCE_I : instr_kind_string = "FENCE_I   ";
+      Instr_CSRRW : instr_kind_string = "CSRRW     ";
+      Instr_CSRRS : instr_kind_string = "CSRRS     ";
+      Instr_CSRRC : instr_kind_string = "CSRRC     ";
+      Instr_CSRRWI : instr_kind_string = "CSRRWI    ";
+      Instr_CSRRSI : instr_kind_string = "CSRRSI    ";
+      Instr_CSRRCI : instr_kind_string = "CSRRCI    ";
+      Instr_MRET : instr_kind_string = "MRET      ";
+      Instr_ANDN : instr_kind_string = "ANDN      ";
+      Instr_CLZ : instr_kind_string = "CLZ       ";
+      Instr_PACK : instr_kind_string = "PACK      ";
+      default : instr_kind_string = "??????????";
     endcase
   end
   always @(*) begin
@@ -3824,17 +3826,24 @@ module ID (
       7'h73 : begin
         case(funct3)
           3'b000 : begin
-            case(rs2)
-              5'h00 : begin
-                instr_kind = Instr_ECALL;
-              end
-              5'h01 : begin
-                instr_kind = Instr_EBREAK;
-              end
-              5'h02 : begin
-                instr_kind = Instr_MRET;
+            case(funct7)
+              7'h09 : begin
+                instr_kind = Instr_SFENCE_VMA;
               end
               default : begin
+                case(rs2)
+                  5'h00 : begin
+                    instr_kind = Instr_ECALL;
+                  end
+                  5'h01 : begin
+                    instr_kind = Instr_EBREAK;
+                  end
+                  5'h02 : begin
+                    instr_kind = Instr_MRET;
+                  end
+                  default : begin
+                  end
+                endcase
               end
             endcase
           end
@@ -3871,7 +3880,7 @@ module ID (
   always @(*) begin
     instr_type = InstrType_I;
     case(instr_kind)
-      Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
+      Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_ANDN, Instr_CLZ, Instr_PACK, Instr_SFENCE_VMA : begin
         instr_type = InstrType_R;
       end
       Instr_JALR, Instr_ADDI, Instr_SLTI, Instr_SLTIU, Instr_XORI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_SRAI, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_ECALL, Instr_EBREAK, Instr_CSRRW, Instr_CSRRS, Instr_CSRRC, Instr_CSRRWI, Instr_CSRRSI, Instr_CSRRCI, Instr_MRET : begin
@@ -3920,7 +3929,7 @@ module ID (
   always @(*) begin
     alu_op = AluOp_ADD;
     case(instr_kind)
-      Instr_CSRRW, Instr_CSRRS, Instr_CSRRC, Instr_CSRRWI, Instr_CSRRSI, Instr_CSRRCI : begin
+      Instr_CSRRW, Instr_CSRRS, Instr_CSRRC, Instr_CSRRWI, Instr_CSRRSI, Instr_CSRRCI, Instr_SFENCE_VMA : begin
         alu_op = AluOp_OP1;
       end
       Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_BEQ, Instr_BNE, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_SB, Instr_SH, Instr_SW, Instr_ADDI, Instr_ADD : begin
@@ -4102,7 +4111,7 @@ module ID (
   always @(*) begin
     reg_we = 1'b0;
     case(instr_kind)
-      Instr_LUI, Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_ADDI, Instr_SLTI, Instr_SLTIU, Instr_XORI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_SRAI, Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_CSRRW, Instr_CSRRS, Instr_CSRRC, Instr_CSRRWI, Instr_CSRRSI, Instr_CSRRCI, Instr_ANDN, Instr_CLZ, Instr_PACK : begin
+      Instr_LUI, Instr_AUIPC, Instr_JAL, Instr_JALR, Instr_LB, Instr_LH, Instr_LW, Instr_LBU, Instr_LHU, Instr_ADDI, Instr_SLTI, Instr_SLTIU, Instr_XORI, Instr_ORI, Instr_ANDI, Instr_SLLI, Instr_SRLI, Instr_SRAI, Instr_ADD, Instr_SUB, Instr_SLL_1, Instr_SLT, Instr_SLTU, Instr_XOR_1, Instr_SRL_1, Instr_SRA_1, Instr_OR_1, Instr_AND_1, Instr_CSRRW, Instr_CSRRS, Instr_CSRRC, Instr_CSRRWI, Instr_CSRRSI, Instr_CSRRCI, Instr_ANDN, Instr_CLZ, Instr_PACK, Instr_SFENCE_VMA : begin
         reg_we = 1'b1;
       end
       default : begin
@@ -4133,13 +4142,13 @@ module ID (
         if(io_i_trap_trap) begin
           io_trap = 1'b1;
         end else begin
-          if(when_ID_l792) begin
+          if(when_ID_l803) begin
             io_trap = 1'b1;
           end else begin
-            if(when_ID_l796) begin
+            if(when_ID_l807) begin
               io_trap = 1'b1;
             end else begin
-              if(when_ID_l800) begin
+              if(when_ID_l811) begin
                 io_trap = 1'b1;
               end
             end
@@ -4151,9 +4160,9 @@ module ID (
 
   assign io_reg_addr_a = rs1;
   assign io_reg_addr_b = rs2;
-  assign when_ID_l792 = (instr_kind == Instr_EBREAK);
-  assign when_ID_l796 = (instr_kind == Instr_ECALL);
-  assign when_ID_l800 = (instr_kind == Instr_MRET);
+  assign when_ID_l803 = (instr_kind == Instr_EBREAK);
+  assign when_ID_l807 = (instr_kind == Instr_ECALL);
+  assign when_ID_l811 = (instr_kind == Instr_MRET);
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       io_o_real <= 1'b0;
@@ -4196,15 +4205,15 @@ module ID (
             io_o_trap_epc <= io_i_trap_epc;
             io_o_trap_cause <= io_i_trap_cause;
           end else begin
-            if(when_ID_l792) begin
+            if(when_ID_l803) begin
               io_o_trap_epc <= io_i_pc;
               io_o_trap_cause <= 32'h00000003;
             end else begin
-              if(when_ID_l796) begin
+              if(when_ID_l807) begin
                 io_o_trap_epc <= io_i_pc;
                 io_o_trap_cause <= 32'h00000008;
               end else begin
-                if(when_ID_l800) begin
+                if(when_ID_l811) begin
                   io_o_trap_epc <= io_i_pc;
                   io_o_trap_cause <= 32'h00000018;
                 end else begin
