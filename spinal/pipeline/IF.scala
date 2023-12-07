@@ -39,7 +39,8 @@ class IF(config: IFConfig = IFConfig()) extends Component {
 
     val va = pc
 
-    val pa = Reg(Types.addr) init(0)
+    val pa = Types.addr
+    pa := io.pt.physical_addr
     // Delayed branch signal
     val delay_br = Reg(Bool()) init(False)
 
@@ -146,7 +147,6 @@ class IF(config: IFConfig = IFConfig()) extends Component {
             }
             whenIsActive {
                 when (io.pt.look_up_ack && io.pt.look_up_vaild) {
-                    pa := io.pt.physical_addr
                     goto(fetch)
                 }
             }

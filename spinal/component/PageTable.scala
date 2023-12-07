@@ -12,21 +12,7 @@ case class PageTableConfigs (
     PAGE_SIZE : Int = 0x1000,
     PTE_SIZE : Int =  4,
 )
-class PTE(pte: Bits) {
-    val value = pte
-    val v = value(0, 1 bits)
-    val r = value(1, 1 bits)
-    val w = value(2, 1 bits)
-    val x = value(3, 1 bits)
-    val u = value(4, 1 bits) // u = 1 时 user_mode 才能用
-    val g = value(5, 1 bits)
-    val a = value(6, 1 bits)
-    val d = value(7, 1 bits)
-    val rsw = value(8, 2 bits)
-    val ppn = Vec(Types.data(12), 2)
-    ppn(0) := value(10, 10 bits).resize(12 bits)
-    ppn(1) := value(20, 12 bits)
-}
+
 
 case class PageTableTranslatePorts() extends Bundle with IMasterSlave{
     // virtual address
@@ -116,7 +102,20 @@ class PageTable(config: PageTableConfigs = PageTableConfigs()) extends Component
     wb.adr.setAsReg() init(0)
     wb.sel.setAsReg() init(0)
 
-
+    val pte = Reg(Types.data) init(0)
+    val pte_v = pte(0, 1 bits)    
+    val pte_r = pte(1, 1 bits)
+    val pte_w = pte(2, 1 bits)
+    val pte_x = pte(3, 1 bits)
+    val pte_u = pte(4, 1 bits)
+    val pte_g = pte(5, 1 bits)
+    val pte_a = pte(6, 1 bits)
+    val pte_d = pte(7, 1 bits)
+    val pte_rsw = pte(8, 2 bits)
+    val pte_ppn = Vec(Types.data(12), 2)
+    val pte_ppn_raw = pte(10, 22 bits)
+    pte_ppn(0) := pte(10, 10 bits).resize(12 bits)
+    pte_ppn(1) := pte(20, 12 bits) 
     val fsm = new StateMachine {
         trans_io.exception_code := 0
         trans_io.exception_we := False
@@ -125,54 +124,55 @@ class PageTable(config: PageTableConfigs = PageTableConfigs()) extends Component
         trans_io.physical_addr := 0
         val idle: State = new State with EntryPoint {
             onEntry {
+                
                 i := 1 // ! hardcode 
                 a := (satp_ppn.asUInt * config.PAGE_SIZE).resize(32)
-                trans_io.look_up_ack := False
-                trans_io.look_up_vaild := False
             }
             whenIsActive {
+                
+                trans_io.look_up_ack := False
+                trans_io.look_up_vaild := False
                 trans_io.exception_we := False 
                 when(trans_io.look_up_req && satp_mode) {
                     // TODO: PMA or PMP check
-                        when (trans_io.look_up_req && ! satp_mode) {
-                            trans_io.physical_addr := trans_io.look_up_addr
-                            trans_io.look_up_ack := True
-                            trans_io.look_up_vaild := True
-                         } otherwise {
-                            goto(read)
-                }
+                    when (trans_io.look_up_req && ! satp_mode) {
+                        trans_io.physical_addr := trans_io.look_up_addr
+                        trans_io.look_up_ack := True
+                        trans_io.look_up_vaild := True
+                    } otherwise {
+                        wb.adr := ((satp_ppn.asUInt * config.PAGE_SIZE).resize(32) + va_ppn(i) * config.PTE_SIZE).resize(32)
+                        wb.stb := True
+                        wb.sel := Sel.WORD
+                        goto(read)
+                    }
                 }
             }
         }
-        val read: State = new State {
-            onEntry {
-                wb.adr := (a + va_ppn(i) * config.PTE_SIZE).resize(32)
-                wb.stb := True
-                wb.sel := Sel.WORD
+
+        val waitClk: State = new State {
+            onEntry{
+
             }
             whenIsActive {
-                when (wb.ack) {
-                    wb.stb := False
-                    val pte = new PTE(wb.dat_r)
-                    when (pte.v === 0 || (pte.r === 0 && pte.w === 1)) {
+                  when (pte_v === 0 || (pte_r === 0 && pte_w === 1)) {
                         // raise page fault
                         raise_page_fault()
                         goto(idle)
 
                     } otherwise {
                     // pte vaild step 5
-                    when (pte.r === 1 || pte.x === 1) { // leaf ppn
+                    when (pte_r === 1 || pte_x === 1) { // leaf ppn
                         when (
-                           (!io.mstatus_SUM && io.privilege_mode === PrivilegeMode.U && pte.u === 0)
-                        || (!io.mstatus_MXR && pte.r === 0)
-                        || (io.mstatus_MXR && pte.r === 0 && pte.x === 0)
+                           (!io.mstatus_SUM && io.privilege_mode === PrivilegeMode.U && pte_u === 0)
+                        || (!io.mstatus_MXR && pte_r === 0)
+                        || (io.mstatus_MXR && pte_r === 0 && pte_x === 0)
                         ) {
                             raise_page_fault()
                             goto(idle)
-                        } elsewhen (i > 0 && pte.ppn(i) =/= 0) {
+                        } elsewhen (i > 0 && pte_ppn(i) =/= 0) {
                             raise_page_fault()
                             goto(idle)
-                        } elsewhen (pte.a === 0 || (trans_io.access_type === MemAccessType.Store && pte.d === 0)) {
+                        } elsewhen (pte_a === 0 || (trans_io.access_type === MemAccessType.Store && pte_d === 0)) {
                             // TODO: step 7 choice 
                             raise_page_fault()
                             goto(idle)
@@ -184,18 +184,22 @@ class PageTable(config: PageTableConfigs = PageTableConfigs()) extends Component
                             switch(i) {
                                 is(1) {
                                     trans_io.physical_addr(12, 10 bits) := trans_io.look_up_addr(12, 10 bits)
-                                    trans_io.physical_addr(22, 10 bits) := pte.ppn(1)(0, 10 bits).asUInt
+                                    trans_io.physical_addr(22, 10 bits) := pte_ppn(1)(0, 10 bits).asUInt
                                 }
                                 is(0) {
-                                    trans_io.physical_addr(12, 10 bits) := pte.ppn(0)(0, 10 bits).asUInt
-                                    trans_io.physical_addr(22, 10 bits) := pte.ppn(1)(0, 10 bits).asUInt
+                                    trans_io.physical_addr(12, 10 bits) := pte_ppn(0)(0, 10 bits).asUInt
+                                    trans_io.physical_addr(22, 10 bits) := pte_ppn(1)(0, 10 bits).asUInt
                                 }
                             }
+                            goto(idle)
                         }
                     } otherwise { // read next page
                         when (i > 0) {
-                            a := (pte.ppn(i-1).asUInt * config.PAGE_SIZE).resize(32)
+                            a := (pte_ppn_raw.asUInt * config.PAGE_SIZE).resize(32)
                             i := 0 // ! hardcode
+                            wb.adr := (pte_ppn_raw.asUInt * config.PAGE_SIZE + va_ppn(i-1) * config.PTE_SIZE).resize(32)
+                            wb.stb := True
+                            wb.sel := Sel.WORD
                             goto(read)
                         } otherwise { // page-fault
                             raise_page_fault()
@@ -203,7 +207,20 @@ class PageTable(config: PageTableConfigs = PageTableConfigs()) extends Component
                         }
                     }
                 }
-                } 
+                
+            }
+        }
+        val read: State = new State {
+            onEntry {
+               
+            }
+            whenIsActive {
+                when (wb.ack) {
+                    wb.stb := False
+                    pte := wb.dat_r
+                    goto(waitClk)
+                  } 
+                  
             }
         }
     }
