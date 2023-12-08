@@ -30,15 +30,23 @@ class CsrFile extends Component {
     val io = new Bundle {
         val csr = slave port CsrFilePorts()
 
+        val time, timeh = slave port CsrPorts()
+
+        val satp = slave port CsrPorts()
+
         val mstatus, mie, mtvec = slave port CsrPorts()
 
         val mscratch, mepc, mcause, mip = slave port CsrPorts()
-        
-        val satp = slave port CsrPorts()
 
         // Timer
+        val timer = in port UInt(64 bits)
         val timeout = in Bool()
     }
+
+    val time = new Time
+    val timeh = new Timeh
+
+    val satp = new Satp
 
     val mstatus = new Mstatus
     val mie = new Mie
@@ -49,11 +57,17 @@ class CsrFile extends Component {
     val mcause = new Mcause
     val mip = new Mip
 
-    val satp = new Satp
+    time.time := io.timer(0, 32 bits)
+    timeh.timeh := io.timer(32, 32 bits)
 
     mip.timeout := io.timeout
 
     val csr_file = Seq (
+        time -> io.time,
+        timeh -> io.timeh,
+
+        satp -> io.satp,
+
         mstatus -> io.mstatus,
         mie -> io.mie,
         mtvec -> io.mtvec,
@@ -62,9 +76,12 @@ class CsrFile extends Component {
         mepc -> io.mepc,
         mcause -> io.mcause,
         mip -> io.mip,
-
-        satp -> io.satp,
     )
+
+    io.time.r allowPruning()
+    io.time.w allowPruning()
+    io.timeh.r allowPruning()
+    io.timeh.w allowPruning()
 
     io.mscratch.r allowPruning()
     io.mcause.r allowPruning()
@@ -94,25 +111,52 @@ class Csr(val addr: Int) extends Component {
     io.r := reg
 }
 
+// Unprivileged Counter/Timers
+
+class Time extends Csr(0xc01) {
+    io.r allowOverride()
+    io.w allowPruning()
+    io.we allowPruning()
+
+    val time = in port UInt(32 bits)
+    // RO
+    io.r := time.asBits
+
+    reg := 0
+}
+
+class Timeh extends Csr(0xc81) {
+    io.r allowOverride()
+    io.w allowPruning()
+    io.we allowPruning()
+
+    val timeh = in port UInt(32 bits)
+
+    // RO
+    io.r := timeh.asBits
+
+    reg := 0
+}
+
 // Supervisor Protection and Translation
 
 class Satp extends Csr(0x180) {
+    // WARL
     val ppn = reg(0, 22 bits) allowPruning()
     val ppn_w = io.w(0, 22 bits)
-
+    // WARL
     val asid = reg(22, 9 bits) allowPruning()
     val asid_w = io.w(22, 9 bits)
-
+    // WARL
     val mode = reg(31, 1 bits) allowPruning()
     val mode_w = io.w(31, 1 bits)
 
     when (io.we) {
-       when (mode_w === 1 || (mode_w === 0 && ppn_w === 0))
-        {
-        ppn := ppn_w
-        mode := mode_w
-        asid := asid_w
-    }
+        when (mode_w === 1 || (mode_w === 0 && ppn_w === 0)) {
+            ppn := ppn_w
+            mode := mode_w
+            asid := asid_w
+        }
     }
 }
 

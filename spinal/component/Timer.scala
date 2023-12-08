@@ -22,6 +22,7 @@ object Timer {
 class Timer extends Component {
     val io = new Bundle {
         val timer = slave port TimerPorts()
+        val time = out UInt(64 bits)
         val timeout = out Bool()
     }
 
@@ -49,5 +50,6 @@ class Timer extends Component {
         mtimecmp(32, 32 bits) := io.timer.mtimecmph.w.asUInt
     }
 
+    io.time := mtime
     io.timeout := mtime >= mtimecmp
 }

@@ -108,6 +108,12 @@ class Top (
     trap.io.mcause <> csr.io.mcause
 
     // Csr
+    csr.io.time.we := False
+    csr.io.time.w := 0
+
+    csr.io.timeh.we := False
+    csr.io.timeh.w := 0
+
     csr.io.mscratch.we := False
     csr.io.mscratch.w := 0
 
@@ -120,6 +126,7 @@ class Top (
     csr.io.satp.we := False
     csr.io.satp.w := 0
 
+    csr.io.timer := timer.io.time
     csr.io.timeout := timer.io.timeout
 
     // Wishbone IO

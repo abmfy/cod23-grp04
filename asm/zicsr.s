@@ -20,7 +20,7 @@ andi t1, t1, 0x20
 beq t1, zero, pass
 addi a0, zero, 'P'
 sb a0, 0(t0)
-beq x0, x0, loop
+beq x0, x0, test_timer
 
 nop
 nop
@@ -128,3 +128,41 @@ li x7, 0xbadbeef
 bne a0, x7, fail
 
 j pass
+
+test_timer:
+li t5, 2
+
+.load:
+rdtimeh x3
+rdtime x2
+rdtimeh x4
+bne x3, x4, .load
+
+li t6, 4
+.low:
+mv a0, x2
+call output
+addi t6, t6, -1
+srli x2, x2, 8
+bne t6, zero, .low
+
+li t6, 4
+.high:
+mv a0, x4
+call output
+addi t6, t6, -1
+srli x4, x4, 8
+bne t6, zero, .high
+
+addi t5, t5, -1
+bne t5, zero, .load
+
+j loop
+
+output:
+lui t0, 0x10000
+lb t1, 5(t0)
+andi t1, t1, 0x20
+beq t1, zero, output
+sb a0, 0(t0)
+ret

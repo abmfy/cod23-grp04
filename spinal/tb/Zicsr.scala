@@ -13,8 +13,6 @@ object Zicsr extends App {
         simulation = true,
         base_sram_init = Some("asm/zicsr.bin"),
     ))).doSim { dut =>
-        SimTimeout(200 us)
-
         // Initialization
         UartModel.init(dut.io.uart0.rxd)
 
@@ -34,7 +32,7 @@ object Zicsr extends App {
             if (char == 'P') {
                 println(s"Zicsr Passed")
                 passed = true
-            } else {
+            } else if (!passed) {
                 simFailure(s"Failed, received '$char'")
             }
         }
@@ -54,5 +52,8 @@ object Zicsr extends App {
         waitUntil(passed)
 
         println(f"Clocks elapsed: $counter")
+
+        // Wait for rdtime
+        sleep(100 us)
     }
 }
