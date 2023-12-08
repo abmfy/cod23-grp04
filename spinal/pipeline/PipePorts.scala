@@ -135,8 +135,9 @@ case class TrapPorts() extends Bundle with IMasterSlave {
 
     val epc = Types.addr
     val cause = Types.data
+    val tval = Types.data
 
     override def asMaster(): Unit = {
-        out (trap, epc, cause)
+        out (trap, epc, cause, tval)
     }
 }

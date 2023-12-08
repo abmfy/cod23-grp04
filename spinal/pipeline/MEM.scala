@@ -117,6 +117,7 @@ class MEM extends Component {
     io.o.trap.trap.setAsReg() init(False)
     io.o.trap.epc.setAsReg() init(0)
     io.o.trap.cause.setAsReg() init(0)
+    io.o.trap.tval.setAsReg() init(0)
 
     io.wb.stb.setAsReg() init(False)
     io.wb.we.setAsReg() init(False)
@@ -224,6 +225,7 @@ class MEM extends Component {
         io.trap := True
         io.o.trap.epc := io.i.pc
         io.o.trap.cause := io.pt.exception_code
+        io.o.trap.tval := va.asBits
     }
 
     val fsm = new StateMachine {
@@ -233,8 +235,7 @@ class MEM extends Component {
                 // Trapped
                 when (io.i.trap.trap) {
                     io.trap := True
-                    io.o.trap.epc := io.i.trap.epc
-                    io.o.trap.cause := io.i.trap.cause
+                    io.o.trap <> io.i.trap
                 } elsewhen (io.i.mem_en) {
                     bubble()
 

@@ -21,8 +21,9 @@ class IF(config: IFConfig = IFConfig()) extends Component {
 
         // Trap
         val trap = out Bool()
-        val mie = in port Types.data
-        val mip = in port Types.data
+        val sie, mie = in Bool()
+        val ie, ip = in port Types.data
+        val mideleg = in port Types.data
 
         // Privilege mode
         val prv = in port PrivilegeMode()
@@ -50,7 +51,9 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     val delay_instr = Reg(Types.data) init(Instr.NOP)
 
     // Interrupt
-    val interrupt = io.mie & io.mip
+    val interrupt = io.ie & io.ip
+    val interrupt_delegated = interrupt & io.mideleg
+    val interrupt_masked = interrupt & ~io.mideleg
 
     // Paging enabled
     val page_en = io.prv =/= PrivilegeMode.M && io.satp_mode
@@ -62,6 +65,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     io.o.trap.trap.setAsReg() init(False)
     io.o.trap.epc.setAsReg() init(0)
     io.o.trap.cause.setAsReg() init(0)
+    io.o.trap.tval.setAsReg() init(0)
 
     io.trap := io.o.trap.trap
     io.o.trap.trap := io.trap
@@ -87,18 +91,36 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         io.trap := False
         io.o.trap.epc := 0
         io.o.trap.cause := 0
+        io.o.trap.tval := 0
+    }
+    
+    def trap(interrupt: Bits): Unit = {
+        io.trap := True
+        io.o.trap.epc := pc
+        
+        when (interrupt(InterruptField.MTI)) {
+            io.o.trap.cause := TrapCause.MACHINE_TIMER_INTERRUPT
+        } elsewhen (interrupt(InterruptField.STI)) {
+            io.o.trap.cause := TrapCause.SUPERVISOR_TIMER_INTERRUPT
+        } otherwise {
+            io.o.trap.cause := TrapCause.UNKNOWN_INTERRUPT
+        }
+        io.o.trap.tval := 0
     }
 
     def output(instr: Bits): Unit = {
-        when ((io.prv !== PrivilegeMode.M) && interrupt =/= 0) {
-            io.trap := True
-            io.o.trap.epc := pc
-            
-            when (interrupt(InterruptField.MTI)) {
-                io.o.trap.cause := TrapCause.MACHINE_TIMER_INTERRUPT
-            } otherwise {
-                io.o.trap.cause := TrapCause.UNKNOWN_INTERRUPT
-            }
+        // Mask out delegated interrupts
+        when (interrupt_masked.orR && (
+            io.prv === PrivilegeMode.M && io.mie
+            || io.prv === PrivilegeMode.S
+            || io.prv === PrivilegeMode.U
+        )) {
+            trap(interrupt_masked)
+        } elsewhen (interrupt_delegated.orR && (
+            io.prv === PrivilegeMode.S && io.sie
+            || io.prv === PrivilegeMode.U
+        )) {
+            trap(interrupt_delegated)
         } otherwise {
             io.trap := False
             io.o.real := True
@@ -112,6 +134,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         io.trap := True
         io.o.trap.epc := pc
         io.o.trap.cause := io.pt.exception_code
+        io.o.trap.tval := va.asBits
     }
 
     val fsm = new StateMachine {

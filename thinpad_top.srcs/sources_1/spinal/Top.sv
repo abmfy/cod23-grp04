@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : 175578042e1ded1d2e0e52501bff76d6b2505fbe
+// Git hash  : 5cc3dee4254c21453d4f0dbd69040cbea82e00c8
 
 `timescale 1ns/1ps
 
@@ -73,8 +73,18 @@ module Top (
   wire                csr_io_time_we;
   wire       [31:0]   csr_io_timeh_w;
   wire                csr_io_timeh_we;
+  wire       [31:0]   csr_io_sstatus_w;
+  wire                csr_io_sstatus_we;
+  wire       [31:0]   csr_io_sie_w;
+  wire                csr_io_sie_we;
+  wire       [31:0]   csr_io_sscratch_w;
+  wire                csr_io_sscratch_we;
+  wire       [31:0]   csr_io_sip_w;
+  wire                csr_io_sip_we;
   wire       [31:0]   csr_io_satp_w;
   wire                csr_io_satp_we;
+  wire       [31:0]   csr_io_mhartid_w;
+  wire                csr_io_mhartid_we;
   wire       [31:0]   csr_io_mie_w;
   wire                csr_io_mie_we;
   wire       [31:0]   csr_io_mscratch_w;
@@ -89,6 +99,8 @@ module Top (
   wire       [31:0]   If_2_io_br_pc;
   wire                If_2_io_stall;
   wire                If_2_io_bubble;
+  wire                If_2_io_sie;
+  wire                If_2_io_mie;
   wire                If_2_io_satp_mode;
   wire                Id_1_io_stall;
   wire                Id_1_io_bubble;
@@ -105,19 +117,43 @@ module Top (
   wire       [31:0]   csr_io_csr_r;
   wire       [31:0]   csr_io_time_r;
   wire       [31:0]   csr_io_timeh_r;
+  wire       [31:0]   csr_io_sstatus_r;
+  wire       [31:0]   csr_io_sie_r;
+  wire       [31:0]   csr_io_stvec_r;
+  wire       [31:0]   csr_io_sscratch_r;
+  wire       [31:0]   csr_io_sepc_r;
+  wire       [31:0]   csr_io_scause_r;
+  wire       [31:0]   csr_io_stval_r;
+  wire       [31:0]   csr_io_sip_r;
   wire       [31:0]   csr_io_satp_r;
+  wire       [31:0]   csr_io_mhartid_r;
+  wire       [31:0]   csr_io_medeleg_r;
+  wire       [31:0]   csr_io_mideleg_r;
   wire       [31:0]   csr_io_mstatus_r;
   wire       [31:0]   csr_io_mie_r;
   wire       [31:0]   csr_io_mtvec_r;
   wire       [31:0]   csr_io_mscratch_r;
   wire       [31:0]   csr_io_mepc_r;
   wire       [31:0]   csr_io_mcause_r;
+  wire       [31:0]   csr_io_mtval_r;
   wire       [31:0]   csr_io_mip_r;
   wire                trap_1_io_flush_req_0;
   wire                trap_1_io_flush_req_1;
   wire                trap_1_io_flush_req_2;
   wire                trap_1_io_br_br;
   wire       [31:0]   trap_1_io_br_pc;
+  wire       [31:0]   trap_1_io_stvec_w;
+  wire                trap_1_io_stvec_we;
+  wire       [31:0]   trap_1_io_sepc_w;
+  wire                trap_1_io_sepc_we;
+  wire       [31:0]   trap_1_io_scause_w;
+  wire                trap_1_io_scause_we;
+  wire       [31:0]   trap_1_io_stval_w;
+  wire                trap_1_io_stval_we;
+  wire       [31:0]   trap_1_io_medeleg_w;
+  wire                trap_1_io_medeleg_we;
+  wire       [31:0]   trap_1_io_mideleg_w;
+  wire                trap_1_io_mideleg_we;
   wire       [31:0]   trap_1_io_mstatus_w;
   wire                trap_1_io_mstatus_we;
   wire       [31:0]   trap_1_io_mtvec_w;
@@ -126,6 +162,8 @@ module Top (
   wire                trap_1_io_mepc_we;
   wire       [31:0]   trap_1_io_mcause_w;
   wire                trap_1_io_mcause_we;
+  wire       [31:0]   trap_1_io_mtval_w;
+  wire                trap_1_io_mtval_we;
   wire       [1:0]    trap_1_io_prv;
   wire       [31:0]   timer_1_io_timer_mtime_r;
   wire       [31:0]   timer_1_io_timer_mtimeh_r;
@@ -159,6 +197,7 @@ module Top (
   wire                If_2_io_o_trap_trap;
   wire       [31:0]   If_2_io_o_trap_epc;
   wire       [31:0]   If_2_io_o_trap_cause;
+  wire       [31:0]   If_2_io_o_trap_tval;
   wire                If_2_io_trap;
   wire                If_2_io_wb_cyc;
   wire                If_2_io_wb_stb;
@@ -192,6 +231,7 @@ module Top (
   wire                Id_1_io_o_trap_trap;
   wire       [31:0]   Id_1_io_o_trap_epc;
   wire       [31:0]   Id_1_io_o_trap_cause;
+  wire       [31:0]   Id_1_io_o_trap_tval;
   wire                Id_1_io_trap;
   wire       [4:0]    Id_1_io_reg_addr_a;
   wire       [4:0]    Id_1_io_reg_addr_b;
@@ -211,6 +251,7 @@ module Top (
   wire                Exe_1_io_o_trap_trap;
   wire       [31:0]   Exe_1_io_o_trap_epc;
   wire       [31:0]   Exe_1_io_o_trap_cause;
+  wire       [31:0]   Exe_1_io_o_trap_tval;
   wire                Exe_1_io_br_br;
   wire       [31:0]   Exe_1_io_br_pc;
   wire                Exe_1_io_flush_req;
@@ -226,6 +267,7 @@ module Top (
   wire                Mem_1_io_o_trap_trap;
   wire       [31:0]   Mem_1_io_o_trap_epc;
   wire       [31:0]   Mem_1_io_o_trap_cause;
+  wire       [31:0]   Mem_1_io_o_trap_tval;
   wire                Mem_1_io_forward_we;
   wire       [4:0]    Mem_1_io_forward_addr;
   wire       [31:0]   Mem_1_io_forward_data;
@@ -257,6 +299,7 @@ module Top (
   wire                Wb_1_io_trap_commit_trap;
   wire       [31:0]   Wb_1_io_trap_commit_epc;
   wire       [31:0]   Wb_1_io_trap_commit_cause;
+  wire       [31:0]   Wb_1_io_trap_commit_tval;
   wire       [4:0]    Wb_1_io_reg_addr;
   wire       [31:0]   Wb_1_io_reg_data;
   wire                Wb_1_io_reg_we;
@@ -589,9 +632,42 @@ module Top (
     .io_timeh_r     (csr_io_timeh_r[31:0]     ), //o
     .io_timeh_w     (csr_io_timeh_w[31:0]     ), //i
     .io_timeh_we    (csr_io_timeh_we          ), //i
+    .io_sstatus_r   (csr_io_sstatus_r[31:0]   ), //o
+    .io_sstatus_w   (csr_io_sstatus_w[31:0]   ), //i
+    .io_sstatus_we  (csr_io_sstatus_we        ), //i
+    .io_sie_r       (csr_io_sie_r[31:0]       ), //o
+    .io_sie_w       (csr_io_sie_w[31:0]       ), //i
+    .io_sie_we      (csr_io_sie_we            ), //i
+    .io_stvec_r     (csr_io_stvec_r[31:0]     ), //o
+    .io_stvec_w     (trap_1_io_stvec_w[31:0]  ), //i
+    .io_stvec_we    (trap_1_io_stvec_we       ), //i
+    .io_sscratch_r  (csr_io_sscratch_r[31:0]  ), //o
+    .io_sscratch_w  (csr_io_sscratch_w[31:0]  ), //i
+    .io_sscratch_we (csr_io_sscratch_we       ), //i
+    .io_sepc_r      (csr_io_sepc_r[31:0]      ), //o
+    .io_sepc_w      (trap_1_io_sepc_w[31:0]   ), //i
+    .io_sepc_we     (trap_1_io_sepc_we        ), //i
+    .io_scause_r    (csr_io_scause_r[31:0]    ), //o
+    .io_scause_w    (trap_1_io_scause_w[31:0] ), //i
+    .io_scause_we   (trap_1_io_scause_we      ), //i
+    .io_stval_r     (csr_io_stval_r[31:0]     ), //o
+    .io_stval_w     (trap_1_io_stval_w[31:0]  ), //i
+    .io_stval_we    (trap_1_io_stval_we       ), //i
+    .io_sip_r       (csr_io_sip_r[31:0]       ), //o
+    .io_sip_w       (csr_io_sip_w[31:0]       ), //i
+    .io_sip_we      (csr_io_sip_we            ), //i
     .io_satp_r      (csr_io_satp_r[31:0]      ), //o
     .io_satp_w      (csr_io_satp_w[31:0]      ), //i
     .io_satp_we     (csr_io_satp_we           ), //i
+    .io_mhartid_r   (csr_io_mhartid_r[31:0]   ), //o
+    .io_mhartid_w   (csr_io_mhartid_w[31:0]   ), //i
+    .io_mhartid_we  (csr_io_mhartid_we        ), //i
+    .io_medeleg_r   (csr_io_medeleg_r[31:0]   ), //o
+    .io_medeleg_w   (trap_1_io_medeleg_w[31:0]), //i
+    .io_medeleg_we  (trap_1_io_medeleg_we     ), //i
+    .io_mideleg_r   (csr_io_mideleg_r[31:0]   ), //o
+    .io_mideleg_w   (trap_1_io_mideleg_w[31:0]), //i
+    .io_mideleg_we  (trap_1_io_mideleg_we     ), //i
     .io_mstatus_r   (csr_io_mstatus_r[31:0]   ), //o
     .io_mstatus_w   (trap_1_io_mstatus_w[31:0]), //i
     .io_mstatus_we  (trap_1_io_mstatus_we     ), //i
@@ -610,6 +686,9 @@ module Top (
     .io_mcause_r    (csr_io_mcause_r[31:0]    ), //o
     .io_mcause_w    (trap_1_io_mcause_w[31:0] ), //i
     .io_mcause_we   (trap_1_io_mcause_we      ), //i
+    .io_mtval_r     (csr_io_mtval_r[31:0]     ), //o
+    .io_mtval_w     (trap_1_io_mtval_w[31:0]  ), //i
+    .io_mtval_we    (trap_1_io_mtval_we       ), //i
     .io_mip_r       (csr_io_mip_r[31:0]       ), //o
     .io_mip_w       (csr_io_mip_w[31:0]       ), //i
     .io_mip_we      (csr_io_mip_we            ), //i
@@ -628,8 +707,27 @@ module Top (
     .io_commit_trap  (Wb_1_io_trap_commit_trap       ), //i
     .io_commit_epc   (Wb_1_io_trap_commit_epc[31:0]  ), //i
     .io_commit_cause (Wb_1_io_trap_commit_cause[31:0]), //i
+    .io_commit_tval  (Wb_1_io_trap_commit_tval[31:0] ), //i
     .io_br_br        (trap_1_io_br_br                ), //o
     .io_br_pc        (trap_1_io_br_pc[31:0]          ), //o
+    .io_stvec_r      (csr_io_stvec_r[31:0]           ), //i
+    .io_stvec_w      (trap_1_io_stvec_w[31:0]        ), //o
+    .io_stvec_we     (trap_1_io_stvec_we             ), //o
+    .io_sepc_r       (csr_io_sepc_r[31:0]            ), //i
+    .io_sepc_w       (trap_1_io_sepc_w[31:0]         ), //o
+    .io_sepc_we      (trap_1_io_sepc_we              ), //o
+    .io_scause_r     (csr_io_scause_r[31:0]          ), //i
+    .io_scause_w     (trap_1_io_scause_w[31:0]       ), //o
+    .io_scause_we    (trap_1_io_scause_we            ), //o
+    .io_stval_r      (csr_io_stval_r[31:0]           ), //i
+    .io_stval_w      (trap_1_io_stval_w[31:0]        ), //o
+    .io_stval_we     (trap_1_io_stval_we             ), //o
+    .io_medeleg_r    (csr_io_medeleg_r[31:0]         ), //i
+    .io_medeleg_w    (trap_1_io_medeleg_w[31:0]      ), //o
+    .io_medeleg_we   (trap_1_io_medeleg_we           ), //o
+    .io_mideleg_r    (csr_io_mideleg_r[31:0]         ), //i
+    .io_mideleg_w    (trap_1_io_mideleg_w[31:0]      ), //o
+    .io_mideleg_we   (trap_1_io_mideleg_we           ), //o
     .io_mstatus_r    (csr_io_mstatus_r[31:0]         ), //i
     .io_mstatus_w    (trap_1_io_mstatus_w[31:0]      ), //o
     .io_mstatus_we   (trap_1_io_mstatus_we           ), //o
@@ -642,6 +740,9 @@ module Top (
     .io_mcause_r     (csr_io_mcause_r[31:0]          ), //i
     .io_mcause_w     (trap_1_io_mcause_w[31:0]       ), //o
     .io_mcause_we    (trap_1_io_mcause_we            ), //o
+    .io_mtval_r      (csr_io_mtval_r[31:0]           ), //i
+    .io_mtval_w      (trap_1_io_mtval_w[31:0]        ), //o
+    .io_mtval_we     (trap_1_io_mtval_we             ), //o
     .io_prv          (trap_1_io_prv[1:0]             ), //o
     .sys_clk         (sys_clk                        ), //i
     .sys_reset       (sys_reset                      )  //i
@@ -717,13 +818,17 @@ module Top (
     .io_o_trap_trap       (If_2_io_o_trap_trap                        ), //o
     .io_o_trap_epc        (If_2_io_o_trap_epc[31:0]                   ), //o
     .io_o_trap_cause      (If_2_io_o_trap_cause[31:0]                 ), //o
+    .io_o_trap_tval       (If_2_io_o_trap_tval[31:0]                  ), //o
     .io_br_br             (If_2_io_br_br                              ), //i
     .io_br_pc             (If_2_io_br_pc[31:0]                        ), //i
     .io_stall             (If_2_io_stall                              ), //i
     .io_bubble            (If_2_io_bubble                             ), //i
     .io_trap              (If_2_io_trap                               ), //o
-    .io_mie               (csr_io_mie_r[31:0]                         ), //i
-    .io_mip               (csr_io_mip_r[31:0]                         ), //i
+    .io_sie               (If_2_io_sie                                ), //i
+    .io_mie               (If_2_io_mie                                ), //i
+    .io_ie                (csr_io_mie_r[31:0]                         ), //i
+    .io_ip                (csr_io_mip_r[31:0]                         ), //i
+    .io_mideleg           (csr_io_mideleg_r[31:0]                     ), //i
     .io_prv               (trap_1_io_prv[1:0]                         ), //i
     .io_satp_mode         (If_2_io_satp_mode                          ), //i
     .io_wb_cyc            (If_2_io_wb_cyc                             ), //o
@@ -751,6 +856,7 @@ module Top (
     .io_i_trap_trap    (If_2_io_o_trap_trap       ), //i
     .io_i_trap_epc     (If_2_io_o_trap_epc[31:0]  ), //i
     .io_i_trap_cause   (If_2_io_o_trap_cause[31:0]), //i
+    .io_i_trap_tval    (If_2_io_o_trap_tval[31:0] ), //i
     .io_o_real         (Id_1_io_o_real            ), //o
     .io_o_pc           (Id_1_io_o_pc[31:0]        ), //o
     .io_o_reg_data_a   (Id_1_io_o_reg_data_a[31:0]), //o
@@ -774,9 +880,11 @@ module Top (
     .io_o_trap_trap    (Id_1_io_o_trap_trap       ), //o
     .io_o_trap_epc     (Id_1_io_o_trap_epc[31:0]  ), //o
     .io_o_trap_cause   (Id_1_io_o_trap_cause[31:0]), //o
+    .io_o_trap_tval    (Id_1_io_o_trap_tval[31:0] ), //o
     .io_stall          (Id_1_io_stall             ), //i
     .io_bubble         (Id_1_io_bubble            ), //i
     .io_trap           (Id_1_io_trap              ), //o
+    .io_prv            (trap_1_io_prv[1:0]        ), //i
     .io_reg_addr_a     (Id_1_io_reg_addr_a[4:0]   ), //o
     .io_reg_data_a     (reg_file_io_r_data_a[31:0]), //i
     .io_reg_addr_b     (Id_1_io_reg_addr_b[4:0]   ), //o
@@ -808,6 +916,7 @@ module Top (
     .io_i_trap_trap    (Id_1_io_o_trap_trap        ), //i
     .io_i_trap_epc     (Id_1_io_o_trap_epc[31:0]   ), //i
     .io_i_trap_cause   (Id_1_io_o_trap_cause[31:0] ), //i
+    .io_i_trap_tval    (Id_1_io_o_trap_tval[31:0]  ), //i
     .io_o_real         (Exe_1_io_o_real            ), //o
     .io_o_pc           (Exe_1_io_o_pc[31:0]        ), //o
     .io_o_reg_data_b   (Exe_1_io_o_reg_data_b[31:0]), //o
@@ -824,6 +933,7 @@ module Top (
     .io_o_trap_trap    (Exe_1_io_o_trap_trap       ), //o
     .io_o_trap_epc     (Exe_1_io_o_trap_epc[31:0]  ), //o
     .io_o_trap_cause   (Exe_1_io_o_trap_cause[31:0]), //o
+    .io_o_trap_tval    (Exe_1_io_o_trap_tval[31:0] ), //o
     .io_br_br          (Exe_1_io_br_br             ), //o
     .io_br_pc          (Exe_1_io_br_pc[31:0]       ), //o
     .io_forward_0_we   (Mem_1_io_forward_we        ), //i
@@ -860,6 +970,7 @@ module Top (
     .io_i_trap_trap        (Exe_1_io_o_trap_trap                        ), //i
     .io_i_trap_epc         (Exe_1_io_o_trap_epc[31:0]                   ), //i
     .io_i_trap_cause       (Exe_1_io_o_trap_cause[31:0]                 ), //i
+    .io_i_trap_tval        (Exe_1_io_o_trap_tval[31:0]                  ), //i
     .io_o_real             (Mem_1_io_o_real                             ), //o
     .io_o_pc               (Mem_1_io_o_pc[31:0]                         ), //o
     .io_o_reg_we           (Mem_1_io_o_reg_we                           ), //o
@@ -868,6 +979,7 @@ module Top (
     .io_o_trap_trap        (Mem_1_io_o_trap_trap                        ), //o
     .io_o_trap_epc         (Mem_1_io_o_trap_epc[31:0]                   ), //o
     .io_o_trap_cause       (Mem_1_io_o_trap_cause[31:0]                 ), //o
+    .io_o_trap_tval        (Mem_1_io_o_trap_tval[31:0]                  ), //o
     .io_forward_we         (Mem_1_io_forward_we                         ), //o
     .io_forward_addr       (Mem_1_io_forward_addr[4:0]                  ), //o
     .io_forward_data       (Mem_1_io_forward_data[31:0]                 ), //o
@@ -918,12 +1030,14 @@ module Top (
     .io_i_trap_trap       (Mem_1_io_o_trap_trap           ), //i
     .io_i_trap_epc        (Mem_1_io_o_trap_epc[31:0]      ), //i
     .io_i_trap_cause      (Mem_1_io_o_trap_cause[31:0]    ), //i
+    .io_i_trap_tval       (Mem_1_io_o_trap_tval[31:0]     ), //i
     .io_forward_we        (Wb_1_io_forward_we             ), //o
     .io_forward_addr      (Wb_1_io_forward_addr[4:0]      ), //o
     .io_forward_data      (Wb_1_io_forward_data[31:0]     ), //o
     .io_trap_commit_trap  (Wb_1_io_trap_commit_trap       ), //o
     .io_trap_commit_epc   (Wb_1_io_trap_commit_epc[31:0]  ), //o
     .io_trap_commit_cause (Wb_1_io_trap_commit_cause[31:0]), //o
+    .io_trap_commit_tval  (Wb_1_io_trap_commit_tval[31:0] ), //o
     .io_reg_addr          (Wb_1_io_reg_addr[4:0]          ), //o
     .io_reg_data          (Wb_1_io_reg_data[31:0]         ), //o
     .io_reg_we            (Wb_1_io_reg_we                 )  //o
@@ -1787,6 +1901,8 @@ module Top (
   assign If_2_io_br_pc = (trap_1_io_br_br ? trap_1_io_br_pc : Exe_1_io_br_pc);
   assign If_2_io_stall = (((! trap_1_io_flush_req_0) && (! Exe_1_io_flush_req)) && Mem_1_io_stall_req);
   assign If_2_io_bubble = (trap_1_io_flush_req_0 || Exe_1_io_flush_req);
+  assign If_2_io_sie = csr_io_mstatus_r[1];
+  assign If_2_io_mie = csr_io_mstatus_r[3];
   assign If_2_io_satp_mode = csr_io_satp_r[31];
   assign IF_page_table_io_mstatus_SUM = csr_io_mstatus_r[18];
   assign IF_page_table_io_mstatus_MXR = csr_io_mstatus_r[19];
@@ -1799,14 +1915,24 @@ module Top (
   assign csr_io_time_w = 32'h00000000;
   assign csr_io_timeh_we = 1'b0;
   assign csr_io_timeh_w = 32'h00000000;
+  assign csr_io_sstatus_we = 1'b0;
+  assign csr_io_sstatus_w = 32'h00000000;
+  assign csr_io_sie_we = 1'b0;
+  assign csr_io_sie_w = 32'h00000000;
+  assign csr_io_sscratch_we = 1'b0;
+  assign csr_io_sscratch_w = 32'h00000000;
+  assign csr_io_sip_we = 1'b0;
+  assign csr_io_sip_w = 32'h00000000;
+  assign csr_io_satp_we = 1'b0;
+  assign csr_io_satp_w = 32'h00000000;
+  assign csr_io_mhartid_we = 1'b0;
+  assign csr_io_mhartid_w = 32'h00000000;
+  assign csr_io_mie_we = 1'b0;
+  assign csr_io_mie_w = 32'h00000000;
   assign csr_io_mscratch_we = 1'b0;
   assign csr_io_mscratch_w = 32'h00000000;
   assign csr_io_mip_we = 1'b0;
   assign csr_io_mip_w = 32'h00000000;
-  assign csr_io_mie_we = 1'b0;
-  assign csr_io_mie_w = 32'h00000000;
-  assign csr_io_satp_we = 1'b0;
-  assign csr_io_satp_w = 32'h00000000;
   assign _zz_base_ram_data_32 = base_ram_io_sram_data_write;
   assign _zz_when_InOutWrapper_l13 = base_ram_io_sram_data_writeEnable;
   assign base_ram_addr = base_ram_io_sram_addr;
@@ -2370,12 +2496,14 @@ module WB (
   input  wire          io_i_trap_trap,
   input  wire [31:0]   io_i_trap_epc,
   input  wire [31:0]   io_i_trap_cause,
+  input  wire [31:0]   io_i_trap_tval,
   output wire          io_forward_we,
   output wire [4:0]    io_forward_addr,
   output wire [31:0]   io_forward_data,
   output reg           io_trap_commit_trap,
   output reg  [31:0]   io_trap_commit_epc,
   output reg  [31:0]   io_trap_commit_cause,
+  output reg  [31:0]   io_trap_commit_tval,
   output wire [4:0]    io_reg_addr,
   output wire [31:0]   io_reg_data,
   output reg           io_reg_we
@@ -2396,7 +2524,7 @@ module WB (
   assign io_reg_data = io_i_reg_data_d;
   always @(*) begin
     if(io_i_trap_trap) begin
-      io_trap_commit_trap = 1'b1;
+      io_trap_commit_trap = io_i_trap_trap;
     end else begin
       io_trap_commit_trap = 1'b0;
     end
@@ -2415,6 +2543,14 @@ module WB (
       io_trap_commit_cause = io_i_trap_cause;
     end else begin
       io_trap_commit_cause = 32'h00000000;
+    end
+  end
+
+  always @(*) begin
+    if(io_i_trap_trap) begin
+      io_trap_commit_tval = io_i_trap_tval;
+    end else begin
+      io_trap_commit_tval = 32'h00000000;
     end
   end
 
@@ -2438,6 +2574,7 @@ module MEM (
   input  wire          io_i_trap_trap,
   input  wire [31:0]   io_i_trap_epc,
   input  wire [31:0]   io_i_trap_cause,
+  input  wire [31:0]   io_i_trap_tval,
   output reg           io_o_real,
   output reg  [31:0]   io_o_pc,
   output reg           io_o_reg_we,
@@ -2446,6 +2583,7 @@ module MEM (
   output reg           io_o_trap_trap,
   output reg  [31:0]   io_o_trap_epc,
   output reg  [31:0]   io_o_trap_cause,
+  output reg  [31:0]   io_o_trap_tval,
   output wire          io_forward_we,
   output wire [4:0]    io_forward_addr,
   output wire [31:0]   io_forward_data,
@@ -2535,8 +2673,8 @@ module MEM (
   wire                timer_mtimecmp_req;
   wire                timer_mtimecmph_req;
   wire                timer_req;
-  wire                when_MEM_l167;
-  wire                when_MEM_l195;
+  wire                when_MEM_l168;
+  wire                when_MEM_l196;
   reg                 fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
@@ -2757,7 +2895,7 @@ module MEM (
   assign timer_req = (((timer_mtime_req || timer_mtimeh_req) || timer_mtimecmp_req) || timer_mtimecmph_req);
   always @(*) begin
     io_timer_mtime_we = 1'b0;
-    if(when_MEM_l167) begin
+    if(when_MEM_l168) begin
       if(timer_mtime_req) begin
         io_timer_mtime_we = 1'b1;
       end
@@ -2766,7 +2904,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimeh_we = 1'b0;
-    if(when_MEM_l167) begin
+    if(when_MEM_l168) begin
       if(timer_mtimeh_req) begin
         io_timer_mtimeh_we = 1'b1;
       end
@@ -2775,7 +2913,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmp_we = 1'b0;
-    if(when_MEM_l167) begin
+    if(when_MEM_l168) begin
       if(timer_mtimecmp_req) begin
         io_timer_mtimecmp_we = 1'b1;
       end
@@ -2784,7 +2922,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmph_we = 1'b0;
-    if(when_MEM_l167) begin
+    if(when_MEM_l168) begin
       if(timer_mtimecmph_req) begin
         io_timer_mtimecmph_we = 1'b1;
       end
@@ -2793,7 +2931,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtime_w = 32'h00000000;
-    if(when_MEM_l167) begin
+    if(when_MEM_l168) begin
       if(timer_mtime_req) begin
         io_timer_mtime_w = mem_data_write;
       end
@@ -2802,7 +2940,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimeh_w = 32'h00000000;
-    if(when_MEM_l167) begin
+    if(when_MEM_l168) begin
       if(timer_mtimeh_req) begin
         io_timer_mtimeh_w = mem_data_write;
       end
@@ -2811,7 +2949,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmp_w = 32'h00000000;
-    if(when_MEM_l167) begin
+    if(when_MEM_l168) begin
       if(timer_mtimecmp_req) begin
         io_timer_mtimecmp_w = mem_data_write;
       end
@@ -2820,17 +2958,17 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmph_w = 32'h00000000;
-    if(when_MEM_l167) begin
+    if(when_MEM_l168) begin
       if(timer_mtimecmph_req) begin
         io_timer_mtimecmph_w = mem_data_write;
       end
     end
   end
 
-  assign when_MEM_l167 = (io_i_mem_en && io_i_mem_we);
+  assign when_MEM_l168 = (io_i_mem_en && io_i_mem_we);
   always @(*) begin
     io_csr_addr = 12'h000;
-    if(when_MEM_l195) begin
+    if(when_MEM_l196) begin
       io_csr_addr = io_i_imm[11 : 0];
     end
   end
@@ -2854,12 +2992,12 @@ module MEM (
 
   always @(*) begin
     io_csr_we = 1'b0;
-    if(when_MEM_l195) begin
+    if(when_MEM_l196) begin
       io_csr_we = 1'b1;
     end
   end
 
-  assign when_MEM_l195 = (io_i_csr_op != CsrOp_N);
+  assign when_MEM_l196 = (io_i_csr_op != CsrOp_N);
   assign io_stall_req = ((io_i_mem_en && (! timer_req)) && (! io_wb_ack));
   assign io_wb_cyc = io_wb_stb;
   always @(*) begin
@@ -2954,6 +3092,7 @@ module MEM (
       io_o_trap_trap <= 1'b0;
       io_o_trap_epc <= 32'h00000000;
       io_o_trap_cause <= 32'h00000000;
+      io_o_trap_tval <= 32'h00000000;
       io_wb_stb <= 1'b0;
       io_wb_we <= 1'b0;
       io_wb_adr <= 32'h00000000;
@@ -2968,8 +3107,10 @@ module MEM (
       case(fsm_stateReg)
         fsm_enumDef_1_start : begin
           if(io_i_trap_trap) begin
+            io_o_trap_trap <= io_i_trap_trap;
             io_o_trap_epc <= io_i_trap_epc;
             io_o_trap_cause <= io_i_trap_cause;
+            io_o_trap_tval <= io_i_trap_tval;
           end else begin
             if(io_i_mem_en) begin
               io_o_real <= 1'b0;
@@ -3016,6 +3157,7 @@ module MEM (
             end else begin
               io_o_trap_epc <= io_i_pc;
               io_o_trap_cause <= io_pt_exception_code;
+              io_o_trap_tval <= mem_adr;
             end
           end
         end
@@ -3080,6 +3222,7 @@ module EXE (
   input  wire          io_i_trap_trap,
   input  wire [31:0]   io_i_trap_epc,
   input  wire [31:0]   io_i_trap_cause,
+  input  wire [31:0]   io_i_trap_tval,
   output reg           io_o_real,
   output reg  [31:0]   io_o_pc,
   output reg  [31:0]   io_o_reg_data_b,
@@ -3096,6 +3239,7 @@ module EXE (
   output reg           io_o_trap_trap,
   output reg  [31:0]   io_o_trap_epc,
   output reg  [31:0]   io_o_trap_cause,
+  output reg  [31:0]   io_o_trap_tval,
   output reg           io_br_br,
   output wire [31:0]   io_br_pc,
   input  wire          io_forward_0_we,
@@ -3158,12 +3302,12 @@ module EXE (
   wire       [31:0]   _zz_io_br_br_3;
   reg        [31:0]   reg_a;
   reg        [31:0]   reg_b;
-  wire                when_EXE_l66;
-  wire                when_EXE_l67;
-  wire                when_EXE_l70;
-  wire                when_EXE_l66_1;
-  wire                when_EXE_l67_1;
-  wire                when_EXE_l70_1;
+  wire                when_EXE_l68;
+  wire                when_EXE_l69;
+  wire                when_EXE_l72;
+  wire                when_EXE_l68_1;
+  wire                when_EXE_l69_1;
+  wire                when_EXE_l72_1;
   `ifndef SYNTHESIS
   reg [39:0] io_i_alu_op_string;
   reg [7:0] io_i_csr_op_string;
@@ -3292,13 +3436,13 @@ module EXE (
 
   always @(*) begin
     reg_a = io_i_reg_data_a;
-    if(when_EXE_l66) begin
-      if(when_EXE_l67) begin
+    if(when_EXE_l68) begin
+      if(when_EXE_l69) begin
         reg_a = io_forward_1_data;
       end
     end
-    if(when_EXE_l66_1) begin
-      if(when_EXE_l67_1) begin
+    if(when_EXE_l68_1) begin
+      if(when_EXE_l69_1) begin
         reg_a = io_forward_0_data;
       end
     end
@@ -3306,24 +3450,24 @@ module EXE (
 
   always @(*) begin
     reg_b = io_i_reg_data_b;
-    if(when_EXE_l66) begin
-      if(when_EXE_l70) begin
+    if(when_EXE_l68) begin
+      if(when_EXE_l72) begin
         reg_b = io_forward_1_data;
       end
     end
-    if(when_EXE_l66_1) begin
-      if(when_EXE_l70_1) begin
+    if(when_EXE_l68_1) begin
+      if(when_EXE_l72_1) begin
         reg_b = io_forward_0_data;
       end
     end
   end
 
-  assign when_EXE_l66 = (io_forward_1_we && (io_forward_1_addr != 5'h00));
-  assign when_EXE_l67 = (io_forward_1_addr == io_i_reg_addr_a);
-  assign when_EXE_l70 = (io_forward_1_addr == io_i_reg_addr_b);
-  assign when_EXE_l66_1 = (io_forward_0_we && (io_forward_0_addr != 5'h00));
-  assign when_EXE_l67_1 = (io_forward_0_addr == io_i_reg_addr_a);
-  assign when_EXE_l70_1 = (io_forward_0_addr == io_i_reg_addr_b);
+  assign when_EXE_l68 = (io_forward_1_we && (io_forward_1_addr != 5'h00));
+  assign when_EXE_l69 = (io_forward_1_addr == io_i_reg_addr_a);
+  assign when_EXE_l72 = (io_forward_1_addr == io_i_reg_addr_b);
+  assign when_EXE_l68_1 = (io_forward_0_we && (io_forward_0_addr != 5'h00));
+  assign when_EXE_l69_1 = (io_forward_0_addr == io_i_reg_addr_a);
+  assign when_EXE_l72_1 = (io_forward_0_addr == io_i_reg_addr_b);
   assign io_alu_a = (io_i_use_pc ? io_i_pc : (io_i_use_uimm ? _zz_io_alu_a : reg_a));
   assign io_alu_b = (io_i_use_rs2 ? reg_b : io_i_imm);
   assign io_alu_op = io_i_alu_op;
@@ -3379,6 +3523,7 @@ module EXE (
       io_o_trap_trap <= 1'b0;
       io_o_trap_epc <= 32'h00000000;
       io_o_trap_cause <= 32'h00000000;
+      io_o_trap_tval <= 32'h00000000;
     end else begin
       io_o_trap_trap <= io_trap;
       if(!io_stall) begin
@@ -3390,10 +3535,13 @@ module EXE (
           io_o_reg_we <= 1'b0;
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
+          io_o_trap_tval <= 32'h00000000;
         end else begin
           if(io_i_trap_trap) begin
+            io_o_trap_trap <= io_i_trap_trap;
             io_o_trap_epc <= io_i_trap_epc;
             io_o_trap_cause <= io_i_trap_cause;
+            io_o_trap_tval <= io_i_trap_tval;
           end else begin
             io_o_alu_y <= io_alu_y;
             io_o_real <= io_i_real;
@@ -3424,6 +3572,7 @@ module ID (
   input  wire          io_i_trap_trap,
   input  wire [31:0]   io_i_trap_epc,
   input  wire [31:0]   io_i_trap_cause,
+  input  wire [31:0]   io_i_trap_tval,
   output reg           io_o_real,
   output reg  [31:0]   io_o_pc,
   output reg  [31:0]   io_o_reg_data_a,
@@ -3447,9 +3596,11 @@ module ID (
   output reg           io_o_trap_trap,
   output reg  [31:0]   io_o_trap_epc,
   output reg  [31:0]   io_o_trap_cause,
+  output reg  [31:0]   io_o_trap_tval,
   input  wire          io_stall,
   input  wire          io_bubble,
   output reg           io_trap,
+  input  wire [1:0]    io_prv,
   output wire [4:0]    io_reg_addr_a,
   input  wire [31:0]   io_reg_data_a,
   output wire [4:0]    io_reg_addr_b,
@@ -3489,6 +3640,9 @@ module ID (
   localparam RegSel_ALU = 2'd0;
   localparam RegSel_MEM = 2'd1;
   localparam RegSel_PC = 2'd2;
+  localparam PrivilegeMode_U = 2'd0;
+  localparam PrivilegeMode_S = 2'd1;
+  localparam PrivilegeMode_M = 2'd3;
   localparam Instr_UNK = 6'd0;
   localparam Instr_LUI = 6'd1;
   localparam Instr_AUIPC = 6'd2;
@@ -3536,11 +3690,12 @@ module ID (
   localparam Instr_CSRRWI = 6'd44;
   localparam Instr_CSRRSI = 6'd45;
   localparam Instr_CSRRCI = 6'd46;
-  localparam Instr_MRET = 6'd47;
-  localparam Instr_SFENCE_VMA = 6'd48;
-  localparam Instr_ANDN = 6'd49;
-  localparam Instr_CLZ = 6'd50;
-  localparam Instr_PACK = 6'd51;
+  localparam Instr_SRET = 6'd47;
+  localparam Instr_MRET = 6'd48;
+  localparam Instr_SFENCE_VMA = 6'd49;
+  localparam Instr_ANDN = 6'd50;
+  localparam Instr_CLZ = 6'd51;
+  localparam Instr_PACK = 6'd52;
   localparam InstrType_R = 3'd0;
   localparam InstrType_I = 3'd1;
   localparam InstrType_S = 3'd2;
@@ -3579,14 +3734,17 @@ module ID (
   reg                 mem_unsigned;
   reg                 reg_we;
   reg        [1:0]    reg_sel;
-  wire                when_ID_l799;
-  wire                when_ID_l803;
-  wire                when_ID_l807;
+  wire                when_ID_l889;
+  wire                when_ID_l891;
+  wire                when_ID_l903;
+  wire                when_ID_l905;
+  wire                when_ID_l907;
   `ifndef SYNTHESIS
   reg [39:0] io_o_alu_op_string;
   reg [7:0] io_o_csr_op_string;
   reg [23:0] io_o_br_type_string;
   reg [23:0] io_o_reg_sel_string;
+  reg [7:0] io_prv_string;
   reg [79:0] instr_kind_string;
   reg [7:0] instr_type_string;
   reg [39:0] alu_op_string;
@@ -3660,6 +3818,14 @@ module ID (
     endcase
   end
   always @(*) begin
+    case(io_prv)
+      PrivilegeMode_U : io_prv_string = "U";
+      PrivilegeMode_S : io_prv_string = "S";
+      PrivilegeMode_M : io_prv_string = "M";
+      default : io_prv_string = "?";
+    endcase
+  end
+  always @(*) begin
     case(instr_kind)
       Instr_UNK : instr_kind_string = "UNK       ";
       Instr_LUI : instr_kind_string = "LUI       ";
@@ -3708,6 +3874,7 @@ module ID (
       Instr_CSRRWI : instr_kind_string = "CSRRWI    ";
       Instr_CSRRSI : instr_kind_string = "CSRRSI    ";
       Instr_CSRRCI : instr_kind_string = "CSRRCI    ";
+      Instr_SRET : instr_kind_string = "SRET      ";
       Instr_MRET : instr_kind_string = "MRET      ";
       Instr_SFENCE_VMA : instr_kind_string = "SFENCE_VMA";
       Instr_ANDN : instr_kind_string = "ANDN      ";
@@ -3800,7 +3967,13 @@ module ID (
         instr_kind = Instr_JAL;
       end
       7'h67 : begin
-        instr_kind = Instr_JALR;
+        case(funct3)
+          3'b000 : begin
+            instr_kind = Instr_JALR;
+          end
+          default : begin
+          end
+        endcase
       end
       7'h63 : begin
         case(funct3)
@@ -3883,12 +4056,18 @@ module ID (
             instr_kind = Instr_ANDI;
           end
           3'b001 : begin
-            casez(funct7)
-              7'b00000?? : begin
+            case(funct7)
+              7'h00 : begin
                 instr_kind = Instr_SLLI;
               end
               7'h30 : begin
-                instr_kind = Instr_CLZ;
+                case(rs2)
+                  5'h00 : begin
+                    instr_kind = Instr_CLZ;
+                  end
+                  default : begin
+                  end
+                endcase
               end
               default : begin
               end
@@ -3923,13 +4102,31 @@ module ID (
             endcase
           end
           3'b001 : begin
-            instr_kind = Instr_SLL_1;
+            case(funct7)
+              7'h00 : begin
+                instr_kind = Instr_SLL_1;
+              end
+              default : begin
+              end
+            endcase
           end
           3'b010 : begin
-            instr_kind = Instr_SLT;
+            case(funct7)
+              7'h00 : begin
+                instr_kind = Instr_SLT;
+              end
+              default : begin
+              end
+            endcase
           end
           3'b011 : begin
-            instr_kind = Instr_SLTU;
+            case(funct7)
+              7'h00 : begin
+                instr_kind = Instr_SLTU;
+              end
+              default : begin
+              end
+            endcase
           end
           3'b100 : begin
             case(funct7)
@@ -3956,7 +4153,13 @@ module ID (
             endcase
           end
           3'b110 : begin
-            instr_kind = Instr_OR_1;
+            case(funct7)
+              7'h00 : begin
+                instr_kind = Instr_OR_1;
+              end
+              default : begin
+              end
+            endcase
           end
           default : begin
             case(funct7)
@@ -3976,23 +4179,82 @@ module ID (
         case(funct3)
           3'b000 : begin
             case(funct7)
-              7'h09 : begin
-                instr_kind = Instr_SFENCE_VMA;
-              end
-              default : begin
-                case(rs2)
+              7'h00 : begin
+                case(rd)
                   5'h00 : begin
-                    instr_kind = Instr_ECALL;
-                  end
-                  5'h01 : begin
-                    instr_kind = Instr_EBREAK;
-                  end
-                  5'h02 : begin
-                    instr_kind = Instr_MRET;
+                    case(rs1)
+                      5'h00 : begin
+                        case(rs2)
+                          5'h00 : begin
+                            instr_kind = Instr_ECALL;
+                          end
+                          5'h01 : begin
+                            instr_kind = Instr_EBREAK;
+                          end
+                          default : begin
+                          end
+                        endcase
+                      end
+                      default : begin
+                      end
+                    endcase
                   end
                   default : begin
                   end
                 endcase
+              end
+              7'h08 : begin
+                case(rd)
+                  5'h00 : begin
+                    case(rs1)
+                      5'h00 : begin
+                        case(rs2)
+                          5'h02 : begin
+                            instr_kind = Instr_SRET;
+                          end
+                          default : begin
+                          end
+                        endcase
+                      end
+                      default : begin
+                      end
+                    endcase
+                  end
+                  default : begin
+                  end
+                endcase
+              end
+              7'h18 : begin
+                case(rd)
+                  5'h00 : begin
+                    case(rs1)
+                      5'h00 : begin
+                        case(rs2)
+                          5'h02 : begin
+                            instr_kind = Instr_MRET;
+                          end
+                          default : begin
+                          end
+                        endcase
+                      end
+                      default : begin
+                      end
+                    endcase
+                  end
+                  default : begin
+                  end
+                endcase
+              end
+              7'h09 : begin
+                case(rd)
+                  5'h00 : begin
+                    instr_kind = Instr_SFENCE_VMA;
+                  end
+                  default : begin
+                  end
+                endcase
+              end
+              default : begin
               end
             endcase
           end
@@ -4019,7 +4281,13 @@ module ID (
         endcase
       end
       7'h0f : begin
-        instr_kind = Instr_FENCE_I;
+        case(funct3)
+          3'b001 : begin
+            instr_kind = Instr_FENCE_I;
+          end
+          default : begin
+          end
+        endcase
       end
       default : begin
       end
@@ -4291,14 +4559,32 @@ module ID (
         if(io_i_trap_trap) begin
           io_trap = 1'b1;
         end else begin
-          if(when_ID_l799) begin
+          if(when_ID_l889) begin
             io_trap = 1'b1;
           end else begin
-            if(when_ID_l803) begin
-              io_trap = 1'b1;
+            if(when_ID_l891) begin
+              case(io_prv)
+                PrivilegeMode_U : begin
+                  io_trap = 1'b1;
+                end
+                PrivilegeMode_S : begin
+                  io_trap = 1'b1;
+                end
+                default : begin
+                  io_trap = 1'b1;
+                end
+              endcase
             end else begin
-              if(when_ID_l807) begin
+              if(when_ID_l903) begin
                 io_trap = 1'b1;
+              end else begin
+                if(when_ID_l905) begin
+                  io_trap = 1'b1;
+                end else begin
+                  if(when_ID_l907) begin
+                    io_trap = 1'b1;
+                  end
+                end
               end
             end
           end
@@ -4309,9 +4595,11 @@ module ID (
 
   assign io_reg_addr_a = rs1;
   assign io_reg_addr_b = rs2;
-  assign when_ID_l799 = (instr_kind == Instr_EBREAK);
-  assign when_ID_l803 = (instr_kind == Instr_ECALL);
-  assign when_ID_l807 = (instr_kind == Instr_MRET);
+  assign when_ID_l889 = (instr_kind == Instr_EBREAK);
+  assign when_ID_l891 = (instr_kind == Instr_ECALL);
+  assign when_ID_l903 = (instr_kind == Instr_SRET);
+  assign when_ID_l905 = (instr_kind == Instr_MRET);
+  assign when_ID_l907 = (instr_kind == Instr_UNK);
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       io_o_real <= 1'b0;
@@ -4337,6 +4625,7 @@ module ID (
       io_o_trap_trap <= 1'b0;
       io_o_trap_epc <= 32'h00000000;
       io_o_trap_cause <= 32'h00000000;
+      io_o_trap_tval <= 32'h00000000;
     end else begin
       io_o_trap_trap <= io_trap;
       if(!io_stall) begin
@@ -4349,43 +4638,75 @@ module ID (
           io_o_reg_we <= 1'b0;
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
+          io_o_trap_tval <= 32'h00000000;
         end else begin
           if(io_i_trap_trap) begin
+            io_o_trap_trap <= io_i_trap_trap;
             io_o_trap_epc <= io_i_trap_epc;
             io_o_trap_cause <= io_i_trap_cause;
+            io_o_trap_tval <= io_i_trap_tval;
           end else begin
-            if(when_ID_l799) begin
+            if(when_ID_l889) begin
               io_o_trap_epc <= io_i_pc;
               io_o_trap_cause <= 32'h00000003;
+              io_o_trap_tval <= io_i_pc;
             end else begin
-              if(when_ID_l803) begin
-                io_o_trap_epc <= io_i_pc;
-                io_o_trap_cause <= 32'h00000008;
+              if(when_ID_l891) begin
+                case(io_prv)
+                  PrivilegeMode_U : begin
+                    io_o_trap_epc <= io_i_pc;
+                    io_o_trap_cause <= 32'h00000008;
+                    io_o_trap_tval <= 32'h00000000;
+                  end
+                  PrivilegeMode_S : begin
+                    io_o_trap_epc <= io_i_pc;
+                    io_o_trap_cause <= 32'h00000009;
+                    io_o_trap_tval <= 32'h00000000;
+                  end
+                  default : begin
+                    io_o_trap_epc <= io_i_pc;
+                    io_o_trap_cause <= 32'h0000000b;
+                    io_o_trap_tval <= 32'h00000000;
+                  end
+                endcase
               end else begin
-                if(when_ID_l807) begin
+                if(when_ID_l903) begin
                   io_o_trap_epc <= io_i_pc;
-                  io_o_trap_cause <= 32'h00000018;
+                  io_o_trap_cause <= 32'h00000019;
+                  io_o_trap_tval <= 32'h00000000;
                 end else begin
-                  io_o_real <= io_i_real;
-                  io_o_pc <= io_i_pc;
-                  io_o_reg_data_a <= io_reg_data_a;
-                  io_o_reg_data_b <= io_reg_data_b;
-                  io_o_reg_addr_a <= rs1;
-                  io_o_reg_addr_b <= rs2;
-                  io_o_reg_addr_d <= rd;
-                  io_o_alu_op <= alu_op;
-                  io_o_csr_op <= csr_op;
-                  io_o_br_type <= br_type;
-                  io_o_imm <= imm;
-                  io_o_use_pc <= use_pc;
-                  io_o_use_uimm <= use_uimm;
-                  io_o_use_rs2 <= use_rs2;
-                  io_o_mem_en <= mem_en;
-                  io_o_mem_we <= mem_we;
-                  io_o_mem_sel <= mem_sel;
-                  io_o_mem_unsigned <= mem_unsigned;
-                  io_o_reg_we <= reg_we;
-                  io_o_reg_sel <= reg_sel;
+                  if(when_ID_l905) begin
+                    io_o_trap_epc <= io_i_pc;
+                    io_o_trap_cause <= 32'h0000001b;
+                    io_o_trap_tval <= 32'h00000000;
+                  end else begin
+                    if(when_ID_l907) begin
+                      io_o_trap_epc <= io_i_pc;
+                      io_o_trap_cause <= 32'h00000002;
+                      io_o_trap_tval <= io_i_instr;
+                    end else begin
+                      io_o_real <= io_i_real;
+                      io_o_pc <= io_i_pc;
+                      io_o_reg_data_a <= io_reg_data_a;
+                      io_o_reg_data_b <= io_reg_data_b;
+                      io_o_reg_addr_a <= rs1;
+                      io_o_reg_addr_b <= rs2;
+                      io_o_reg_addr_d <= rd;
+                      io_o_alu_op <= alu_op;
+                      io_o_csr_op <= csr_op;
+                      io_o_br_type <= br_type;
+                      io_o_imm <= imm;
+                      io_o_use_pc <= use_pc;
+                      io_o_use_uimm <= use_uimm;
+                      io_o_use_rs2 <= use_rs2;
+                      io_o_mem_en <= mem_en;
+                      io_o_mem_we <= mem_we;
+                      io_o_mem_sel <= mem_sel;
+                      io_o_mem_unsigned <= mem_unsigned;
+                      io_o_reg_we <= reg_we;
+                      io_o_reg_sel <= reg_sel;
+                    end
+                  end
                 end
               end
             end
@@ -4405,13 +4726,17 @@ module IF_1 (
   output reg           io_o_trap_trap,
   output reg  [31:0]   io_o_trap_epc,
   output reg  [31:0]   io_o_trap_cause,
+  output reg  [31:0]   io_o_trap_tval,
   input  wire          io_br_br,
   input  wire [31:0]   io_br_pc,
   input  wire          io_stall,
   input  wire          io_bubble,
   output reg           io_trap,
-  input  wire [31:0]   io_mie,
-  input  wire [31:0]   io_mip,
+  input  wire          io_sie,
+  input  wire          io_mie,
+  input  wire [31:0]   io_ie,
+  input  wire [31:0]   io_ip,
+  input  wire [31:0]   io_mideleg,
   input  wire [1:0]    io_prv,
   input  wire          io_satp_mode,
   output wire          io_wb_cyc,
@@ -4448,6 +4773,8 @@ module IF_1 (
   reg                 delay_ack;
   reg        [31:0]   delay_instr;
   wire       [31:0]   interrupt;
+  wire       [31:0]   interrupt_delegated;
+  wire       [31:0]   interrupt_masked;
   wire                page_en;
   reg                 fsm_wantExit;
   reg                 fsm_wantStart;
@@ -4458,11 +4785,15 @@ module IF_1 (
   wire                _zz_when_StateMachine_l237_1;
   wire                _zz_when_StateMachine_l237_2;
   wire                _zz_when_StateMachine_l237_3;
-  wire                when_IF_l133;
-  wire                when_IF_l173;
-  wire                when_IF_l93;
-  wire                when_IF_l97;
-  wire                when_IF_l184;
+  wire                when_IF_l156;
+  wire                when_IF_l196;
+  wire                when_IF_l117;
+  wire                when_IF_l101;
+  wire                when_IF_l103;
+  wire                when_IF_l101_1;
+  wire                when_IF_l103_1;
+  wire                when_IF_l119;
+  wire                when_IF_l207;
   wire                when_StateMachine_l237;
   wire                when_StateMachine_l237_1;
   wire                when_StateMachine_l253;
@@ -4512,7 +4843,9 @@ module IF_1 (
   end
   `endif
 
-  assign interrupt = (io_mie & io_mip);
+  assign interrupt = (io_ie & io_ip);
+  assign interrupt_delegated = (interrupt & io_mideleg);
+  assign interrupt_masked = (interrupt & (~ io_mideleg));
   assign page_en = ((io_prv != PrivilegeMode_M) && io_satp_mode);
   always @(*) begin
     io_trap = io_o_trap_trap;
@@ -4535,13 +4868,17 @@ module IF_1 (
       end
       fsm_enumDef_1_fetch : begin
         io_trap = 1'b0;
-        if(when_IF_l173) begin
+        if(when_IF_l196) begin
           if(!io_stall) begin
-            if(!when_IF_l184) begin
-              if(when_IF_l93) begin
+            if(!when_IF_l207) begin
+              if(when_IF_l117) begin
                 io_trap = 1'b1;
               end else begin
-                io_trap = 1'b0;
+                if(when_IF_l119) begin
+                  io_trap = 1'b1;
+                end else begin
+                  io_trap = 1'b0;
+                end
               end
             end
           end
@@ -4619,9 +4956,9 @@ module IF_1 (
         end
       end
       fsm_enumDef_1_fetch : begin
-        if(when_IF_l173) begin
+        if(when_IF_l196) begin
           if(!io_stall) begin
-            if(when_IF_l184) begin
+            if(when_IF_l207) begin
               fsm_stateNext = fsm_enumDef_1_start;
             end else begin
               fsm_stateNext = fsm_enumDef_1_start;
@@ -4640,11 +4977,15 @@ module IF_1 (
     end
   end
 
-  assign when_IF_l133 = (io_br_br || delay_br);
-  assign when_IF_l173 = (io_wb_ack || delay_ack);
-  assign when_IF_l93 = ((io_prv != PrivilegeMode_M) && (interrupt != 32'h00000000));
-  assign when_IF_l97 = interrupt[7];
-  assign when_IF_l184 = (io_br_br || delay_br);
+  assign when_IF_l156 = (io_br_br || delay_br);
+  assign when_IF_l196 = (io_wb_ack || delay_ack);
+  assign when_IF_l117 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l101 = interrupt_masked[7];
+  assign when_IF_l103 = interrupt_masked[5];
+  assign when_IF_l101_1 = interrupt_delegated[7];
+  assign when_IF_l103_1 = interrupt_delegated[5];
+  assign when_IF_l119 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l207 = (io_br_br || delay_br);
   assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_2));
   assign when_StateMachine_l237_1 = (_zz_when_StateMachine_l237_1 && (! _zz_when_StateMachine_l237_3));
   assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_2);
@@ -4661,6 +5002,7 @@ module IF_1 (
       io_o_trap_trap <= 1'b0;
       io_o_trap_epc <= 32'h00000000;
       io_o_trap_cause <= 32'h00000000;
+      io_o_trap_tval <= 32'h00000000;
       io_wb_stb <= 1'b0;
       io_wb_adr <= 32'h00000000;
       io_wb_sel <= 4'b0000;
@@ -4683,13 +5025,15 @@ module IF_1 (
               io_o_instr <= 32'h00000013;
               io_o_trap_epc <= 32'h00000000;
               io_o_trap_cause <= 32'h00000000;
+              io_o_trap_tval <= 32'h00000000;
             end else begin
               io_o_real <= 1'b0;
               io_o_pc <= 32'h00000000;
               io_o_instr <= 32'h00000013;
               io_o_trap_epc <= 32'h00000000;
               io_o_trap_cause <= 32'h00000000;
-              if(when_IF_l133) begin
+              io_o_trap_tval <= 32'h00000000;
+              if(when_IF_l156) begin
                 delay_br <= 1'b0;
               end
             end
@@ -4700,6 +5044,7 @@ module IF_1 (
             if(!io_pt_look_up_valid) begin
               io_o_trap_epc <= pc;
               io_o_trap_cause <= io_pt_exception_code;
+              io_o_trap_tval <= pc;
             end
           end
         end
@@ -4709,7 +5054,8 @@ module IF_1 (
           io_o_instr <= 32'h00000013;
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
-          if(when_IF_l173) begin
+          io_o_trap_tval <= 32'h00000000;
+          if(when_IF_l196) begin
             delay_ack <= 1'b0;
             if(io_stall) begin
               delay_ack <= 1'b1;
@@ -4718,21 +5064,40 @@ module IF_1 (
                 delay_instr <= io_wb_dat_r;
               end
             end else begin
-              if(when_IF_l184) begin
+              if(when_IF_l207) begin
                 delay_br <= 1'b0;
               end else begin
-                if(when_IF_l93) begin
+                if(when_IF_l117) begin
                   io_o_trap_epc <= pc;
-                  if(when_IF_l97) begin
+                  if(when_IF_l101) begin
                     io_o_trap_cause <= 32'h80000007;
                   end else begin
-                    io_o_trap_cause <= 32'h80000010;
+                    if(when_IF_l103) begin
+                      io_o_trap_cause <= 32'h80000005;
+                    end else begin
+                      io_o_trap_cause <= 32'h80000010;
+                    end
                   end
+                  io_o_trap_tval <= 32'h00000000;
                 end else begin
-                  io_o_real <= 1'b1;
-                  io_o_pc <= pc;
-                  io_o_instr <= (delay_ack ? delay_instr : io_wb_dat_r);
-                  pc <= (pc + 32'h00000004);
+                  if(when_IF_l119) begin
+                    io_o_trap_epc <= pc;
+                    if(when_IF_l101_1) begin
+                      io_o_trap_cause <= 32'h80000007;
+                    end else begin
+                      if(when_IF_l103_1) begin
+                        io_o_trap_cause <= 32'h80000005;
+                      end else begin
+                        io_o_trap_cause <= 32'h80000010;
+                      end
+                    end
+                    io_o_trap_tval <= 32'h00000000;
+                  end else begin
+                    io_o_real <= 1'b1;
+                    io_o_pc <= pc;
+                    io_o_instr <= (delay_ack ? delay_instr : io_wb_dat_r);
+                    pc <= (pc + 32'h00000004);
+                  end
                 end
               end
             end
@@ -5522,8 +5887,27 @@ module Trap (
   input  wire          io_commit_trap,
   input  wire [31:0]   io_commit_epc,
   input  wire [31:0]   io_commit_cause,
+  input  wire [31:0]   io_commit_tval,
   output reg           io_br_br,
   output reg  [31:0]   io_br_pc,
+  input  wire [31:0]   io_stvec_r,
+  output wire [31:0]   io_stvec_w,
+  output wire          io_stvec_we,
+  input  wire [31:0]   io_sepc_r,
+  output reg  [31:0]   io_sepc_w,
+  output reg           io_sepc_we,
+  input  wire [31:0]   io_scause_r,
+  output reg  [31:0]   io_scause_w,
+  output reg           io_scause_we,
+  input  wire [31:0]   io_stval_r,
+  output reg  [31:0]   io_stval_w,
+  output reg           io_stval_we,
+  input  wire [31:0]   io_medeleg_r,
+  output wire [31:0]   io_medeleg_w,
+  output wire          io_medeleg_we,
+  input  wire [31:0]   io_mideleg_r,
+  output wire [31:0]   io_mideleg_w,
+  output wire          io_mideleg_we,
   input  wire [31:0]   io_mstatus_r,
   output reg  [31:0]   io_mstatus_w,
   output reg           io_mstatus_we,
@@ -5536,6 +5920,9 @@ module Trap (
   input  wire [31:0]   io_mcause_r,
   output reg  [31:0]   io_mcause_w,
   output reg           io_mcause_we,
+  input  wire [31:0]   io_mtval_r,
+  output reg  [31:0]   io_mtval_w,
+  output reg           io_mtval_we,
   output reg  [1:0]    io_prv,
   input  wire          sys_clk,
   input  wire          sys_reset
@@ -5544,25 +5931,76 @@ module Trap (
   localparam PrivilegeMode_S = 2'd1;
   localparam PrivilegeMode_M = 2'd3;
 
+  wire       [1:0]    _zz_io_mstatus_w;
   wire       [31:0]   _zz_io_br_pc;
   wire       [33:0]   _zz_io_br_pc_1;
+  wire       [31:0]   _zz_io_br_pc_2;
+  wire       [33:0]   _zz_io_br_pc_3;
+  wire       [1:0]    _zz_io_mstatus_w_1;
+  wire       [31:0]   _zz_io_br_pc_4;
+  wire       [33:0]   _zz_io_br_pc_5;
+  wire       [4:0]    _zz_when_Trap_l285;
+  wire       [31:0]   _zz_when_Trap_l285_1;
+  wire       [31:0]   _zz_io_br_pc_6;
+  wire       [33:0]   _zz_io_br_pc_7;
+  wire       [31:0]   _zz_io_br_pc_8;
+  wire       [33:0]   _zz_io_br_pc_9;
+  wire       [1:0]    _zz_io_mstatus_w_2;
+  wire       [31:0]   _zz_io_br_pc_10;
+  wire       [33:0]   _zz_io_br_pc_11;
+  wire       [4:0]    _zz_when_Trap_l294;
+  wire       [31:0]   _zz_when_Trap_l294_1;
   wire                cause_interrupt;
   wire       [30:0]   cause_exception_code;
+  wire       [1:0]    stvec_mode;
+  wire       [31:0]   stvec_base;
+  wire       [31:0]   sepc_sepc;
+  wire                mstatus_sie;
+  wire                mstatus_mie;
+  wire                mstatus_spie;
+  wire                mstatus_mpie;
+  wire       [1:0]    mstatus_spp;
+  wire       [1:0]    _zz_mstatus_spp;
   wire       [1:0]    mstatus_mpp;
   wire       [1:0]    _zz_mstatus_mpp;
   wire       [1:0]    mtvec_mode;
   wire       [31:0]   mtvec_base;
   wire       [31:0]   mepc_mepc;
-  wire                when_Trap_l110;
+  wire                when_Trap_l276;
+  wire                when_Trap_l281;
+  wire                when_Trap_l283;
+  wire                when_Trap_l285;
+  wire                when_Trap_l292;
+  wire                when_Trap_l294;
+  wire                when_Trap_l278;
   `ifndef SYNTHESIS
   reg [7:0] io_prv_string;
+  reg [7:0] mstatus_spp_string;
+  reg [7:0] _zz_mstatus_spp_string;
   reg [7:0] mstatus_mpp_string;
   reg [7:0] _zz_mstatus_mpp_string;
   `endif
 
 
+  assign _zz_io_mstatus_w = PrivilegeMode_U;
   assign _zz_io_br_pc_1 = (cause_exception_code * 3'b100);
   assign _zz_io_br_pc = _zz_io_br_pc_1[31:0];
+  assign _zz_io_br_pc_3 = (cause_exception_code * 3'b100);
+  assign _zz_io_br_pc_2 = _zz_io_br_pc_3[31:0];
+  assign _zz_io_mstatus_w_1 = io_prv;
+  assign _zz_io_br_pc_5 = (cause_exception_code * 3'b100);
+  assign _zz_io_br_pc_4 = _zz_io_br_pc_5[31:0];
+  assign _zz_when_Trap_l285_1 = (io_commit_cause ^ 32'h80000000);
+  assign _zz_when_Trap_l285 = _zz_when_Trap_l285_1[4:0];
+  assign _zz_io_br_pc_7 = (cause_exception_code * 3'b100);
+  assign _zz_io_br_pc_6 = _zz_io_br_pc_7[31:0];
+  assign _zz_io_br_pc_9 = (cause_exception_code * 3'b100);
+  assign _zz_io_br_pc_8 = _zz_io_br_pc_9[31:0];
+  assign _zz_io_mstatus_w_2 = io_prv;
+  assign _zz_io_br_pc_11 = (cause_exception_code * 3'b100);
+  assign _zz_io_br_pc_10 = _zz_io_br_pc_11[31:0];
+  assign _zz_when_Trap_l294_1 = io_commit_cause;
+  assign _zz_when_Trap_l294 = _zz_when_Trap_l294_1[4:0];
   `ifndef SYNTHESIS
   always @(*) begin
     case(io_prv)
@@ -5570,6 +6008,22 @@ module Trap (
       PrivilegeMode_S : io_prv_string = "S";
       PrivilegeMode_M : io_prv_string = "M";
       default : io_prv_string = "?";
+    endcase
+  end
+  always @(*) begin
+    case(mstatus_spp)
+      PrivilegeMode_U : mstatus_spp_string = "U";
+      PrivilegeMode_S : mstatus_spp_string = "S";
+      PrivilegeMode_M : mstatus_spp_string = "M";
+      default : mstatus_spp_string = "?";
+    endcase
+  end
+  always @(*) begin
+    case(_zz_mstatus_spp)
+      PrivilegeMode_U : _zz_mstatus_spp_string = "U";
+      PrivilegeMode_S : _zz_mstatus_spp_string = "S";
+      PrivilegeMode_M : _zz_mstatus_spp_string = "M";
+      default : _zz_mstatus_spp_string = "?";
     endcase
   end
   always @(*) begin
@@ -5592,28 +6046,261 @@ module Trap (
 
   assign cause_interrupt = io_commit_cause[31];
   assign cause_exception_code = io_commit_cause[30 : 0];
+  assign io_stvec_we = 1'b0;
+  assign io_stvec_w = 32'h00000000;
+  assign stvec_mode = io_stvec_r[1 : 0];
+  assign stvec_base = {io_stvec_r[31 : 2],2'b00};
+  always @(*) begin
+    io_sepc_we = 1'b0;
+    if(io_commit_trap) begin
+      if(!when_Trap_l276) begin
+        if(!when_Trap_l278) begin
+          if(when_Trap_l281) begin
+            if(!when_Trap_l283) begin
+              if(when_Trap_l285) begin
+                io_sepc_we = 1'b1;
+              end
+            end
+          end else begin
+            if(!when_Trap_l292) begin
+              if(when_Trap_l294) begin
+                io_sepc_we = 1'b1;
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  always @(*) begin
+    io_sepc_w = 32'h00000000;
+    if(io_commit_trap) begin
+      if(!when_Trap_l276) begin
+        if(!when_Trap_l278) begin
+          if(when_Trap_l281) begin
+            if(!when_Trap_l283) begin
+              if(when_Trap_l285) begin
+                io_sepc_w = io_commit_epc;
+              end
+            end
+          end else begin
+            if(!when_Trap_l292) begin
+              if(when_Trap_l294) begin
+                io_sepc_w = io_commit_epc;
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  assign sepc_sepc = io_sepc_r;
+  always @(*) begin
+    io_scause_we = 1'b0;
+    if(io_commit_trap) begin
+      if(!when_Trap_l276) begin
+        if(!when_Trap_l278) begin
+          if(when_Trap_l281) begin
+            if(!when_Trap_l283) begin
+              if(when_Trap_l285) begin
+                io_scause_we = 1'b1;
+              end
+            end
+          end else begin
+            if(!when_Trap_l292) begin
+              if(when_Trap_l294) begin
+                io_scause_we = 1'b1;
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  always @(*) begin
+    io_scause_w = 32'h00000000;
+    if(io_commit_trap) begin
+      if(!when_Trap_l276) begin
+        if(!when_Trap_l278) begin
+          if(when_Trap_l281) begin
+            if(!when_Trap_l283) begin
+              if(when_Trap_l285) begin
+                io_scause_w = io_commit_cause;
+              end
+            end
+          end else begin
+            if(!when_Trap_l292) begin
+              if(when_Trap_l294) begin
+                io_scause_w = io_commit_cause;
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  always @(*) begin
+    io_stval_we = 1'b0;
+    if(io_commit_trap) begin
+      if(!when_Trap_l276) begin
+        if(!when_Trap_l278) begin
+          if(when_Trap_l281) begin
+            if(!when_Trap_l283) begin
+              if(when_Trap_l285) begin
+                io_stval_we = 1'b1;
+              end
+            end
+          end else begin
+            if(!when_Trap_l292) begin
+              if(when_Trap_l294) begin
+                io_stval_we = 1'b1;
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  always @(*) begin
+    io_stval_w = 32'h00000000;
+    if(io_commit_trap) begin
+      if(!when_Trap_l276) begin
+        if(!when_Trap_l278) begin
+          if(when_Trap_l281) begin
+            if(!when_Trap_l283) begin
+              if(when_Trap_l285) begin
+                io_stval_w = io_commit_tval;
+              end
+            end
+          end else begin
+            if(!when_Trap_l292) begin
+              if(when_Trap_l294) begin
+                io_stval_w = io_commit_tval;
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  assign io_medeleg_we = 1'b0;
+  assign io_medeleg_w = 32'h00000000;
+  assign io_mideleg_we = 1'b0;
+  assign io_mideleg_w = 32'h00000000;
+  always @(*) begin
+    io_mstatus_w = io_mstatus_r;
+    if(io_commit_trap) begin
+      if(when_Trap_l276) begin
+        io_mstatus_w[12 : 11] = PrivilegeMode_U;
+        io_mstatus_w[7] = 1'b1;
+        io_mstatus_w[3] = mstatus_mpie;
+      end else begin
+        if(when_Trap_l278) begin
+          io_mstatus_w[8] = _zz_io_mstatus_w[0];
+          io_mstatus_w[5] = 1'b1;
+          io_mstatus_w[1] = mstatus_spie;
+        end else begin
+          if(when_Trap_l281) begin
+            if(when_Trap_l283) begin
+              io_mstatus_w[12 : 11] = io_prv;
+              io_mstatus_w[7] = mstatus_mie;
+              io_mstatus_w[3] = 1'b0;
+            end else begin
+              if(when_Trap_l285) begin
+                io_mstatus_w[8] = _zz_io_mstatus_w_1[0];
+                io_mstatus_w[5] = mstatus_sie;
+                io_mstatus_w[1] = 1'b0;
+              end else begin
+                io_mstatus_w[12 : 11] = io_prv;
+                io_mstatus_w[7] = mstatus_mie;
+                io_mstatus_w[3] = 1'b0;
+              end
+            end
+          end else begin
+            if(when_Trap_l292) begin
+              io_mstatus_w[12 : 11] = io_prv;
+              io_mstatus_w[7] = mstatus_mie;
+              io_mstatus_w[3] = 1'b0;
+            end else begin
+              if(when_Trap_l294) begin
+                io_mstatus_w[8] = _zz_io_mstatus_w_2[0];
+                io_mstatus_w[5] = mstatus_sie;
+                io_mstatus_w[1] = 1'b0;
+              end else begin
+                io_mstatus_w[12 : 11] = io_prv;
+                io_mstatus_w[7] = mstatus_mie;
+                io_mstatus_w[3] = 1'b0;
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
   always @(*) begin
     io_mstatus_we = 1'b0;
     if(io_commit_trap) begin
-      if(when_Trap_l110) begin
+      if(when_Trap_l276) begin
+        io_mstatus_we = 1'b1;
+        io_mstatus_we = 1'b1;
         io_mstatus_we = 1'b1;
       end else begin
-        io_mstatus_we = 1'b1;
+        if(when_Trap_l278) begin
+          io_mstatus_we = 1'b1;
+          io_mstatus_we = 1'b1;
+          io_mstatus_we = 1'b1;
+        end else begin
+          if(when_Trap_l281) begin
+            if(when_Trap_l283) begin
+              io_mstatus_we = 1'b1;
+              io_mstatus_we = 1'b1;
+              io_mstatus_we = 1'b1;
+            end else begin
+              if(when_Trap_l285) begin
+                io_mstatus_we = 1'b1;
+                io_mstatus_we = 1'b1;
+                io_mstatus_we = 1'b1;
+              end else begin
+                io_mstatus_we = 1'b1;
+                io_mstatus_we = 1'b1;
+                io_mstatus_we = 1'b1;
+              end
+            end
+          end else begin
+            if(when_Trap_l292) begin
+              io_mstatus_we = 1'b1;
+              io_mstatus_we = 1'b1;
+              io_mstatus_we = 1'b1;
+            end else begin
+              if(when_Trap_l294) begin
+                io_mstatus_we = 1'b1;
+                io_mstatus_we = 1'b1;
+                io_mstatus_we = 1'b1;
+              end else begin
+                io_mstatus_we = 1'b1;
+                io_mstatus_we = 1'b1;
+                io_mstatus_we = 1'b1;
+              end
+            end
+          end
+        end
       end
     end
   end
 
-  always @(*) begin
-    io_mstatus_w = 32'h00000000;
-    if(io_commit_trap) begin
-      if(when_Trap_l110) begin
-        io_mstatus_w[12 : 11] = PrivilegeMode_U;
-      end else begin
-        io_mstatus_w[12 : 11] = io_prv;
-      end
-    end
-  end
-
+  assign mstatus_sie = io_mstatus_r[1];
+  assign mstatus_mie = io_mstatus_r[3];
+  assign mstatus_spie = io_mstatus_r[5];
+  assign mstatus_mpie = io_mstatus_r[7];
+  assign _zz_mstatus_spp = {1'b0,io_mstatus_r[8]};
+  assign mstatus_spp = _zz_mstatus_spp;
   assign _zz_mstatus_mpp = io_mstatus_r[12 : 11];
   assign mstatus_mpp = _zz_mstatus_mpp;
   assign io_mtvec_we = 1'b0;
@@ -5623,8 +6310,26 @@ module Trap (
   always @(*) begin
     io_mepc_we = 1'b0;
     if(io_commit_trap) begin
-      if(!when_Trap_l110) begin
-        io_mepc_we = 1'b1;
+      if(!when_Trap_l276) begin
+        if(!when_Trap_l278) begin
+          if(when_Trap_l281) begin
+            if(when_Trap_l283) begin
+              io_mepc_we = 1'b1;
+            end else begin
+              if(!when_Trap_l285) begin
+                io_mepc_we = 1'b1;
+              end
+            end
+          end else begin
+            if(when_Trap_l292) begin
+              io_mepc_we = 1'b1;
+            end else begin
+              if(!when_Trap_l294) begin
+                io_mepc_we = 1'b1;
+              end
+            end
+          end
+        end
       end
     end
   end
@@ -5632,8 +6337,26 @@ module Trap (
   always @(*) begin
     io_mepc_w = 32'h00000000;
     if(io_commit_trap) begin
-      if(!when_Trap_l110) begin
-        io_mepc_w = io_commit_epc;
+      if(!when_Trap_l276) begin
+        if(!when_Trap_l278) begin
+          if(when_Trap_l281) begin
+            if(when_Trap_l283) begin
+              io_mepc_w = io_commit_epc;
+            end else begin
+              if(!when_Trap_l285) begin
+                io_mepc_w = io_commit_epc;
+              end
+            end
+          end else begin
+            if(when_Trap_l292) begin
+              io_mepc_w = io_commit_epc;
+            end else begin
+              if(!when_Trap_l294) begin
+                io_mepc_w = io_commit_epc;
+              end
+            end
+          end
+        end
       end
     end
   end
@@ -5642,8 +6365,26 @@ module Trap (
   always @(*) begin
     io_mcause_we = 1'b0;
     if(io_commit_trap) begin
-      if(!when_Trap_l110) begin
-        io_mcause_we = 1'b1;
+      if(!when_Trap_l276) begin
+        if(!when_Trap_l278) begin
+          if(when_Trap_l281) begin
+            if(when_Trap_l283) begin
+              io_mcause_we = 1'b1;
+            end else begin
+              if(!when_Trap_l285) begin
+                io_mcause_we = 1'b1;
+              end
+            end
+          end else begin
+            if(when_Trap_l292) begin
+              io_mcause_we = 1'b1;
+            end else begin
+              if(!when_Trap_l294) begin
+                io_mcause_we = 1'b1;
+              end
+            end
+          end
+        end
       end
     end
   end
@@ -5651,8 +6392,80 @@ module Trap (
   always @(*) begin
     io_mcause_w = 32'h00000000;
     if(io_commit_trap) begin
-      if(!when_Trap_l110) begin
-        io_mcause_w = io_commit_cause;
+      if(!when_Trap_l276) begin
+        if(!when_Trap_l278) begin
+          if(when_Trap_l281) begin
+            if(when_Trap_l283) begin
+              io_mcause_w = io_commit_cause;
+            end else begin
+              if(!when_Trap_l285) begin
+                io_mcause_w = io_commit_cause;
+              end
+            end
+          end else begin
+            if(when_Trap_l292) begin
+              io_mcause_w = io_commit_cause;
+            end else begin
+              if(!when_Trap_l294) begin
+                io_mcause_w = io_commit_cause;
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  always @(*) begin
+    io_mtval_we = 1'b0;
+    if(io_commit_trap) begin
+      if(!when_Trap_l276) begin
+        if(!when_Trap_l278) begin
+          if(when_Trap_l281) begin
+            if(when_Trap_l283) begin
+              io_mtval_we = 1'b1;
+            end else begin
+              if(!when_Trap_l285) begin
+                io_mtval_we = 1'b1;
+              end
+            end
+          end else begin
+            if(when_Trap_l292) begin
+              io_mtval_we = 1'b1;
+            end else begin
+              if(!when_Trap_l294) begin
+                io_mtval_we = 1'b1;
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  always @(*) begin
+    io_mtval_w = 32'h00000000;
+    if(io_commit_trap) begin
+      if(!when_Trap_l276) begin
+        if(!when_Trap_l278) begin
+          if(when_Trap_l281) begin
+            if(when_Trap_l283) begin
+              io_mtval_w = io_commit_tval;
+            end else begin
+              if(!when_Trap_l285) begin
+                io_mtval_w = io_commit_tval;
+              end
+            end
+          end else begin
+            if(when_Trap_l292) begin
+              io_mtval_w = io_commit_tval;
+            end else begin
+              if(!when_Trap_l294) begin
+                io_mtval_w = io_commit_tval;
+              end
+            end
+          end
+        end
       end
     end
   end
@@ -5667,23 +6480,112 @@ module Trap (
   always @(*) begin
     io_br_pc = 32'h00000000;
     if(io_commit_trap) begin
-      if(when_Trap_l110) begin
+      if(when_Trap_l276) begin
         io_br_pc = mepc_mepc;
       end else begin
-        case(mtvec_mode)
-          2'b00 : begin
-            io_br_pc = mtvec_base;
-          end
-          2'b01 : begin
-            if(cause_interrupt) begin
-              io_br_pc = (mtvec_base + _zz_io_br_pc);
+        if(when_Trap_l278) begin
+          io_br_pc = sepc_sepc;
+        end else begin
+          if(when_Trap_l281) begin
+            if(when_Trap_l283) begin
+              case(mtvec_mode)
+                2'b00 : begin
+                  io_br_pc = mtvec_base;
+                end
+                2'b01 : begin
+                  if(cause_interrupt) begin
+                    io_br_pc = (mtvec_base + _zz_io_br_pc);
+                  end else begin
+                    io_br_pc = mtvec_base;
+                  end
+                end
+                default : begin
+                end
+              endcase
             end else begin
-              io_br_pc = mtvec_base;
+              if(when_Trap_l285) begin
+                case(stvec_mode)
+                  2'b00 : begin
+                    io_br_pc = stvec_base;
+                  end
+                  2'b01 : begin
+                    if(cause_interrupt) begin
+                      io_br_pc = (stvec_base + _zz_io_br_pc_2);
+                    end else begin
+                      io_br_pc = stvec_base;
+                    end
+                  end
+                  default : begin
+                  end
+                endcase
+              end else begin
+                case(mtvec_mode)
+                  2'b00 : begin
+                    io_br_pc = mtvec_base;
+                  end
+                  2'b01 : begin
+                    if(cause_interrupt) begin
+                      io_br_pc = (mtvec_base + _zz_io_br_pc_4);
+                    end else begin
+                      io_br_pc = mtvec_base;
+                    end
+                  end
+                  default : begin
+                  end
+                endcase
+              end
+            end
+          end else begin
+            if(when_Trap_l292) begin
+              case(mtvec_mode)
+                2'b00 : begin
+                  io_br_pc = mtvec_base;
+                end
+                2'b01 : begin
+                  if(cause_interrupt) begin
+                    io_br_pc = (mtvec_base + _zz_io_br_pc_6);
+                  end else begin
+                    io_br_pc = mtvec_base;
+                  end
+                end
+                default : begin
+                end
+              endcase
+            end else begin
+              if(when_Trap_l294) begin
+                case(stvec_mode)
+                  2'b00 : begin
+                    io_br_pc = stvec_base;
+                  end
+                  2'b01 : begin
+                    if(cause_interrupt) begin
+                      io_br_pc = (stvec_base + _zz_io_br_pc_8);
+                    end else begin
+                      io_br_pc = stvec_base;
+                    end
+                  end
+                  default : begin
+                  end
+                endcase
+              end else begin
+                case(mtvec_mode)
+                  2'b00 : begin
+                    io_br_pc = mtvec_base;
+                  end
+                  2'b01 : begin
+                    if(cause_interrupt) begin
+                      io_br_pc = (mtvec_base + _zz_io_br_pc_10);
+                    end else begin
+                      io_br_pc = mtvec_base;
+                    end
+                  end
+                  default : begin
+                  end
+                endcase
+              end
             end
           end
-          default : begin
-          end
-        endcase
+        end
       end
     end
   end
@@ -5727,16 +6629,46 @@ module Trap (
     end
   end
 
-  assign when_Trap_l110 = (io_commit_cause == 32'h00000018);
+  assign when_Trap_l276 = (io_commit_cause == 32'h0000001b);
+  assign when_Trap_l281 = ((io_commit_cause & 32'h80000000) != 32'h00000000);
+  assign when_Trap_l283 = (io_prv == PrivilegeMode_M);
+  assign when_Trap_l285 = io_mideleg_r[_zz_when_Trap_l285];
+  assign when_Trap_l292 = (io_prv == PrivilegeMode_M);
+  assign when_Trap_l294 = io_medeleg_r[_zz_when_Trap_l294];
+  assign when_Trap_l278 = (io_commit_cause == 32'h00000019);
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       io_prv <= PrivilegeMode_M;
     end else begin
       if(io_commit_trap) begin
-        if(when_Trap_l110) begin
+        if(when_Trap_l276) begin
           io_prv <= mstatus_mpp;
         end else begin
-          io_prv <= PrivilegeMode_M;
+          if(when_Trap_l278) begin
+            io_prv <= mstatus_spp;
+          end else begin
+            if(when_Trap_l281) begin
+              if(when_Trap_l283) begin
+                io_prv <= PrivilegeMode_M;
+              end else begin
+                if(when_Trap_l285) begin
+                  io_prv <= PrivilegeMode_S;
+                end else begin
+                  io_prv <= PrivilegeMode_M;
+                end
+              end
+            end else begin
+              if(when_Trap_l292) begin
+                io_prv <= PrivilegeMode_M;
+              end else begin
+                if(when_Trap_l294) begin
+                  io_prv <= PrivilegeMode_S;
+                end else begin
+                  io_prv <= PrivilegeMode_M;
+                end
+              end
+            end
+          end
         end
       end
     end
@@ -5756,9 +6688,42 @@ module CsrFile (
   output wire [31:0]   io_timeh_r,
   input  wire [31:0]   io_timeh_w,
   input  wire          io_timeh_we,
+  output wire [31:0]   io_sstatus_r,
+  input  wire [31:0]   io_sstatus_w,
+  input  wire          io_sstatus_we,
+  output wire [31:0]   io_sie_r,
+  input  wire [31:0]   io_sie_w,
+  input  wire          io_sie_we,
+  output wire [31:0]   io_stvec_r,
+  input  wire [31:0]   io_stvec_w,
+  input  wire          io_stvec_we,
+  output wire [31:0]   io_sscratch_r,
+  input  wire [31:0]   io_sscratch_w,
+  input  wire          io_sscratch_we,
+  output wire [31:0]   io_sepc_r,
+  input  wire [31:0]   io_sepc_w,
+  input  wire          io_sepc_we,
+  output wire [31:0]   io_scause_r,
+  input  wire [31:0]   io_scause_w,
+  input  wire          io_scause_we,
+  output wire [31:0]   io_stval_r,
+  input  wire [31:0]   io_stval_w,
+  input  wire          io_stval_we,
+  output wire [31:0]   io_sip_r,
+  input  wire [31:0]   io_sip_w,
+  input  wire          io_sip_we,
   output wire [31:0]   io_satp_r,
   input  wire [31:0]   io_satp_w,
   input  wire          io_satp_we,
+  output wire [31:0]   io_mhartid_r,
+  input  wire [31:0]   io_mhartid_w,
+  input  wire          io_mhartid_we,
+  output wire [31:0]   io_medeleg_r,
+  input  wire [31:0]   io_medeleg_w,
+  input  wire          io_medeleg_we,
+  output wire [31:0]   io_mideleg_r,
+  input  wire [31:0]   io_mideleg_w,
+  input  wire          io_mideleg_we,
   output wire [31:0]   io_mstatus_r,
   input  wire [31:0]   io_mstatus_w,
   input  wire          io_mstatus_we,
@@ -5777,6 +6742,9 @@ module CsrFile (
   output wire [31:0]   io_mcause_r,
   input  wire [31:0]   io_mcause_w,
   input  wire          io_mcause_we,
+  output wire [31:0]   io_mtval_r,
+  input  wire [31:0]   io_mtval_w,
+  input  wire          io_mtval_we,
   output wire [31:0]   io_mip_r,
   input  wire [31:0]   io_mip_w,
   input  wire          io_mip_we,
@@ -5792,8 +6760,30 @@ module CsrFile (
   reg        [31:0]   timeh_1_io_w;
   reg                 timeh_1_io_we;
   wire       [31:0]   timeh_1_timeh_1;
+  reg        [31:0]   sstatus_1_io_w;
+  reg                 sstatus_1_io_we;
+  reg        [31:0]   sie_1_io_w;
+  reg                 sie_1_io_we;
+  reg        [31:0]   stvec_1_io_w;
+  reg                 stvec_1_io_we;
+  reg        [31:0]   sscratch_1_io_w;
+  reg                 sscratch_1_io_we;
+  reg        [31:0]   sepc_1_io_w;
+  reg                 sepc_1_io_we;
+  reg        [31:0]   scause_1_io_w;
+  reg                 scause_1_io_we;
+  reg        [31:0]   stval_1_io_w;
+  reg                 stval_1_io_we;
+  reg        [31:0]   sip_1_io_w;
+  reg                 sip_1_io_we;
   reg        [31:0]   satp_1_io_w;
   reg                 satp_1_io_we;
+  reg        [31:0]   mhartid_1_io_w;
+  reg                 mhartid_1_io_we;
+  reg        [31:0]   medeleg_1_io_w;
+  reg                 medeleg_1_io_we;
+  reg        [31:0]   mideleg_1_io_w;
+  reg                 mideleg_1_io_we;
   reg        [31:0]   mstatus_1_io_w;
   reg                 mstatus_1_io_we;
   reg        [31:0]   mie_1_io_w;
@@ -5806,28 +6796,60 @@ module CsrFile (
   reg                 mepc_1_io_we;
   reg        [31:0]   mcause_1_io_w;
   reg                 mcause_1_io_we;
+  reg        [31:0]   mtval_1_io_w;
+  reg                 mtval_1_io_we;
   reg        [31:0]   mip_1_io_w;
   reg                 mip_1_io_we;
   wire       [31:0]   time_2_io_r;
   wire       [31:0]   timeh_1_io_r;
+  wire       [31:0]   sstatus_1_io_r;
+  wire       [31:0]   sstatus_1_shadow_w;
+  wire                sstatus_1_shadow_we;
+  wire       [31:0]   sie_1_io_r;
+  wire       [31:0]   sie_1_shadow_w;
+  wire                sie_1_shadow_we;
+  wire       [31:0]   stvec_1_io_r;
+  wire       [31:0]   sscratch_1_io_r;
+  wire       [31:0]   sepc_1_io_r;
+  wire       [31:0]   scause_1_io_r;
+  wire       [31:0]   stval_1_io_r;
+  wire       [31:0]   sip_1_io_r;
+  wire       [31:0]   sip_1_shadow_w;
+  wire                sip_1_shadow_we;
   wire       [31:0]   satp_1_io_r;
+  wire       [31:0]   mhartid_1_io_r;
+  wire       [31:0]   medeleg_1_io_r;
+  wire       [31:0]   mideleg_1_io_r;
   wire       [31:0]   mstatus_1_io_r;
   wire       [31:0]   mie_1_io_r;
   wire       [31:0]   mtvec_1_io_r;
   wire       [31:0]   mscratch_1_io_r;
   wire       [31:0]   mepc_1_io_r;
   wire       [31:0]   mcause_1_io_r;
+  wire       [31:0]   mtval_1_io_r;
   wire       [31:0]   mip_1_io_r;
-  wire                when_Csr_l97;
-  wire                when_Csr_l97_1;
-  wire                when_Csr_l97_2;
-  wire                when_Csr_l97_3;
-  wire                when_Csr_l97_4;
-  wire                when_Csr_l97_5;
-  wire                when_Csr_l97_6;
-  wire                when_Csr_l97_7;
-  wire                when_Csr_l97_8;
-  wire                when_Csr_l97_9;
+  wire                when_Csr_l154;
+  wire                when_Csr_l154_1;
+  wire                when_Csr_l154_2;
+  wire                when_Csr_l154_3;
+  wire                when_Csr_l154_4;
+  wire                when_Csr_l154_5;
+  wire                when_Csr_l154_6;
+  wire                when_Csr_l154_7;
+  wire                when_Csr_l154_8;
+  wire                when_Csr_l154_9;
+  wire                when_Csr_l154_10;
+  wire                when_Csr_l154_11;
+  wire                when_Csr_l154_12;
+  wire                when_Csr_l154_13;
+  wire                when_Csr_l154_14;
+  wire                when_Csr_l154_15;
+  wire                when_Csr_l154_16;
+  wire                when_Csr_l154_17;
+  wire                when_Csr_l154_18;
+  wire                when_Csr_l154_19;
+  wire                when_Csr_l154_20;
+  wire                when_Csr_l154_21;
 
   Time_1 time_2 (
     .io_r      (time_2_io_r[31:0]  ), //o
@@ -5845,12 +6867,98 @@ module CsrFile (
     .sys_clk   (sys_clk              ), //i
     .sys_reset (sys_reset            )  //i
   );
+  Sstatus sstatus_1 (
+    .io_r      (sstatus_1_io_r[31:0]    ), //o
+    .io_w      (sstatus_1_io_w[31:0]    ), //i
+    .io_we     (sstatus_1_io_we         ), //i
+    .shadow_r  (mstatus_1_io_r[31:0]    ), //i
+    .shadow_w  (sstatus_1_shadow_w[31:0]), //o
+    .shadow_we (sstatus_1_shadow_we     ), //o
+    .sys_clk   (sys_clk                 ), //i
+    .sys_reset (sys_reset               )  //i
+  );
+  Sie sie_1 (
+    .io_r      (sie_1_io_r[31:0]    ), //o
+    .io_w      (sie_1_io_w[31:0]    ), //i
+    .io_we     (sie_1_io_we         ), //i
+    .shadow_r  (mie_1_io_r[31:0]    ), //i
+    .shadow_w  (sie_1_shadow_w[31:0]), //o
+    .shadow_we (sie_1_shadow_we     ), //o
+    .sys_clk   (sys_clk             ), //i
+    .sys_reset (sys_reset           )  //i
+  );
+  Stvec stvec_1 (
+    .io_r      (stvec_1_io_r[31:0]), //o
+    .io_w      (stvec_1_io_w[31:0]), //i
+    .io_we     (stvec_1_io_we     ), //i
+    .sys_clk   (sys_clk           ), //i
+    .sys_reset (sys_reset         )  //i
+  );
+  Sscratch sscratch_1 (
+    .io_r      (sscratch_1_io_r[31:0]), //o
+    .io_w      (sscratch_1_io_w[31:0]), //i
+    .io_we     (sscratch_1_io_we     ), //i
+    .sys_clk   (sys_clk              ), //i
+    .sys_reset (sys_reset            )  //i
+  );
+  Sepc sepc_1 (
+    .io_r      (sepc_1_io_r[31:0]), //o
+    .io_w      (sepc_1_io_w[31:0]), //i
+    .io_we     (sepc_1_io_we     ), //i
+    .sys_clk   (sys_clk          ), //i
+    .sys_reset (sys_reset        )  //i
+  );
+  Scause scause_1 (
+    .io_r      (scause_1_io_r[31:0]), //o
+    .io_w      (scause_1_io_w[31:0]), //i
+    .io_we     (scause_1_io_we     ), //i
+    .sys_clk   (sys_clk            ), //i
+    .sys_reset (sys_reset          )  //i
+  );
+  Stval stval_1 (
+    .io_r      (stval_1_io_r[31:0]), //o
+    .io_w      (stval_1_io_w[31:0]), //i
+    .io_we     (stval_1_io_we     ), //i
+    .sys_clk   (sys_clk           ), //i
+    .sys_reset (sys_reset         )  //i
+  );
+  Sip sip_1 (
+    .io_r      (sip_1_io_r[31:0]    ), //o
+    .io_w      (sip_1_io_w[31:0]    ), //i
+    .io_we     (sip_1_io_we         ), //i
+    .shadow_r  (mip_1_io_r[31:0]    ), //i
+    .shadow_w  (sip_1_shadow_w[31:0]), //o
+    .shadow_we (sip_1_shadow_we     ), //o
+    .sys_clk   (sys_clk             ), //i
+    .sys_reset (sys_reset           )  //i
+  );
   Satp satp_1 (
     .io_r      (satp_1_io_r[31:0]), //o
     .io_w      (satp_1_io_w[31:0]), //i
     .io_we     (satp_1_io_we     ), //i
     .sys_clk   (sys_clk          ), //i
     .sys_reset (sys_reset        )  //i
+  );
+  Mhartid mhartid_1 (
+    .io_r      (mhartid_1_io_r[31:0]), //o
+    .io_w      (mhartid_1_io_w[31:0]), //i
+    .io_we     (mhartid_1_io_we     ), //i
+    .sys_clk   (sys_clk             ), //i
+    .sys_reset (sys_reset           )  //i
+  );
+  Medeleg medeleg_1 (
+    .io_r      (medeleg_1_io_r[31:0]), //o
+    .io_w      (medeleg_1_io_w[31:0]), //i
+    .io_we     (medeleg_1_io_we     ), //i
+    .sys_clk   (sys_clk             ), //i
+    .sys_reset (sys_reset           )  //i
+  );
+  Mideleg mideleg_1 (
+    .io_r      (mideleg_1_io_r[31:0]), //o
+    .io_w      (mideleg_1_io_w[31:0]), //i
+    .io_we     (mideleg_1_io_we     ), //i
+    .sys_clk   (sys_clk             ), //i
+    .sys_reset (sys_reset           )  //i
   );
   Mstatus mstatus_1 (
     .io_r      (mstatus_1_io_r[31:0]), //o
@@ -5866,7 +6974,7 @@ module CsrFile (
     .sys_clk   (sys_clk         ), //i
     .sys_reset (sys_reset       )  //i
   );
-  Mtvec mtvec_1 (
+  Stvec mtvec_1 (
     .io_r      (mtvec_1_io_r[31:0]), //o
     .io_w      (mtvec_1_io_w[31:0]), //i
     .io_we     (mtvec_1_io_we     ), //i
@@ -5887,12 +6995,19 @@ module CsrFile (
     .sys_clk   (sys_clk          ), //i
     .sys_reset (sys_reset        )  //i
   );
-  Mcause mcause_1 (
+  Scause mcause_1 (
     .io_r      (mcause_1_io_r[31:0]), //o
     .io_w      (mcause_1_io_w[31:0]), //i
     .io_we     (mcause_1_io_we     ), //i
     .sys_clk   (sys_clk            ), //i
     .sys_reset (sys_reset          )  //i
+  );
+  Mtval mtval_1 (
+    .io_r      (mtval_1_io_r[31:0]), //o
+    .io_w      (mtval_1_io_w[31:0]), //i
+    .io_we     (mtval_1_io_we     ), //i
+    .sys_clk   (sys_clk           ), //i
+    .sys_reset (sys_reset         )  //i
   );
   Mip mip_1 (
     .io_r      (mip_1_io_r[31:0]), //o
@@ -5907,52 +7022,112 @@ module CsrFile (
   always @(*) begin
     io_csr_r = 32'h00000000;
     if(!io_time_we) begin
-      if(when_Csr_l97) begin
+      if(when_Csr_l154) begin
         io_csr_r = time_2_io_r;
       end
     end
     if(!io_timeh_we) begin
-      if(when_Csr_l97_1) begin
+      if(when_Csr_l154_1) begin
         io_csr_r = timeh_1_io_r;
       end
     end
+    if(!io_sstatus_we) begin
+      if(when_Csr_l154_2) begin
+        io_csr_r = sstatus_1_io_r;
+      end
+    end
+    if(!io_sie_we) begin
+      if(when_Csr_l154_3) begin
+        io_csr_r = sie_1_io_r;
+      end
+    end
+    if(!io_stvec_we) begin
+      if(when_Csr_l154_4) begin
+        io_csr_r = stvec_1_io_r;
+      end
+    end
+    if(!io_sscratch_we) begin
+      if(when_Csr_l154_5) begin
+        io_csr_r = sscratch_1_io_r;
+      end
+    end
+    if(!io_sepc_we) begin
+      if(when_Csr_l154_6) begin
+        io_csr_r = sepc_1_io_r;
+      end
+    end
+    if(!io_scause_we) begin
+      if(when_Csr_l154_7) begin
+        io_csr_r = scause_1_io_r;
+      end
+    end
+    if(!io_stval_we) begin
+      if(when_Csr_l154_8) begin
+        io_csr_r = stval_1_io_r;
+      end
+    end
+    if(!io_sip_we) begin
+      if(when_Csr_l154_9) begin
+        io_csr_r = sip_1_io_r;
+      end
+    end
     if(!io_satp_we) begin
-      if(when_Csr_l97_2) begin
+      if(when_Csr_l154_10) begin
         io_csr_r = satp_1_io_r;
       end
     end
+    if(!io_mhartid_we) begin
+      if(when_Csr_l154_11) begin
+        io_csr_r = mhartid_1_io_r;
+      end
+    end
+    if(!io_medeleg_we) begin
+      if(when_Csr_l154_12) begin
+        io_csr_r = medeleg_1_io_r;
+      end
+    end
+    if(!io_mideleg_we) begin
+      if(when_Csr_l154_13) begin
+        io_csr_r = mideleg_1_io_r;
+      end
+    end
     if(!io_mstatus_we) begin
-      if(when_Csr_l97_3) begin
+      if(when_Csr_l154_14) begin
         io_csr_r = mstatus_1_io_r;
       end
     end
     if(!io_mie_we) begin
-      if(when_Csr_l97_4) begin
+      if(when_Csr_l154_15) begin
         io_csr_r = mie_1_io_r;
       end
     end
     if(!io_mtvec_we) begin
-      if(when_Csr_l97_5) begin
+      if(when_Csr_l154_16) begin
         io_csr_r = mtvec_1_io_r;
       end
     end
     if(!io_mscratch_we) begin
-      if(when_Csr_l97_6) begin
+      if(when_Csr_l154_17) begin
         io_csr_r = mscratch_1_io_r;
       end
     end
     if(!io_mepc_we) begin
-      if(when_Csr_l97_7) begin
+      if(when_Csr_l154_18) begin
         io_csr_r = mepc_1_io_r;
       end
     end
     if(!io_mcause_we) begin
-      if(when_Csr_l97_8) begin
+      if(when_Csr_l154_19) begin
         io_csr_r = mcause_1_io_r;
       end
     end
+    if(!io_mtval_we) begin
+      if(when_Csr_l154_20) begin
+        io_csr_r = mtval_1_io_r;
+      end
+    end
     if(!io_mip_we) begin
-      if(when_Csr_l97_9) begin
+      if(when_Csr_l154_21) begin
         io_csr_r = mip_1_io_r;
       end
     end
@@ -5963,7 +7138,7 @@ module CsrFile (
     if(io_time_we) begin
       time_2_io_we = 1'b1;
     end else begin
-      if(when_Csr_l97) begin
+      if(when_Csr_l154) begin
         time_2_io_we = io_csr_we;
       end else begin
         time_2_io_we = 1'b0;
@@ -5975,7 +7150,7 @@ module CsrFile (
     if(io_time_we) begin
       time_2_io_w = io_time_w;
     end else begin
-      if(when_Csr_l97) begin
+      if(when_Csr_l154) begin
         time_2_io_w = io_csr_w;
       end else begin
         time_2_io_w = 32'h00000000;
@@ -5983,13 +7158,13 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l97 = (io_csr_addr == 12'hc01);
+  assign when_Csr_l154 = (io_csr_addr == 12'hc01);
   assign io_timeh_r = timeh_1_io_r;
   always @(*) begin
     if(io_timeh_we) begin
       timeh_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l97_1) begin
+      if(when_Csr_l154_1) begin
         timeh_1_io_we = io_csr_we;
       end else begin
         timeh_1_io_we = 1'b0;
@@ -6001,7 +7176,7 @@ module CsrFile (
     if(io_timeh_we) begin
       timeh_1_io_w = io_timeh_w;
     end else begin
-      if(when_Csr_l97_1) begin
+      if(when_Csr_l154_1) begin
         timeh_1_io_w = io_csr_w;
       end else begin
         timeh_1_io_w = 32'h00000000;
@@ -6009,13 +7184,221 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l97_1 = (io_csr_addr == 12'hc81);
+  assign when_Csr_l154_1 = (io_csr_addr == 12'hc81);
+  assign io_sstatus_r = sstatus_1_io_r;
+  always @(*) begin
+    if(io_sstatus_we) begin
+      sstatus_1_io_we = 1'b1;
+    end else begin
+      if(when_Csr_l154_2) begin
+        sstatus_1_io_we = io_csr_we;
+      end else begin
+        sstatus_1_io_we = 1'b0;
+      end
+    end
+  end
+
+  always @(*) begin
+    if(io_sstatus_we) begin
+      sstatus_1_io_w = io_sstatus_w;
+    end else begin
+      if(when_Csr_l154_2) begin
+        sstatus_1_io_w = io_csr_w;
+      end else begin
+        sstatus_1_io_w = 32'h00000000;
+      end
+    end
+  end
+
+  assign when_Csr_l154_2 = (io_csr_addr == 12'h100);
+  assign io_sie_r = sie_1_io_r;
+  always @(*) begin
+    if(io_sie_we) begin
+      sie_1_io_we = 1'b1;
+    end else begin
+      if(when_Csr_l154_3) begin
+        sie_1_io_we = io_csr_we;
+      end else begin
+        sie_1_io_we = 1'b0;
+      end
+    end
+  end
+
+  always @(*) begin
+    if(io_sie_we) begin
+      sie_1_io_w = io_sie_w;
+    end else begin
+      if(when_Csr_l154_3) begin
+        sie_1_io_w = io_csr_w;
+      end else begin
+        sie_1_io_w = 32'h00000000;
+      end
+    end
+  end
+
+  assign when_Csr_l154_3 = (io_csr_addr == 12'h104);
+  assign io_stvec_r = stvec_1_io_r;
+  always @(*) begin
+    if(io_stvec_we) begin
+      stvec_1_io_we = 1'b1;
+    end else begin
+      if(when_Csr_l154_4) begin
+        stvec_1_io_we = io_csr_we;
+      end else begin
+        stvec_1_io_we = 1'b0;
+      end
+    end
+  end
+
+  always @(*) begin
+    if(io_stvec_we) begin
+      stvec_1_io_w = io_stvec_w;
+    end else begin
+      if(when_Csr_l154_4) begin
+        stvec_1_io_w = io_csr_w;
+      end else begin
+        stvec_1_io_w = 32'h00000000;
+      end
+    end
+  end
+
+  assign when_Csr_l154_4 = (io_csr_addr == 12'h105);
+  assign io_sscratch_r = sscratch_1_io_r;
+  always @(*) begin
+    if(io_sscratch_we) begin
+      sscratch_1_io_we = 1'b1;
+    end else begin
+      if(when_Csr_l154_5) begin
+        sscratch_1_io_we = io_csr_we;
+      end else begin
+        sscratch_1_io_we = 1'b0;
+      end
+    end
+  end
+
+  always @(*) begin
+    if(io_sscratch_we) begin
+      sscratch_1_io_w = io_sscratch_w;
+    end else begin
+      if(when_Csr_l154_5) begin
+        sscratch_1_io_w = io_csr_w;
+      end else begin
+        sscratch_1_io_w = 32'h00000000;
+      end
+    end
+  end
+
+  assign when_Csr_l154_5 = (io_csr_addr == 12'h140);
+  assign io_sepc_r = sepc_1_io_r;
+  always @(*) begin
+    if(io_sepc_we) begin
+      sepc_1_io_we = 1'b1;
+    end else begin
+      if(when_Csr_l154_6) begin
+        sepc_1_io_we = io_csr_we;
+      end else begin
+        sepc_1_io_we = 1'b0;
+      end
+    end
+  end
+
+  always @(*) begin
+    if(io_sepc_we) begin
+      sepc_1_io_w = io_sepc_w;
+    end else begin
+      if(when_Csr_l154_6) begin
+        sepc_1_io_w = io_csr_w;
+      end else begin
+        sepc_1_io_w = 32'h00000000;
+      end
+    end
+  end
+
+  assign when_Csr_l154_6 = (io_csr_addr == 12'h141);
+  assign io_scause_r = scause_1_io_r;
+  always @(*) begin
+    if(io_scause_we) begin
+      scause_1_io_we = 1'b1;
+    end else begin
+      if(when_Csr_l154_7) begin
+        scause_1_io_we = io_csr_we;
+      end else begin
+        scause_1_io_we = 1'b0;
+      end
+    end
+  end
+
+  always @(*) begin
+    if(io_scause_we) begin
+      scause_1_io_w = io_scause_w;
+    end else begin
+      if(when_Csr_l154_7) begin
+        scause_1_io_w = io_csr_w;
+      end else begin
+        scause_1_io_w = 32'h00000000;
+      end
+    end
+  end
+
+  assign when_Csr_l154_7 = (io_csr_addr == 12'h142);
+  assign io_stval_r = stval_1_io_r;
+  always @(*) begin
+    if(io_stval_we) begin
+      stval_1_io_we = 1'b1;
+    end else begin
+      if(when_Csr_l154_8) begin
+        stval_1_io_we = io_csr_we;
+      end else begin
+        stval_1_io_we = 1'b0;
+      end
+    end
+  end
+
+  always @(*) begin
+    if(io_stval_we) begin
+      stval_1_io_w = io_stval_w;
+    end else begin
+      if(when_Csr_l154_8) begin
+        stval_1_io_w = io_csr_w;
+      end else begin
+        stval_1_io_w = 32'h00000000;
+      end
+    end
+  end
+
+  assign when_Csr_l154_8 = (io_csr_addr == 12'h143);
+  assign io_sip_r = sip_1_io_r;
+  always @(*) begin
+    if(io_sip_we) begin
+      sip_1_io_we = 1'b1;
+    end else begin
+      if(when_Csr_l154_9) begin
+        sip_1_io_we = io_csr_we;
+      end else begin
+        sip_1_io_we = 1'b0;
+      end
+    end
+  end
+
+  always @(*) begin
+    if(io_sip_we) begin
+      sip_1_io_w = io_sip_w;
+    end else begin
+      if(when_Csr_l154_9) begin
+        sip_1_io_w = io_csr_w;
+      end else begin
+        sip_1_io_w = 32'h00000000;
+      end
+    end
+  end
+
+  assign when_Csr_l154_9 = (io_csr_addr == 12'h144);
   assign io_satp_r = satp_1_io_r;
   always @(*) begin
     if(io_satp_we) begin
       satp_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l97_2) begin
+      if(when_Csr_l154_10) begin
         satp_1_io_we = io_csr_we;
       end else begin
         satp_1_io_we = 1'b0;
@@ -6027,7 +7410,7 @@ module CsrFile (
     if(io_satp_we) begin
       satp_1_io_w = io_satp_w;
     end else begin
-      if(when_Csr_l97_2) begin
+      if(when_Csr_l154_10) begin
         satp_1_io_w = io_csr_w;
       end else begin
         satp_1_io_w = 32'h00000000;
@@ -6035,17 +7418,98 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l97_2 = (io_csr_addr == 12'h180);
+  assign when_Csr_l154_10 = (io_csr_addr == 12'h180);
+  assign io_mhartid_r = mhartid_1_io_r;
+  always @(*) begin
+    if(io_mhartid_we) begin
+      mhartid_1_io_we = 1'b1;
+    end else begin
+      if(when_Csr_l154_11) begin
+        mhartid_1_io_we = io_csr_we;
+      end else begin
+        mhartid_1_io_we = 1'b0;
+      end
+    end
+  end
+
+  always @(*) begin
+    if(io_mhartid_we) begin
+      mhartid_1_io_w = io_mhartid_w;
+    end else begin
+      if(when_Csr_l154_11) begin
+        mhartid_1_io_w = io_csr_w;
+      end else begin
+        mhartid_1_io_w = 32'h00000000;
+      end
+    end
+  end
+
+  assign when_Csr_l154_11 = (io_csr_addr == 12'hf14);
+  assign io_medeleg_r = medeleg_1_io_r;
+  always @(*) begin
+    if(io_medeleg_we) begin
+      medeleg_1_io_we = 1'b1;
+    end else begin
+      if(when_Csr_l154_12) begin
+        medeleg_1_io_we = io_csr_we;
+      end else begin
+        medeleg_1_io_we = 1'b0;
+      end
+    end
+  end
+
+  always @(*) begin
+    if(io_medeleg_we) begin
+      medeleg_1_io_w = io_medeleg_w;
+    end else begin
+      if(when_Csr_l154_12) begin
+        medeleg_1_io_w = io_csr_w;
+      end else begin
+        medeleg_1_io_w = 32'h00000000;
+      end
+    end
+  end
+
+  assign when_Csr_l154_12 = (io_csr_addr == 12'h302);
+  assign io_mideleg_r = mideleg_1_io_r;
+  always @(*) begin
+    if(io_mideleg_we) begin
+      mideleg_1_io_we = 1'b1;
+    end else begin
+      if(when_Csr_l154_13) begin
+        mideleg_1_io_we = io_csr_we;
+      end else begin
+        mideleg_1_io_we = 1'b0;
+      end
+    end
+  end
+
+  always @(*) begin
+    if(io_mideleg_we) begin
+      mideleg_1_io_w = io_mideleg_w;
+    end else begin
+      if(when_Csr_l154_13) begin
+        mideleg_1_io_w = io_csr_w;
+      end else begin
+        mideleg_1_io_w = 32'h00000000;
+      end
+    end
+  end
+
+  assign when_Csr_l154_13 = (io_csr_addr == 12'h303);
   assign io_mstatus_r = mstatus_1_io_r;
   always @(*) begin
     if(io_mstatus_we) begin
       mstatus_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l97_3) begin
+      if(when_Csr_l154_14) begin
         mstatus_1_io_we = io_csr_we;
       end else begin
         mstatus_1_io_we = 1'b0;
       end
+    end
+    if(sstatus_1_shadow_we) begin
+      mstatus_1_io_we = 1'b1;
     end
   end
 
@@ -6053,25 +7517,31 @@ module CsrFile (
     if(io_mstatus_we) begin
       mstatus_1_io_w = io_mstatus_w;
     end else begin
-      if(when_Csr_l97_3) begin
+      if(when_Csr_l154_14) begin
         mstatus_1_io_w = io_csr_w;
       end else begin
         mstatus_1_io_w = 32'h00000000;
       end
     end
+    if(sstatus_1_shadow_we) begin
+      mstatus_1_io_w = sstatus_1_shadow_w;
+    end
   end
 
-  assign when_Csr_l97_3 = (io_csr_addr == 12'h300);
+  assign when_Csr_l154_14 = (io_csr_addr == 12'h300);
   assign io_mie_r = mie_1_io_r;
   always @(*) begin
     if(io_mie_we) begin
       mie_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l97_4) begin
+      if(when_Csr_l154_15) begin
         mie_1_io_we = io_csr_we;
       end else begin
         mie_1_io_we = 1'b0;
       end
+    end
+    if(sie_1_shadow_we) begin
+      mie_1_io_we = 1'b1;
     end
   end
 
@@ -6079,21 +7549,24 @@ module CsrFile (
     if(io_mie_we) begin
       mie_1_io_w = io_mie_w;
     end else begin
-      if(when_Csr_l97_4) begin
+      if(when_Csr_l154_15) begin
         mie_1_io_w = io_csr_w;
       end else begin
         mie_1_io_w = 32'h00000000;
       end
     end
+    if(sie_1_shadow_we) begin
+      mie_1_io_w = sie_1_shadow_w;
+    end
   end
 
-  assign when_Csr_l97_4 = (io_csr_addr == 12'h304);
+  assign when_Csr_l154_15 = (io_csr_addr == 12'h304);
   assign io_mtvec_r = mtvec_1_io_r;
   always @(*) begin
     if(io_mtvec_we) begin
       mtvec_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l97_5) begin
+      if(when_Csr_l154_16) begin
         mtvec_1_io_we = io_csr_we;
       end else begin
         mtvec_1_io_we = 1'b0;
@@ -6105,7 +7578,7 @@ module CsrFile (
     if(io_mtvec_we) begin
       mtvec_1_io_w = io_mtvec_w;
     end else begin
-      if(when_Csr_l97_5) begin
+      if(when_Csr_l154_16) begin
         mtvec_1_io_w = io_csr_w;
       end else begin
         mtvec_1_io_w = 32'h00000000;
@@ -6113,13 +7586,13 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l97_5 = (io_csr_addr == 12'h305);
+  assign when_Csr_l154_16 = (io_csr_addr == 12'h305);
   assign io_mscratch_r = mscratch_1_io_r;
   always @(*) begin
     if(io_mscratch_we) begin
       mscratch_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l97_6) begin
+      if(when_Csr_l154_17) begin
         mscratch_1_io_we = io_csr_we;
       end else begin
         mscratch_1_io_we = 1'b0;
@@ -6131,7 +7604,7 @@ module CsrFile (
     if(io_mscratch_we) begin
       mscratch_1_io_w = io_mscratch_w;
     end else begin
-      if(when_Csr_l97_6) begin
+      if(when_Csr_l154_17) begin
         mscratch_1_io_w = io_csr_w;
       end else begin
         mscratch_1_io_w = 32'h00000000;
@@ -6139,13 +7612,13 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l97_6 = (io_csr_addr == 12'h340);
+  assign when_Csr_l154_17 = (io_csr_addr == 12'h340);
   assign io_mepc_r = mepc_1_io_r;
   always @(*) begin
     if(io_mepc_we) begin
       mepc_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l97_7) begin
+      if(when_Csr_l154_18) begin
         mepc_1_io_we = io_csr_we;
       end else begin
         mepc_1_io_we = 1'b0;
@@ -6157,7 +7630,7 @@ module CsrFile (
     if(io_mepc_we) begin
       mepc_1_io_w = io_mepc_w;
     end else begin
-      if(when_Csr_l97_7) begin
+      if(when_Csr_l154_18) begin
         mepc_1_io_w = io_csr_w;
       end else begin
         mepc_1_io_w = 32'h00000000;
@@ -6165,13 +7638,13 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l97_7 = (io_csr_addr == 12'h341);
+  assign when_Csr_l154_18 = (io_csr_addr == 12'h341);
   assign io_mcause_r = mcause_1_io_r;
   always @(*) begin
     if(io_mcause_we) begin
       mcause_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l97_8) begin
+      if(when_Csr_l154_19) begin
         mcause_1_io_we = io_csr_we;
       end else begin
         mcause_1_io_we = 1'b0;
@@ -6183,7 +7656,7 @@ module CsrFile (
     if(io_mcause_we) begin
       mcause_1_io_w = io_mcause_w;
     end else begin
-      if(when_Csr_l97_8) begin
+      if(when_Csr_l154_19) begin
         mcause_1_io_w = io_csr_w;
       end else begin
         mcause_1_io_w = 32'h00000000;
@@ -6191,17 +7664,46 @@ module CsrFile (
     end
   end
 
-  assign when_Csr_l97_8 = (io_csr_addr == 12'h342);
+  assign when_Csr_l154_19 = (io_csr_addr == 12'h342);
+  assign io_mtval_r = mtval_1_io_r;
+  always @(*) begin
+    if(io_mtval_we) begin
+      mtval_1_io_we = 1'b1;
+    end else begin
+      if(when_Csr_l154_20) begin
+        mtval_1_io_we = io_csr_we;
+      end else begin
+        mtval_1_io_we = 1'b0;
+      end
+    end
+  end
+
+  always @(*) begin
+    if(io_mtval_we) begin
+      mtval_1_io_w = io_mtval_w;
+    end else begin
+      if(when_Csr_l154_20) begin
+        mtval_1_io_w = io_csr_w;
+      end else begin
+        mtval_1_io_w = 32'h00000000;
+      end
+    end
+  end
+
+  assign when_Csr_l154_20 = (io_csr_addr == 12'h343);
   assign io_mip_r = mip_1_io_r;
   always @(*) begin
     if(io_mip_we) begin
       mip_1_io_we = 1'b1;
     end else begin
-      if(when_Csr_l97_9) begin
+      if(when_Csr_l154_21) begin
         mip_1_io_we = io_csr_we;
       end else begin
         mip_1_io_we = 1'b0;
       end
+    end
+    if(sip_1_shadow_we) begin
+      mip_1_io_we = 1'b1;
     end
   end
 
@@ -6209,15 +7711,18 @@ module CsrFile (
     if(io_mip_we) begin
       mip_1_io_w = io_mip_w;
     end else begin
-      if(when_Csr_l97_9) begin
+      if(when_Csr_l154_21) begin
         mip_1_io_w = io_csr_w;
       end else begin
         mip_1_io_w = 32'h00000000;
       end
     end
+    if(sip_1_shadow_we) begin
+      mip_1_io_w = sip_1_shadow_w;
+    end
   end
 
-  assign when_Csr_l97_9 = (io_csr_addr == 12'h344);
+  assign when_Csr_l154_21 = (io_csr_addr == 12'h344);
 
 endmodule
 
@@ -6729,7 +8234,7 @@ module BufferCC (
 endmodule
 
 module Mip (
-  output reg  [31:0]   io_r,
+  output wire [31:0]   io_r,
   input  wire [31:0]   io_w,
   input  wire          io_we,
   input  wire          timeout,
@@ -6738,24 +8243,29 @@ module Mip (
 );
 
   reg        [31:0]   reg_1;
+  wire                sti;
+  wire                sti_w;
+  wire                mti;
 
-  always @(*) begin
-    io_r = reg_1;
-    io_r[7] = timeout;
-  end
-
+  assign io_r = reg_1;
+  assign sti = reg_1[5];
+  assign sti_w = io_w[5];
+  assign mti = reg_1[7];
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       reg_1 <= 32'h00000000;
     end else begin
-      reg_1 <= 32'h00000000;
+      if(io_we) begin
+        reg_1[5] <= sti_w;
+      end
+      reg_1[7] <= timeout;
     end
   end
 
 
 endmodule
 
-module Mcause (
+module Mtval (
   output wire [31:0]   io_r,
   input  wire [31:0]   io_w,
   input  wire          io_we,
@@ -6764,29 +8274,26 @@ module Mcause (
 );
 
   reg        [31:0]   reg_1;
-  wire                interrupt;
-  wire                interrupt_w;
-  wire       [30:0]   exception_code;
-  wire       [30:0]   exception_code_w;
+  wire       [31:0]   mtval_1;
+  wire       [31:0]   mtval_w;
 
   assign io_r = reg_1;
-  assign interrupt = reg_1[31];
-  assign interrupt_w = io_w[31];
-  assign exception_code = reg_1[30 : 0];
-  assign exception_code_w = io_w[30 : 0];
+  assign mtval_1 = reg_1[31 : 0];
+  assign mtval_w = io_w[31 : 0];
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       reg_1 <= 32'h00000000;
     end else begin
       if(io_we) begin
-        reg_1[31] <= interrupt_w;
-        reg_1[30 : 0] <= exception_code_w;
+        reg_1[31 : 0] <= mtval_w;
       end
     end
   end
 
 
 endmodule
+
+//Mcause replaced by Scause
 
 module Mepc (
   output wire [31:0]   io_r,
@@ -6844,7 +8351,400 @@ module Mscratch (
 
 endmodule
 
-module Mtvec (
+//Mtvec replaced by Stvec
+
+module Mie (
+  output wire [31:0]   io_r,
+  input  wire [31:0]   io_w,
+  input  wire          io_we,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+
+  reg        [31:0]   reg_1;
+  wire                stie;
+  wire                stie_w;
+  wire                mtie;
+  wire                mtie_w;
+
+  assign io_r = reg_1;
+  assign stie = reg_1[5];
+  assign stie_w = io_w[5];
+  assign mtie = reg_1[7];
+  assign mtie_w = io_w[7];
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      reg_1 <= 32'h00000000;
+    end else begin
+      if(io_we) begin
+        reg_1[5] <= stie_w;
+        reg_1[7] <= mtie_w;
+      end
+    end
+  end
+
+
+endmodule
+
+module Mstatus (
+  output wire [31:0]   io_r,
+  input  wire [31:0]   io_w,
+  input  wire          io_we,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+  localparam PrivilegeMode_U = 2'd0;
+  localparam PrivilegeMode_S = 2'd1;
+  localparam PrivilegeMode_M = 2'd3;
+
+  reg        [31:0]   reg_1;
+  wire                sie_1;
+  wire                sie_w;
+  wire                mie_1;
+  wire                mie_w;
+  wire                spie;
+  wire                spie_w;
+  wire                mpie;
+  wire                mpie_w;
+  wire                spp;
+  wire                spp_w;
+  wire       [1:0]    mpp;
+  wire       [1:0]    mpp_w;
+  wire                sum;
+  wire                sum_w;
+  wire                mxr;
+  wire                mxr_w;
+
+  assign io_r = reg_1;
+  assign sie_1 = reg_1[1];
+  assign sie_w = io_w[1];
+  assign mie_1 = reg_1[3];
+  assign mie_w = io_w[3];
+  assign spie = reg_1[5];
+  assign spie_w = io_w[5];
+  assign mpie = reg_1[7];
+  assign mpie_w = io_w[7];
+  assign spp = reg_1[8];
+  assign spp_w = io_w[8];
+  assign mpp = reg_1[12 : 11];
+  assign mpp_w = io_w[12 : 11];
+  assign sum = reg_1[18];
+  assign sum_w = io_w[18];
+  assign mxr = reg_1[19];
+  assign mxr_w = io_w[19];
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      reg_1 <= 32'h00000000;
+    end else begin
+      if(io_we) begin
+        reg_1[1] <= sie_w;
+        reg_1[3] <= mie_w;
+        reg_1[5] <= spie_w;
+        reg_1[7] <= mpie_w;
+        reg_1[8] <= spp_w;
+        if((mpp_w == PrivilegeMode_U) || (mpp_w == PrivilegeMode_S) || (mpp_w == PrivilegeMode_M)) begin
+            reg_1[12 : 11] <= mpp_w;
+        end
+        reg_1[18] <= sum_w;
+        reg_1[19] <= mxr_w;
+      end
+    end
+  end
+
+
+endmodule
+
+module Mideleg (
+  output wire [31:0]   io_r,
+  input  wire [31:0]   io_w,
+  input  wire          io_we,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+
+  reg        [31:0]   reg_1;
+
+  assign io_r = reg_1;
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      reg_1 <= 32'h00000000;
+    end else begin
+      if(io_we) begin
+        reg_1[3'b101] <= io_w[3'b101];
+      end
+      if(io_we) begin
+        reg_1[3'b111] <= io_w[3'b111];
+      end
+    end
+  end
+
+
+endmodule
+
+module Medeleg (
+  output wire [31:0]   io_r,
+  input  wire [31:0]   io_w,
+  input  wire          io_we,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+
+  reg        [31:0]   reg_1;
+
+  assign io_r = reg_1;
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      reg_1 <= 32'h00000000;
+    end else begin
+      if(io_we) begin
+        reg_1[2'b10] <= io_w[2'b10];
+      end
+      if(io_we) begin
+        reg_1[2'b11] <= io_w[2'b11];
+      end
+      if(io_we) begin
+        reg_1[4'b1000] <= io_w[4'b1000];
+      end
+      if(io_we) begin
+        reg_1[4'b1001] <= io_w[4'b1001];
+      end
+      if(io_we) begin
+        reg_1[4'b1011] <= io_w[4'b1011];
+      end
+      if(io_we) begin
+        reg_1[4'b1100] <= io_w[4'b1100];
+      end
+      if(io_we) begin
+        reg_1[4'b1101] <= io_w[4'b1101];
+      end
+      if(io_we) begin
+        reg_1[4'b1111] <= io_w[4'b1111];
+      end
+    end
+  end
+
+
+endmodule
+
+module Mhartid (
+  output reg  [31:0]   io_r,
+  input  wire [31:0]   io_w,
+  input  wire          io_we,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+
+  reg        [31:0]   reg_1;
+
+  always @(*) begin
+    io_r = reg_1;
+    io_r = 32'h00000000;
+  end
+
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      reg_1 <= 32'h00000000;
+    end else begin
+      reg_1 <= 32'h00000000;
+    end
+  end
+
+
+endmodule
+
+module Satp (
+  output wire [31:0]   io_r,
+  input  wire [31:0]   io_w,
+  input  wire          io_we,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+
+  reg        [31:0]   reg_1;
+  wire       [21:0]   ppn;
+  wire       [21:0]   ppn_w;
+  wire       [8:0]    asid;
+  wire       [8:0]    asid_w;
+  wire       [0:0]    mode;
+  wire       [0:0]    mode_w;
+  wire                when_Csr_l345;
+
+  assign io_r = reg_1;
+  assign ppn = reg_1[21 : 0];
+  assign ppn_w = io_w[21 : 0];
+  assign asid = reg_1[30 : 22];
+  assign asid_w = io_w[30 : 22];
+  assign mode = reg_1[31 : 31];
+  assign mode_w = io_w[31 : 31];
+  assign when_Csr_l345 = ((mode_w == 1'b1) || ((mode_w == 1'b0) && (ppn_w == 22'h000000)));
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      reg_1 <= 32'h00000000;
+    end else begin
+      if(io_we) begin
+        if(when_Csr_l345) begin
+          reg_1[21 : 0] <= ppn_w;
+          reg_1[31 : 31] <= mode_w;
+          reg_1[30 : 22] <= asid_w;
+        end
+      end
+    end
+  end
+
+
+endmodule
+
+module Sip (
+  output reg  [31:0]   io_r,
+  input  wire [31:0]   io_w,
+  input  wire          io_we,
+  input  wire [31:0]   shadow_r,
+  output wire [31:0]   shadow_w,
+  output wire          shadow_we,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+
+  reg        [31:0]   reg_1;
+
+  always @(*) begin
+    io_r = reg_1;
+    io_r = shadow_r;
+    io_r = 32'h00000000;
+    io_r[5] = shadow_r[5];
+  end
+
+  assign shadow_w = shadow_r;
+  assign shadow_we = io_we;
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      reg_1 <= 32'h00000000;
+    end else begin
+      reg_1 <= 32'h00000000;
+    end
+  end
+
+
+endmodule
+
+module Stval (
+  output wire [31:0]   io_r,
+  input  wire [31:0]   io_w,
+  input  wire          io_we,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+
+  reg        [31:0]   reg_1;
+  wire       [31:0]   stval_1;
+  wire       [31:0]   stval_w;
+
+  assign io_r = reg_1;
+  assign stval_1 = reg_1[31 : 0];
+  assign stval_w = io_w[31 : 0];
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      reg_1 <= 32'h00000000;
+    end else begin
+      if(io_we) begin
+        reg_1[31 : 0] <= stval_w;
+      end
+    end
+  end
+
+
+endmodule
+
+module Scause (
+  output wire [31:0]   io_r,
+  input  wire [31:0]   io_w,
+  input  wire          io_we,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+
+  reg        [31:0]   reg_1;
+  wire                interrupt;
+  wire                interrupt_w;
+  wire       [30:0]   exception_code;
+  wire       [30:0]   exception_code_w;
+
+  assign io_r = reg_1;
+  assign interrupt = reg_1[31];
+  assign interrupt_w = io_w[31];
+  assign exception_code = reg_1[30 : 0];
+  assign exception_code_w = io_w[30 : 0];
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      reg_1 <= 32'h00000000;
+    end else begin
+      if(io_we) begin
+        reg_1[31] <= interrupt_w;
+        reg_1[30 : 0] <= exception_code_w;
+      end
+    end
+  end
+
+
+endmodule
+
+module Sepc (
+  output wire [31:0]   io_r,
+  input  wire [31:0]   io_w,
+  input  wire          io_we,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+
+  reg        [31:0]   reg_1;
+  wire       [31:0]   sepc_1;
+  wire       [31:0]   sepc_w;
+
+  assign io_r = reg_1;
+  assign sepc_1 = reg_1[31 : 0];
+  assign sepc_w = io_w[31 : 0];
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      reg_1 <= 32'h00000000;
+    end else begin
+      if(io_we) begin
+        reg_1[31 : 0] <= sepc_w;
+      end
+    end
+  end
+
+
+endmodule
+
+module Sscratch (
+  output wire [31:0]   io_r,
+  input  wire [31:0]   io_w,
+  input  wire          io_we,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+
+  reg        [31:0]   reg_1;
+  wire       [31:0]   sscratch_1;
+  wire       [31:0]   sscratch_w;
+
+  assign io_r = reg_1;
+  assign sscratch_1 = reg_1[31 : 0];
+  assign sscratch_w = io_w[31 : 0];
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      reg_1 <= 32'h00000000;
+    end else begin
+      if(io_we) begin
+        reg_1[31 : 0] <= sscratch_w;
+      end
+    end
+  end
+
+
+endmodule
+
+module Stvec (
   output wire [31:0]   io_r,
   input  wire [31:0]   io_w,
   input  wire          io_we,
@@ -6877,113 +8777,104 @@ module Mtvec (
 
 endmodule
 
-module Mie (
-  output wire [31:0]   io_r,
+module Sie (
+  output reg  [31:0]   io_r,
   input  wire [31:0]   io_w,
   input  wire          io_we,
+  input  wire [31:0]   shadow_r,
+  output reg  [31:0]   shadow_w,
+  output wire          shadow_we,
   input  wire          sys_clk,
   input  wire          sys_reset
 );
 
   reg        [31:0]   reg_1;
-  wire                mtie;
-  wire                mtie_w;
+  wire                stie;
+  wire                stie_w;
 
-  assign io_r = reg_1;
-  assign mtie = reg_1[7];
-  assign mtie_w = io_w[7];
+  always @(*) begin
+    io_r = reg_1;
+    io_r = shadow_r;
+    io_r = 32'h00000000;
+    io_r[5] = shadow_r[5];
+  end
+
+  always @(*) begin
+    shadow_w = shadow_r;
+    if(io_we) begin
+      shadow_w[5] = stie_w;
+    end
+  end
+
+  assign shadow_we = io_we;
+  assign stie = shadow_w[5];
+  assign stie_w = io_w[5];
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       reg_1 <= 32'h00000000;
     end else begin
-      if(io_we) begin
-        reg_1[7] <= mtie_w;
-      end
+      reg_1 <= 32'h00000000;
     end
   end
 
 
 endmodule
 
-module Mstatus (
-  output wire [31:0]   io_r,
+module Sstatus (
+  output reg  [31:0]   io_r,
   input  wire [31:0]   io_w,
   input  wire          io_we,
+  input  wire [31:0]   shadow_r,
+  output reg  [31:0]   shadow_w,
+  output wire          shadow_we,
   input  wire          sys_clk,
   input  wire          sys_reset
 );
-  localparam PrivilegeMode_U = 2'd0;
-  localparam PrivilegeMode_S = 2'd1;
-  localparam PrivilegeMode_M = 2'd3;
 
   reg        [31:0]   reg_1;
-  wire       [1:0]    mpp;
-  wire       [1:0]    mpp_w;
+  wire                sie_1;
+  wire                sie_w;
+  wire                spie;
+  wire                spie_w;
+  wire                spp;
+  wire                spp_w;
   wire                sum;
   wire                sum_w;
   wire                mxr;
   wire                mxr_w;
 
-  assign io_r = reg_1;
-  assign mpp = reg_1[12 : 11];
-  assign mpp_w = io_w[12 : 11];
-  assign sum = reg_1[18];
+  always @(*) begin
+    io_r = reg_1;
+    io_r = shadow_r;
+  end
+
+  always @(*) begin
+    shadow_w = shadow_r;
+    if(io_we) begin
+      shadow_w[1] = sie_w;
+      shadow_w[5] = spie_w;
+      shadow_w[8] = spp_w;
+      shadow_w[18] = sum_w;
+      shadow_w[19] = mxr_w;
+    end
+  end
+
+  assign shadow_we = io_we;
+  assign sie_1 = shadow_w[1];
+  assign sie_w = io_w[1];
+  assign spie = shadow_w[5];
+  assign spie_w = io_w[5];
+  assign spp = shadow_w[8];
+  assign spp_w = io_w[8];
+  assign sum = shadow_w[18];
   assign sum_w = io_w[18];
-  assign mxr = reg_1[19];
+  assign mxr = shadow_w[19];
   assign mxr_w = io_w[19];
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       reg_1 <= 32'h00000000;
     end else begin
-      if(io_we) begin
-        if((mpp_w == PrivilegeMode_U) || (mpp_w == PrivilegeMode_S) || (mpp_w == PrivilegeMode_M)) begin
-            reg_1[12 : 11] <= mpp_w;
-        end
-        reg_1[18] <= sum_w;
-        reg_1[19] <= mxr_w;
-      end
-    end
-  end
-
-
-endmodule
-
-module Satp (
-  output wire [31:0]   io_r,
-  input  wire [31:0]   io_w,
-  input  wire          io_we,
-  input  wire          sys_clk,
-  input  wire          sys_reset
-);
-
-  reg        [31:0]   reg_1;
-  wire       [21:0]   ppn;
-  wire       [21:0]   ppn_w;
-  wire       [8:0]    asid;
-  wire       [8:0]    asid_w;
-  wire       [0:0]    mode;
-  wire       [0:0]    mode_w;
-  wire                when_Csr_l155;
-
-  assign io_r = reg_1;
-  assign ppn = reg_1[21 : 0];
-  assign ppn_w = io_w[21 : 0];
-  assign asid = reg_1[30 : 22];
-  assign asid_w = io_w[30 : 22];
-  assign mode = reg_1[31 : 31];
-  assign mode_w = io_w[31 : 31];
-  assign when_Csr_l155 = ((mode_w == 1'b1) || ((mode_w == 1'b0) && (ppn_w == 22'h000000)));
-  always @(posedge sys_clk or posedge sys_reset) begin
-    if(sys_reset) begin
       reg_1 <= 32'h00000000;
-    end else begin
-      if(io_we) begin
-        if(when_Csr_l155) begin
-          reg_1[21 : 0] <= ppn_w;
-          reg_1[31 : 31] <= mode_w;
-          reg_1[30 : 22] <= asid_w;
-        end
-      end
     end
   end
 

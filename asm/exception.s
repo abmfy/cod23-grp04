@@ -79,6 +79,7 @@ user:
     spin:
         j spin
     csrr s0, mstatus
-    bnez s0, fail
+    li s1, 1 << 7
+    bne s0, s1, fail
 
 j pass

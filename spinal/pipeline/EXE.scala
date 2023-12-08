@@ -35,6 +35,7 @@ class EXE extends Component {
         io.trap := False
         io.o.trap.epc := 0
         io.o.trap.cause := 0
+        io.o.trap.tval := 0
     }
 
     io.o.real.setAsReg() init(False)
@@ -54,6 +55,7 @@ class EXE extends Component {
     io.o.trap.trap.setAsReg() init(False)
     io.o.trap.epc.setAsReg() init(0)
     io.o.trap.cause.setAsReg() init(0)
+    io.o.trap.tval.setAsReg() init(0)
 
     io.o.trap.trap := io.trap
     io.trap := io.o.trap.trap
@@ -85,8 +87,7 @@ class EXE extends Component {
         bubble()
     } elsewhen (io.i.trap.trap) {
         io.trap := True
-        io.o.trap.epc := io.i.trap.epc
-        io.o.trap.cause := io.i.trap.cause
+        io.o.trap <> io.i.trap
     } otherwise {
         io.o.alu_y := io.alu.y
 

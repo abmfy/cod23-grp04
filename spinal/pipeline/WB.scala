@@ -32,13 +32,11 @@ class WB extends Component {
     // Trapped
     when (io.i.trap.trap) {
         io.reg.we := False
-        
-        io.trap_commit.trap := True
-        io.trap_commit.epc := io.i.trap.epc
-        io.trap_commit.cause := io.i.trap.cause
+        io.trap_commit <> io.i.trap
     } otherwise {
         io.trap_commit.trap := False
         io.trap_commit.epc := 0
         io.trap_commit.cause := 0
+        io.trap_commit.tval := 0
     }
 }

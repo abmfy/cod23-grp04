@@ -47,8 +47,12 @@ class Top (
     If.io.stall := !trap.io.flush_req(0) && !Exe.io.flush_req && Mem.io.stall_req
     If.io.bubble := trap.io.flush_req(0) || Exe.io.flush_req
 
-    If.io.mie := csr.io.mie.r
-    If.io.mip := csr.io.mip.r
+    If.io.sie := csr.io.mstatus.r(StatusField.SIE)
+    If.io.mie := csr.io.mstatus.r(StatusField.MIE)
+
+    If.io.ie := csr.io.mie.r
+    If.io.ip := csr.io.mip.r
+    If.io.mideleg := csr.io.mideleg.r
 
     If.io.prv := trap.io.prv
     If.io.satp_mode := csr.io.satp.r.msb
@@ -67,6 +71,8 @@ class Top (
     Id.io.bubble := trap.io.flush_req(1) || Exe.io.flush_req
 
     trap.io.trap(0) := Id.io.trap
+
+    Id.io.prv := trap.io.prv
 
     // EXE
     Exe.io.alu <> alu.io
@@ -102,10 +108,17 @@ class Top (
     Wb.io.trap_commit <> trap.io.commit
 
     // Trap
+    trap.io.stvec <> csr.io.stvec
+    trap.io.sepc <> csr.io.sepc
+    trap.io.scause <> csr.io.scause
+    trap.io.stval <> csr.io.stval
+    trap.io.medeleg <> csr.io.medeleg
+    trap.io.mideleg <> csr.io.mideleg
     trap.io.mstatus <> csr.io.mstatus
     trap.io.mtvec <> csr.io.mtvec
     trap.io.mepc <> csr.io.mepc
     trap.io.mcause <> csr.io.mcause
+    trap.io.mtval <> csr.io.mtval
 
     // Csr
     csr.io.time.we := False
@@ -114,17 +127,32 @@ class Top (
     csr.io.timeh.we := False
     csr.io.timeh.w := 0
 
+    csr.io.sstatus.we := False
+    csr.io.sstatus.w := 0
+
+    csr.io.sie.we := False
+    csr.io.sie.w := 0
+    
+    csr.io.sscratch.we := False
+    csr.io.sscratch.w := 0
+
+    csr.io.sip.we := False
+    csr.io.sip.w := 0
+
+    csr.io.satp.we := False
+    csr.io.satp.w := 0
+
+    csr.io.mhartid.we := False
+    csr.io.mhartid.w := 0
+
+    csr.io.mie.we := False
+    csr.io.mie.w := 0
+
     csr.io.mscratch.we := False
     csr.io.mscratch.w := 0
 
     csr.io.mip.we := False
     csr.io.mip.w := 0
-
-    csr.io.mie.we := False
-    csr.io.mie.w := 0
-
-    csr.io.satp.we := False
-    csr.io.satp.w := 0
 
     csr.io.timer := timer.io.time
     csr.io.timeout := timer.io.timeout

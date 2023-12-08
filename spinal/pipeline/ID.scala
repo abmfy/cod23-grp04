@@ -19,6 +19,9 @@ class ID extends Component {
         // Trap
         val trap = out Bool()
 
+        // Privilege mode
+        val prv = in port PrivilegeMode()
+
         // RegFile
         val reg = master port RegFileReadPorts()
     }
@@ -45,7 +48,11 @@ class ID extends Component {
                 res := JAL
             }
             is (B"1100111") {
-                res := JALR
+                switch (funct3) {
+                    is (B"000") {
+                        res := JALR
+                    }
+                }
             }
             is (B"1100011") {
                 switch (funct3) {
@@ -123,11 +130,15 @@ class ID extends Component {
                     }
                     is (B"001") {
                         switch (funct7) {
-                            is (M"00000--") {
+                            is (B"0000000") {
                                 res := SLLI
                             }
                             is (B"0110000") {
-                                res := CLZ
+                                switch (rs2) {
+                                    is (U"00000") {
+                                        res := CLZ
+                                    }
+                                }
                             }
                         }
                     }
@@ -156,13 +167,25 @@ class ID extends Component {
                         }
                     }
                     is (B"001") {
-                        res := SLL
+                        switch (funct7) {
+                            is (B"0000000") {
+                                res := SLL
+                            }
+                        }
                     }
                     is (B"010") {
-                        res := SLT
+                        switch (funct7) {
+                            is (B"0000000") {
+                                res := SLT
+                            }
+                        }
                     }
                     is (B"011") {
-                        res := SLTU
+                        switch (funct7) {
+                            is (B"0000000") {
+                                res := SLTU
+                            }
+                        }
                     }
                     is (B"100") {
                         switch (funct7) {
@@ -185,7 +208,11 @@ class ID extends Component {
                         }
                     }
                     is (B"110") {
-                        res := OR
+                        switch (funct7) {
+                            is (B"0000000") {
+                                res := OR
+                            }
+                        }
                     }
                     is (B"111") {
                         switch (funct7) {
@@ -195,7 +222,6 @@ class ID extends Component {
                             is (B"0100000") {
                                 res := ANDN
                             }
-                        
                         }
                     }
                 }
@@ -204,21 +230,60 @@ class ID extends Component {
                 switch (funct3) {
                     is (B"000") {
                         switch (funct7) {
-                            is (B"0001001") {
-                                res := SFENCE_VMA
-                            }
-                            default {
-                                switch (rs2) {
+                            is (B"0000000") {
+                                switch (rd) {
                                     is (U"00000") {
-                                        res := ECALL
+                                        switch (rs1) {
+                                            is (U"00000") {
+                                                switch (rs2) {
+                                                    is (U"00000") {
+                                                        res := ECALL
+                                                    }
+                                                    is (U"00001") {
+                                                        res := EBREAK
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
-                                    is (U"00001") {
-                                        res := EBREAK
+                                }
+                            }
+                            is (B"0001000") {
+                                switch (rd) {
+                                    is (U"00000") {
+                                        switch (rs1) {
+                                            is (U"00000") {
+                                                switch (rs2) {
+                                                    is (U"00010") {
+                                                        res := SRET
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
-                                    is (U"00010") {
-                                        res := MRET
+                                }
+                            }
+                            is (B"0011000") {
+                                switch (rd) {
+                                    is (U"00000") {
+                                        switch (rs1) {
+                                            is (U"00000") {
+                                                switch (rs2) {
+                                                    is (U"00010") {
+                                                        res := MRET
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
-                                 }
+                                }
+                            }
+                            is (B"0001001") {
+                                switch (rd) {
+                                    is (U"00000") {
+                                        res := SFENCE_VMA
+                                    }
+                                }
                             }
                         }
                     }
@@ -243,7 +308,11 @@ class ID extends Component {
                 }
             }
             is (B"0001111") {
-                res := FENCE_I
+                switch (funct3) {
+                    is (B"001") {
+                        res := FENCE_I
+                    }
+                }
             }
         }
         res
@@ -755,6 +824,27 @@ class ID extends Component {
         io.trap := False
         io.o.trap.epc := 0
         io.o.trap.cause := 0
+        io.o.trap.tval := 0
+    }
+
+    def raise(cause: Long) {
+        io.trap := True
+        io.o.trap.epc := io.i.pc
+        io.o.trap.cause := cause
+        cause match {
+            case TrapCause.BREAKPOINT
+               | TrapCause.INSTRUCTION_PAGE_FAULT
+               | TrapCause.LOAD_PAGE_FAULT
+               | TrapCause.STORE_AMO_PAGE_FAULT => {
+                io.o.trap.tval := io.i.pc.asBits
+            }
+            case TrapCause.ILLEGAL_INSTRUCTION => {
+                io.o.trap.tval := instr
+            }
+            case _ => {
+                io.o.trap.tval := 0
+            }
+        }
     }
 
     io.o.real.setAsReg() init(False)
@@ -781,6 +871,7 @@ class ID extends Component {
     io.o.trap.trap.setAsReg() init(False)
     io.o.trap.epc.setAsReg() init(0)
     io.o.trap.cause.setAsReg() init(0)
+    io.o.trap.tval.setAsReg() init(0)
 
     io.o.trap.trap := io.trap
     io.trap := io.o.trap.trap
@@ -794,20 +885,27 @@ class ID extends Component {
         bubble()
     } elsewhen (io.i.trap.trap) {
         io.trap := True
-        io.o.trap.epc := io.i.trap.epc
-        io.o.trap.cause := io.i.trap.cause
+        io.o.trap <> io.i.trap
     } elsewhen (instr_kind === EBREAK) {
-        io.trap := True
-        io.o.trap.epc := io.i.pc
-        io.o.trap.cause := TrapCause.BREAKPOINT
+        raise(TrapCause.BREAKPOINT)
     } elsewhen (instr_kind === ECALL) {
-        io.trap := True
-        io.o.trap.epc := io.i.pc
-        io.o.trap.cause := TrapCause.ENVIRONMENT_CALL_FROM_U_MODE
+        switch (io.prv) {
+            is (PrivilegeMode.U) {
+                raise(TrapCause.ENVIRONMENT_CALL_FROM_U_MODE)
+            }
+            is (PrivilegeMode.S) {
+                raise(TrapCause.ENVIRONMENT_CALL_FROM_S_MODE)
+            }
+            is (PrivilegeMode.M) {
+                raise(TrapCause.ENVIRONMENT_CALL_FROM_M_MODE)
+            }
+        }
+    } elsewhen (instr_kind === SRET) {
+        raise(TrapCause.TRAP_RETURN_FROM_S_MODE)
     } elsewhen (instr_kind === MRET) {
-        io.trap := True
-        io.o.trap.epc := io.i.pc
-        io.o.trap.cause := TrapCause.RETURN_FROM_M_MODE
+        raise(TrapCause.TRAP_RETURN_FROM_M_MODE)
+    } elsewhen (instr_kind === UNK) {
+        raise(TrapCause.ILLEGAL_INSTRUCTION)
     } otherwise {
         io.o.real := io.i.real
         io.o.pc := io.i.pc
