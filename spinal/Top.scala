@@ -122,20 +122,8 @@ class Top (
 
     csr.io.timeout := timer.io.timeout
 
-    val IF_arbiter = new WbArbiter(WbArbiterConfig(
-        master_count = 2
-    ))
-    IF_arbiter.io.masters(0) <> IF_page_table.wb
-    IF_arbiter.io.masters(1) <> If.io.wb
-
-    val MEM_arbiter = new WbArbiter(WbArbiterConfig(
-        master_count = 2
-    ))
-    MEM_arbiter.io.masters(0) <> MEM_page_table.wb
-    MEM_arbiter.io.masters(1) <> Mem.io.wb
-
     // Wishbone IO
-    val muxes = List.fill(2)(new WbMux(WbMuxConfig(
+    val muxes = List.fill(4)(new WbMux(WbMuxConfig(
         slave_count = 3,
         slave_addr = List(
             0x80000000L,
@@ -149,7 +137,7 @@ class Top (
         ),
     )))
     val arbiters = List.fill(3)(new WbArbiter(WbArbiterConfig(
-        master_count = 2
+        master_count = 4
     )))
     for ((mux, i) <- muxes.zipWithIndex;
          (arbiter, j) <- arbiters.zipWithIndex) {
@@ -157,8 +145,10 @@ class Top (
     }
 
     // Masters
-    muxes(0).io.wb <> MEM_arbiter.io.wb
-    muxes(1).io.wb <> IF_arbiter.io.wb
+    muxes(0).io.wb <> MEM_page_table.wb
+    muxes(1).io.wb <> Mem.io.wb
+    muxes(2).io.wb <> IF_page_table.wb
+    muxes(3).io.wb <> If.io.wb
 
     // Slaves
     val (base_ram, ext_ram) = if (simulation) {
