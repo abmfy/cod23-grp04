@@ -140,11 +140,11 @@ def run_T():
     print("Page table at %08x" % addr)
     print("     Virtual Address     |      Physical Address     | D | A | G | U | X | W | R | V")
     if xlen == 4:
-        for vpn1 in range(0, 1024):
-            outp.write(b'D')
-            outp.write(int_to_byte_string(addr))
-            outp.write(int_to_byte_string(4))
-            entry = byte_string_to_int(inp.read(4))
+        outp.write(b'D')
+        outp.write(int_to_byte_string(addr))
+        outp.write(int_to_byte_string(4096))
+        pt1 = [byte_string_to_int(inp.read(4)) for _ in range(1024)]
+        for vpn1, entry in enumerate(pt1):
             if (entry & 1) != 0:
                 # Valid
                 if (entry & 0xe) == 0:
