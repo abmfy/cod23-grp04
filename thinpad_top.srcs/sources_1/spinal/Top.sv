@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : 8f49bf00034f554e48c88e39fefe41ae602b4b18
+// Git hash  : 2230dcb6864c35cca5c2f756abf71eed9b767989
 
 `timescale 1ns/1ps
 
@@ -1367,7 +1367,7 @@ module Top (
   uart_controller #(
     .ADDR_WIDTH(32),
     .DATA_WIDTH(32),
-    .CLK_FREQ(28'h42c1d80),
+    .CLK_FREQ(28'h3dfd240),
     .BAUD(20'h1c200)
   ) uart (
     .clk_i      (sys_clk                     ), //i
