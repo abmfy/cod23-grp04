@@ -16,18 +16,19 @@ object Rv32i extends App {
     ))).doSim { dut =>
         SimTimeout(10 ms)
 
+        val period = (1 sec) / dut.simulation_freq
+        val baud_period = (1 sec) / BigDecimal(dut.uart.config.baud)
+
         // Initialization
         UartModel.init(dut.io.uart0.rxd)
 
-        dut.clockDomain.forkStimulus(10 ns)
+        dut.clockDomain.forkStimulus(period)
         dut.clockDomain.waitSampling()
 
         // To clear txd buffer
         dut.clockDomain.assertReset()
-        sleep(100 us)
+        sleep(period * 100)
         dut.clockDomain.deassertReset()
-
-        val baud_period = (1 sec) / dut.uart.config.baud
 
         var passed = false
         
@@ -40,7 +41,7 @@ object Rv32i extends App {
             }
         }
 
-        Tracer.init(dut.Wb, 10 ns)
+        Tracer.init(dut.Wb, period)
 
         var counter = 0
 

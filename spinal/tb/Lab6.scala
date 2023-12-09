@@ -16,21 +16,22 @@ object Lab6 extends App {
     ))).doSim { dut =>
         SimTimeout(1 ms)
 
+        val period = (1 sec) / dut.simulation_freq
+        val baud_period = (1 sec) / dut.uart.config.baud
+
         val sram = dut.base_ram.asInstanceOf[SramModel]
 
         // Initialization
 
         UartModel.init(dut.io.uart0.rxd)
 
-        dut.clockDomain.forkStimulus(10 ns)
+        dut.clockDomain.forkStimulus(period)
         dut.clockDomain.waitSampling()
 
         // To clear txd buffer
         dut.clockDomain.assertReset()
-        sleep(100 us)
+        sleep(baud_period * 10)
         dut.clockDomain.deassertReset()
-
-        val baud_period = (1 sec) / dut.uart.config.baud
 
         val string_received = new StringBuilder
         

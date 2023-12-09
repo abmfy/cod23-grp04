@@ -16,10 +16,13 @@ object Extra extends App {
     ))).doSim { dut =>
         val sram = dut.base_ram.asInstanceOf[SramModel]
 
+        val period = (1 sec) / dut.simulation_freq
+        val baud_period = (1 sec) / dut.uart.config.baud
+
         // Initialization
         UartModel.init(dut.io.uart0.rxd)
 
-        dut.clockDomain.forkStimulus(10 ns)
+        dut.clockDomain.forkStimulus(period)
         dut.clockDomain.waitSampling()
 
         val result = 0x55555555L
@@ -39,7 +42,7 @@ object Extra extends App {
         sram.mem.setBigInt(ADDR + 1, selection)
         sram.mem.setBigInt(ADDR + 2, rnd)
 
-        sleep(1 us)
+        sleep(period * 100)
 
         print("Params: ")
         for (i <- 0 until 3) {
@@ -47,7 +50,7 @@ object Extra extends App {
         }
         println()
 
-        sleep(1 ms)
+        sleep(period * 10000)
 
         // Retrieve results
         val n = 4 + 3

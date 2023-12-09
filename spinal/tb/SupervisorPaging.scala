@@ -14,42 +14,42 @@ object SupervisorPaging extends App {
         simulation = true,
         base_sram_init = Some("supervisor/kernel_paging.bin"),
     ))).doSim { dut =>
+        val period = (1 sec) / dut.simulation_freq
+        val baud_period = (1 sec) / BigDecimal(dut.uart.config.baud)
 
         // Initialization
         UartModel.init(dut.io.uart0.rxd)
 
-        dut.clockDomain.forkStimulus(10 ns)
+        dut.clockDomain.forkStimulus(period)
         dut.clockDomain.waitSampling()
 
         // To clear txd buffer
         dut.clockDomain.assertReset()
-        sleep(1 us)
+        sleep(baud_period * 10)
         dut.clockDomain.deassertReset()
-
-        val baud_period = (1 sec) / dut.uart.config.baud
         
         UartModel.decoder(dut.io.uart0.txd, baud_period)()
 
-        Tracer.init(dut.Wb, 10 ns)
+        Tracer.init(dut.Wb, period)
 
-        sleep(100 us)
+        sleep(baud_period * 10000)
 
         println("Test print table")
 
         UartModel.encode(dut.io.uart0.rxd, baud_period, 'T'.toInt)
-        sleep(1 ms)
+        sleep(baud_period * 100)
 
         println("Test ecall")
 
         UartModel.encode(dut.io.uart0.rxd, baud_period, 'G'.toInt)
-        sleep(1 us)
+        sleep(baud_period * 10)
         UartModel.encode(dut.io.uart0.rxd, baud_period, 0xa8)
-        sleep(1 us)
+        sleep(baud_period * 10)
         UartModel.encode(dut.io.uart0.rxd, baud_period, 0x10)
-        sleep(1 us)
+        sleep(baud_period * 10)
         UartModel.encode(dut.io.uart0.rxd, baud_period, 0x00)
-        sleep(1 us)
+        sleep(baud_period * 10)
         UartModel.encode(dut.io.uart0.rxd, baud_period, 0x80)
-        sleep(1 ms)
+        sleep(baud_period * 1000)
     }
 }

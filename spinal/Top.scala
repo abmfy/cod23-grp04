@@ -8,6 +8,7 @@ import java.io.ObjectInputFilter.Status
 
 class Top (
     simulation: Boolean = false,
+    val simulation_freq: Long = 100000000000L,
     base_sram_init: Option[String] = None,
     ext_sram_init: Option[String] = None,
 ) extends ThinPadTop {
@@ -208,8 +209,8 @@ class Top (
         (base, ext)
     }
     val uart = new UartController(UartControllerConfig(
-        clk_freq = if (simulation) 100000000 else ClockDomain.current.frequency.getValue.toInt,
-        baud = if (simulation) 10000000 else 115200,
+        clk_freq = if (simulation) simulation_freq else ClockDomain.current.frequency.getValue.toInt,
+        baud = if (simulation) simulation_freq / 10 else 115200,
     ))
     uart.io.uart <> io.uart0
     uart.io.wb <> arbiters(2).io.wb

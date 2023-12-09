@@ -15,24 +15,24 @@ object UCore extends App {
         base_sram_init = Some("ucore/rbl.img"),
         ext_sram_init = Some("ucore/ucore.img"),
     ))).doSim { dut =>
+        val period = (1 sec) / dut.simulation_freq
+        val baud_period = (1 sec) / dut.uart.config.baud
 
         // Initialization
         UartModel.init(dut.io.uart0.rxd)
 
-        dut.clockDomain.forkStimulus(10 ns)
+        dut.clockDomain.forkStimulus(period)
         dut.clockDomain.waitSampling()
 
         // To clear txd buffer
         dut.clockDomain.assertReset()
-        sleep(1 us)
+        sleep(baud_period * 10)
         dut.clockDomain.deassertReset()
-
-        val baud_period = (1 sec) / dut.uart.config.baud
         
         UartModel.decoder(dut.io.uart0.txd, baud_period)()
 
-        Tracer.init(dut.Wb, 10 ns)
+        Tracer.init(dut.Wb, period)
 
-        sleep(100 ms)
+        sleep(1 sec)
     }
 }
