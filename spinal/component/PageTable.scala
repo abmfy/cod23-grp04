@@ -100,8 +100,8 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
     val pte_w = pte(2)
     val pte_x = pte(3)
     val pte_u = pte(4)
-    val pte_a = pte(6)
-    val pte_d = pte(7)
+    val pte_a = pte(6) allowPruning()
+    val pte_d = pte(7) allowPruning()
     val pte_ppn_raw = pte(10, 22 bits).asUInt
     val pte_ppn = Vec(Types.addr(12), 2)
     pte_ppn(0) := pte(10, 10 bits).resize(12 bits).asUInt
@@ -180,10 +180,11 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
                             // Misaligned superpage
                             raise_page_fault()
                             exit()
-                        } elsewhen (!pte_a || trans_io.access_type === MemAccessType.Store && !pte_d) {
-                            // step 7
-                            raise_page_fault()
-                            exit()
+                        // uCore does not use a and d bits
+                        // } elsewhen (!pte_a || trans_io.access_type === MemAccessType.Store && !pte_d) {
+                        //     // step 7
+                        //     raise_page_fault()
+                        //     exit()
                         } otherwise { // success translation
                             // pa.pgoff = va.pgoff
                             trans_io.physical_addr(0, 12 bits) := trans_io.look_up_addr(0, 12 bits)

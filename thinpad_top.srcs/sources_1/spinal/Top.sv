@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : fd95f831c88c1a698520bc05d544d9718739b09d
+// Git hash  : eb667d4b8c2e6b235b45852e16dea62dedf682e1
 
 `timescale 1ns/1ps
 
@@ -5206,8 +5206,7 @@ module PageTable (
   wire                when_PageTable_l171;
   wire                when_PageTable_l175;
   wire                when_PageTable_l179;
-  wire                when_PageTable_l183;
-  wire                when_PageTable_l205;
+  wire                when_PageTable_l206;
   wire                when_StateMachine_l253;
   `ifndef SYNTHESIS
   reg [7:0] io_privilege_mode_string;
@@ -5334,11 +5333,7 @@ module PageTable (
                         if(when_PageTable_l179) begin
                           fsm_wantExit = 1'b1;
                         end else begin
-                          if(when_PageTable_l183) begin
-                            fsm_wantExit = 1'b1;
-                          end else begin
-                            fsm_wantExit = 1'b1;
-                          end
+                          fsm_wantExit = 1'b1;
                         end
                       end
                     end
@@ -5347,7 +5342,7 @@ module PageTable (
               end
             end
           end else begin
-            if(!when_PageTable_l205) begin
+            if(!when_PageTable_l206) begin
               fsm_wantExit = 1'b1;
             end
           end
@@ -5486,20 +5481,6 @@ module PageTable (
                               trans_io_exception_code = 32'h0000000c;
                             end
                           endcase
-                        end else begin
-                          if(when_PageTable_l183) begin
-                            case(trans_io_access_type)
-                              MemAccessType_Load : begin
-                                trans_io_exception_code = 32'h0000000d;
-                              end
-                              MemAccessType_Store : begin
-                                trans_io_exception_code = 32'h0000000f;
-                              end
-                              default : begin
-                                trans_io_exception_code = 32'h0000000c;
-                              end
-                            endcase
-                          end
                         end
                       end
                     end
@@ -5508,7 +5489,7 @@ module PageTable (
               end
             end
           end else begin
-            if(!when_PageTable_l205) begin
+            if(!when_PageTable_l206) begin
               case(trans_io_access_type)
                 MemAccessType_Load : begin
                   trans_io_exception_code = 32'h0000000d;
@@ -5563,11 +5544,7 @@ module PageTable (
                         if(when_PageTable_l179) begin
                           trans_io_look_up_valid = 1'b0;
                         end else begin
-                          if(when_PageTable_l183) begin
-                            trans_io_look_up_valid = 1'b0;
-                          end else begin
-                            trans_io_look_up_valid = 1'b1;
-                          end
+                          trans_io_look_up_valid = 1'b1;
                         end
                       end
                     end
@@ -5576,7 +5553,7 @@ module PageTable (
               end
             end
           end else begin
-            if(!when_PageTable_l205) begin
+            if(!when_PageTable_l206) begin
               trans_io_look_up_valid = 1'b0;
             end
           end
@@ -5621,11 +5598,7 @@ module PageTable (
                         if(when_PageTable_l179) begin
                           trans_io_look_up_ack = 1'b1;
                         end else begin
-                          if(when_PageTable_l183) begin
-                            trans_io_look_up_ack = 1'b1;
-                          end else begin
-                            trans_io_look_up_ack = 1'b1;
-                          end
+                          trans_io_look_up_ack = 1'b1;
                         end
                       end
                     end
@@ -5634,7 +5607,7 @@ module PageTable (
               end
             end
           end else begin
-            if(!when_PageTable_l205) begin
+            if(!when_PageTable_l206) begin
               trans_io_look_up_ack = 1'b1;
             end
           end
@@ -5662,19 +5635,17 @@ module PageTable (
                     if(!when_PageTable_l171) begin
                       if(!when_PageTable_l175) begin
                         if(!when_PageTable_l179) begin
-                          if(!when_PageTable_l183) begin
-                            trans_io_physical_addr[11 : 0] = trans_io_look_up_addr[11 : 0];
-                            case(i)
-                              1'b1 : begin
-                                trans_io_physical_addr[21 : 12] = trans_io_look_up_addr[21 : 12];
-                                trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
-                              end
-                              default : begin
-                                trans_io_physical_addr[21 : 12] = pte_ppn_0[9 : 0];
-                                trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
-                              end
-                            endcase
-                          end
+                          trans_io_physical_addr[11 : 0] = trans_io_look_up_addr[11 : 0];
+                          case(i)
+                            1'b1 : begin
+                              trans_io_physical_addr[21 : 12] = trans_io_look_up_addr[21 : 12];
+                              trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
+                            end
+                            default : begin
+                              trans_io_physical_addr[21 : 12] = pte_ppn_0[9 : 0];
+                              trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
+                            end
+                          endcase
                         end
                       end
                     end
@@ -5729,11 +5700,7 @@ module PageTable (
                         if(when_PageTable_l179) begin
                           fsm_stateNext = fsm_enumDef_BOOT;
                         end else begin
-                          if(when_PageTable_l183) begin
-                            fsm_stateNext = fsm_enumDef_BOOT;
-                          end else begin
-                            fsm_stateNext = fsm_enumDef_BOOT;
-                          end
+                          fsm_stateNext = fsm_enumDef_BOOT;
                         end
                       end
                     end
@@ -5742,7 +5709,7 @@ module PageTable (
               end
             end
           end else begin
-            if(when_PageTable_l205) begin
+            if(when_PageTable_l206) begin
               fsm_stateNext = fsm_enumDef_read;
             end else begin
               fsm_stateNext = fsm_enumDef_BOOT;
@@ -5770,8 +5737,7 @@ module PageTable (
   assign when_PageTable_l171 = ((trans_io_access_type == MemAccessType_Store) && (! pte_w));
   assign when_PageTable_l175 = ((trans_io_access_type == MemAccessType_Fetch) && (! pte_x));
   assign when_PageTable_l179 = ((1'b0 < i) && (_zz_when_PageTable_l179 != 12'h000));
-  assign when_PageTable_l183 = ((! pte_a) || ((trans_io_access_type == MemAccessType_Store) && (! pte_d)));
-  assign when_PageTable_l205 = (1'b0 < i);
+  assign when_PageTable_l206 = (1'b0 < i);
   assign when_StateMachine_l253 = ((! (fsm_stateReg == fsm_enumDef_idle)) && (fsm_stateNext == fsm_enumDef_idle));
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
@@ -5800,7 +5766,7 @@ module PageTable (
         fsm_enumDef_translate : begin
           if(!when_PageTable_l141) begin
             if(!when_PageTable_l147) begin
-              if(when_PageTable_l205) begin
+              if(when_PageTable_l206) begin
                 i <= (i - 1'b1);
                 wb_adr <= _zz_wb_adr_5[31:0];
                 wb_stb <= 1'b1;
