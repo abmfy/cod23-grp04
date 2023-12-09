@@ -14,6 +14,7 @@ class MEM extends Component {
 
         // Hazard handling
         val stall_req = out Bool()
+        val flush_req = out Bool()
 
         // Trap
         val trap = out Bool()
@@ -212,6 +213,7 @@ class MEM extends Component {
     }
 
     io.stall_req := io.i.mem_en && !timer.req && !io.wb.ack
+    io.flush_req := io.i.csr_op =/= CsrOp.N
 
     io.wb.cyc := io.wb.stb
 

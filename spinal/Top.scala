@@ -45,8 +45,8 @@ class Top (
     If.io.br.br := trap.io.br.br || Exe.io.br.br
     If.io.br.pc := trap.io.br.br ? trap.io.br.pc | Exe.io.br.pc
 
-    If.io.stall := !trap.io.flush_req(0) && !Exe.io.flush_req && Mem.io.stall_req
-    If.io.bubble := trap.io.flush_req(0) || Exe.io.flush_req
+    If.io.stall := !trap.io.flush_req(0) && !Id.io.flush_req && !Exe.io.flush_req && !Mem.io.flush_req && Mem.io.stall_req
+    If.io.bubble := trap.io.flush_req(0) || Id.io.flush_req || Exe.io.flush_req || Mem.io.flush_req
 
     If.io.sie := csr.io.mstatus.r(StatusField.SIE)
     If.io.mie := csr.io.mstatus.r(StatusField.MIE)
@@ -68,8 +68,8 @@ class Top (
     // ID
     Id.io.reg <> reg_file.io.r
 
-    Id.io.stall := !trap.io.flush_req(1) && !Exe.io.flush_req && Mem.io.stall_req
-    Id.io.bubble := trap.io.flush_req(1) || Exe.io.flush_req
+    Id.io.stall := !trap.io.flush_req(1) && !Exe.io.flush_req && !Mem.io.flush_req && Mem.io.stall_req
+    Id.io.bubble := trap.io.flush_req(1) || Exe.io.flush_req || Mem.io.flush_req
 
     trap.io.trap(0) := Id.io.trap
 
@@ -81,8 +81,8 @@ class Top (
     Exe.io.forward(0) <> Mem.io.forward
     Exe.io.forward(1) <> Wb.io.forward
 
-    Exe.io.stall := Mem.io.stall_req
-    Exe.io.bubble := trap.io.flush_req(2)
+    Exe.io.stall := !trap.io.flush_req(2) && !Mem.io.flush_req && Mem.io.stall_req
+    Exe.io.bubble := trap.io.flush_req(2) || Mem.io.flush_req
 
     trap.io.trap(1) := Exe.io.trap
 

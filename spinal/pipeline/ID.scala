@@ -15,6 +15,7 @@ class ID extends Component {
         // Hazard handling
         val stall = in Bool()
         val bubble = in Bool()
+        val flush_req = out Bool()
 
         // Trap
         val trap = out Bool()
@@ -878,6 +879,9 @@ class ID extends Component {
 
     io.reg.addr_a := rs1
     io.reg.addr_b := rs2
+
+    // Wait for control state to update
+    io.flush_req := csr_op =/= CsrOp.N
 
     when (io.stall) {
         // Pass
