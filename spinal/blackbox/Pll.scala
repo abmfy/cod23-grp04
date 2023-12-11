@@ -11,6 +11,8 @@ class Pll extends BlackBox {
     setBlackBoxName("pll_example")
     spinalSimWhiteBox()
 
+    io.clk_out2.allowPruning()
+
     io.clk_out1 := io.clk_in1
     io.clk_out2 := io.clk_in1
     io.locked := !io.reset

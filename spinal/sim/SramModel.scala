@@ -112,7 +112,10 @@ class SramModel(
 
     val enable = io.wb.cyc && io.wb.stb && !io.wb.ack
 
-    dat_o_reg := mem(adr_i_valid)
+    dat_o_reg := mem.readAsync(
+        address = adr_i_valid,
+        readUnderWrite = writeFirst,
+    )
     mem.write(
         address = adr_i_valid,
         data = io.wb.dat_w,

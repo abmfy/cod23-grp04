@@ -7,8 +7,8 @@ case class UartControllerConfig (
     addr_width: Int = 32,
     data_width: Int = 32,
 
-    clk_freq: Int = 10000000,
-    baud: Int = 115200,
+    clk_freq: Long = 10000000,
+    baud: Long = 115200,
 )
 
 class UartController(
@@ -17,8 +17,8 @@ class UartController(
     val generic = new Generic {
         val ADDR_WIDTH = config.addr_width
         val DATA_WIDTH = config.data_width
-        val CLK_FREQ = config.clk_freq
-        val BAUD = config.baud
+        val CLK_FREQ = config.clk_freq.toBigInt
+        val BAUD = config.baud.toBigInt
     }
 
     val io = new Bundle {
