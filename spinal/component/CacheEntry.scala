@@ -18,7 +18,6 @@ case class CacheLine(
   val valid = Reg(Bool) init(False)
   val tag = Reg(Bits(tagBits bits)) init(0)
   val data = Vec(Reg(Bits(dataWidth bits)) init(0) allowUnsetRegToAvoidLatch, wordNums)
-  val dirty = Reg(Bool) init(False)
   val counter = Reg(UInt(log2Up(setNums) bits)) init(0)
 }
 

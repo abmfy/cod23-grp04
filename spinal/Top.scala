@@ -4,16 +4,23 @@ import cod.sim._
 import spinal.core._
 import spinal.lib._
 import spinal.lib.io._
+import java.io.ObjectInputFilter.Status
 
 class Top (
     simulation: Boolean = false,
+    val simulation_freq: Long = 100000000000L,
     base_sram_init: Option[String] = None,
     ext_sram_init: Option[String] = None,
 ) extends ThinPadTop {
     // Components
     val reg_file = new RegFile
     val alu = new Alu
-    
+    val csr = new CsrFile
+    val trap = new Trap
+    val timer = new Timer
+    val IF_page_table = new PageTable
+    val MEM_page_table = new PageTable    
+
     // Pipelines
     val If = new IF
     val Id = new ID
@@ -37,17 +44,39 @@ class Top (
 
     io.gpio.leds := If.io.o.instr.resized
 
-    If.io.br <> Exe.io.br
     If.io.cache <> ICache.io.toIF
+    If.io.br.br := trap.io.br.br || Exe.io.br.br
+    If.io.br.pc := trap.io.br.br ? trap.io.br.pc | Exe.io.br.pc
 
-    If.io.stall := !Exe.io.flush_req && Mem.io.stall_req
-    If.io.bubble := Exe.io.flush_req
+    If.io.stall := !trap.io.flush_req(0) && !Id.io.flush_req && !Exe.io.flush_req && !Mem.io.flush_req && Mem.io.stall_req
+    If.io.bubble := trap.io.flush_req(0) || Id.io.flush_req || Exe.io.flush_req || Mem.io.flush_req
+
+    If.io.sie := csr.io.mstatus.r(StatusField.SIE)
+    If.io.mie := csr.io.mstatus.r(StatusField.MIE)
+
+    If.io.ie := csr.io.mie.r
+    If.io.ip := csr.io.mip.r
+    If.io.mideleg := csr.io.mideleg.r
+
+    If.io.prv := trap.io.prv
+    If.io.satp_mode := csr.io.satp.r.msb
+    
+    If.io.pt <> IF_page_table.trans_io
+
+    IF_page_table.io.satp := csr.io.satp.r
+    IF_page_table.io.privilege_mode := trap.io.prv
+    IF_page_table.io.mstatus_SUM := csr.io.mstatus.r(StatusField.SUM)
+    IF_page_table.io.mstatus_MXR := csr.io.mstatus.r(StatusField.MXR)
 
     // ID
     Id.io.reg <> reg_file.io.r
 
-    Id.io.stall := Exe.io.flush_req && Mem.io.stall_req
-    Id.io.bubble := Exe.io.flush_req
+    Id.io.stall := !trap.io.flush_req(1) && !Exe.io.flush_req && !Mem.io.flush_req && Mem.io.stall_req
+    Id.io.bubble := trap.io.flush_req(1) || Exe.io.flush_req || Mem.io.flush_req
+
+    trap.io.trap(0) := Id.io.trap
+
+    Id.io.prv := trap.io.prv
 
     // EXE
     Exe.io.alu <> alu.io
@@ -55,7 +84,27 @@ class Top (
     Exe.io.forward(0) <> Mem.io.forward
     Exe.io.forward(1) <> Wb.io.forward
 
-    Exe.io.stall := Mem.io.stall_req
+    Exe.io.stall := !trap.io.flush_req(2) && !Mem.io.flush_req && Mem.io.stall_req
+    Exe.io.bubble := trap.io.flush_req(2) || Mem.io.flush_req
+
+    trap.io.trap(1) := Exe.io.trap
+
+    // MEM
+    Mem.io.csr <> csr.io.csr
+
+    trap.io.trap(2) := Mem.io.trap
+
+    Mem.io.timer <> timer.io.timer
+
+    Mem.io.prv := trap.io.prv
+    Mem.io.satp_mode := csr.io.satp.r.msb
+
+    Mem.io.pt <> MEM_page_table.trans_io
+
+    MEM_page_table.io.satp := csr.io.satp.r
+    MEM_page_table.io.privilege_mode := trap.io.prv
+    MEM_page_table.io.mstatus_SUM := csr.io.mstatus.r(StatusField.SUM)
+    MEM_page_table.io.mstatus_MXR := csr.io.mstatus.r(StatusField.MXR)
 
     // MEM
     Mem.io.dcache <> DCache.io.toMEM
@@ -63,8 +112,60 @@ class Top (
     // WB
     Wb.io.reg <> reg_file.io.w
 
+    Wb.io.trap_commit <> trap.io.commit
+
+    // Trap
+    trap.io.stvec <> csr.io.stvec
+    trap.io.sepc <> csr.io.sepc
+    trap.io.scause <> csr.io.scause
+    trap.io.stval <> csr.io.stval
+    trap.io.medeleg <> csr.io.medeleg
+    trap.io.mideleg <> csr.io.mideleg
+    trap.io.mstatus <> csr.io.mstatus
+    trap.io.mtvec <> csr.io.mtvec
+    trap.io.mepc <> csr.io.mepc
+    trap.io.mcause <> csr.io.mcause
+    trap.io.mtval <> csr.io.mtval
+
+    // Csr
+    csr.io.time.we := False
+    csr.io.time.w := 0
+
+    csr.io.timeh.we := False
+    csr.io.timeh.w := 0
+
+    csr.io.sstatus.we := False
+    csr.io.sstatus.w := 0
+
+    csr.io.sie.we := False
+    csr.io.sie.w := 0
+    
+    csr.io.sscratch.we := False
+    csr.io.sscratch.w := 0
+
+    csr.io.sip.we := False
+    csr.io.sip.w := 0
+
+    csr.io.satp.we := False
+    csr.io.satp.w := 0
+
+    csr.io.mhartid.we := False
+    csr.io.mhartid.w := 0
+
+    csr.io.mie.we := False
+    csr.io.mie.w := 0
+
+    csr.io.mscratch.we := False
+    csr.io.mscratch.w := 0
+
+    csr.io.mip.we := False
+    csr.io.mip.w := 0
+
+    csr.io.timer := timer.io.time
+    csr.io.timeout := timer.io.timeout
+
     // Wishbone IO
-    val muxes = List.fill(2)(new WbMux(WbMuxConfig(
+    val muxes = List.fill(4)(new WbMux(WbMuxConfig(
         slave_count = 3,
         slave_addr = List(
             0x80000000L,
@@ -78,7 +179,7 @@ class Top (
         ),
     )))
     val arbiters = List.fill(3)(new WbArbiter(WbArbiterConfig(
-        master_count = 2
+        master_count = 4
     )))
     for ((mux, i) <- muxes.zipWithIndex;
          (arbiter, j) <- arbiters.zipWithIndex) {
@@ -86,8 +187,10 @@ class Top (
     }
 
     // Masters
-    muxes(0).io.wb <> DCache.io.wb
-    muxes(1).io.wb <> ICache.io.wb
+    muxes(0).io.wb <> MEM_page_table.wb
+    muxes(1).io.wb <> DCache.io.wb
+    muxes(2).io.wb <> IF_page_table.wb
+    muxes(3).io.wb <> ICache.io.wb
 
     // Slaves
     val (base_ram, ext_ram) = if (simulation) {
@@ -111,7 +214,10 @@ class Top (
 
         (base, ext)
     }
-    val uart = new UartController
+    val uart = new UartController(UartControllerConfig(
+        clk_freq = if (simulation) simulation_freq else ClockDomain.current.frequency.getValue.toInt,
+        baud = if (simulation) simulation_freq / 10 else 115200,
+    ))
     uart.io.uart <> io.uart0
     uart.io.wb <> arbiters(2).io.wb
 }

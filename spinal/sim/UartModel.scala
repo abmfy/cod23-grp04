@@ -54,7 +54,7 @@ object UartModel {
         }
     }
 
-    def decoder(uart_pin: Bool, baud_period: TimeNumber)(action: Char => Unit) = fork {
+    def decoder(uart_pin: Bool, baud_period: TimeNumber)(action: Char => Unit = _ => ()) = fork {
         // Wait boot signals propagation
         sleep(1) 
         waitUntil(uart_pin.toBoolean == true)
@@ -67,7 +67,7 @@ object UartModel {
                 println("UART FRAME ERROR")
             } else {
                 val buffer = decode(uart_pin, baud_period)
-                println(s"Uart decoder received: $buffer")
+                println(f"Uart decoder received: $buffer%02x $buffer")
                 action(buffer)
             }
         }

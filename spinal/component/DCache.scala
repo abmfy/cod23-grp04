@@ -6,9 +6,6 @@ import spinal.lib._
 import spinal.lib.fsm._
 
 import Instr._
-import spinal.lib.cpu.riscv.impl.RegFileReadKind
-import spinal.lib.bus.tilelink.coherent.Cache
-
 
 case class DCacheConfig (
     lineNums: Int = 8,
@@ -42,7 +39,14 @@ class DCache(
         val toMEM = slave port DCachePorts()
         val wb = master port WishbonePorts()
     }
+
     io.wb.cyc := io.wb.stb
+    io.wb.stb.setAsReg() init(False)
+    io.wb.we.setAsReg() init(False)
+    io.wb.adr.setAsReg() init(0)
+    io.wb.dat_w.setAsReg() init(0)
+    io.wb.sel.setAsReg() init(0)
+
     val offsetBitsNum = log2Up(config.linewordsNum)
     val indexBitsNum = log2Up(config.lineNums)
     val tagBitsNum = config.dataWidth - offsetBitsNum - indexBitsNum - 2
@@ -118,11 +122,6 @@ class DCache(
     io.toMEM.data := addrCacheLegal ? temp_data | io.wb.dat_r
     // io.toMEM.data := io.wb.dat_r
     var fsm = new StateMachine {
-        io.wb.stb := False
-        io.wb.we := False
-        io.wb.adr := 0
-        io.wb.dat_w := 0
-        io.wb.sel := 0
         io.toMEM.ack := False
         val start: State = new State with EntryPoint {
             whenIsActive {
@@ -133,17 +132,15 @@ class DCache(
                             // 如果地址合法，进行正常的 Cache 操作
                             when(hit){
                                 io.toMEM.ack := True
-                                goto(start)
-                            }.otherwise{
+                            } otherwise {
                                 goto(fetch_0)
                             }
-                        }.otherwise{
+                        } otherwise {
                             // 如果地址不合法，进行 Wishbone 操作
-                            req()
                             goto (wb_fetch)
                         }
 
-                    }.otherwise{
+                    } otherwise {
                         // 如果进行的是写入操作
                         when(hit){
                             // 如果命中，更新 Cache 中的数据，然后进行 Wishbone 操作 , 注意 sel 写入使能信号
@@ -155,7 +152,6 @@ class DCache(
                             }
                         }
                         // 进行 Wishbone 操作
-                        req()
                         goto(wb_fetch)
                     }
                     // req()
@@ -165,66 +161,69 @@ class DCache(
             }
         }
         val fetch_0: State = new State {
-            whenIsActive {
+            onEntry {
                 io.wb.stb := True
                 io.wb.adr := alignAddr
                 io.wb.we := False
                 io.wb.sel := Sel.WORD
+            }
+            whenIsActive {
                 when(io.wb.ack){
                     caches.sets(set_idx).set(idx).data(0) := io.wb.dat_r
                     caches.sets(set_idx).set(idx).tag := getTag(io.toMEM.addr).asBits
                     caches.sets(set_idx).set(idx).valid := True
-                    io.wb.stb := False
                     goto(fetch_1)
                 }
             }
         }
         val fetch_1: State = new State {
-            whenIsActive {
-                io.wb.stb := True
+            onEntry {
                 io.wb.adr := alignAddr + 4
-                io.wb.we := False
-                io.wb.sel := Sel.WORD
+            }
+            whenIsActive {
                 when(io.wb.ack){
                     caches.sets(set_idx).set(idx).data(1) := io.wb.dat_r
                     goto(fetch_2)
-                    io.wb.stb := False
                 }
             }
         }
         val fetch_2: State = new State {
-            whenIsActive {
-                io.wb.stb := True
+            onEntry {
                 io.wb.adr := alignAddr + 8
-                io.wb.we := False
-                io.wb.sel := Sel.WORD
+            }
+            whenIsActive {
                 when(io.wb.ack){
                     caches.sets(set_idx).set(idx).data(2) := io.wb.dat_r
                     goto(fetch_3)
-                    io.wb.stb := False
                 }
             }
         }
         val fetch_3: State = new State {
-            whenIsActive {
-                io.wb.stb := True
+            onEntry {
                 io.wb.adr := alignAddr + 12
-                io.wb.we := False
-                io.wb.sel := Sel.WORD
+            }
+            whenIsActive {
                 when(io.wb.ack){
                     caches.sets(set_idx).set(idx).data(3) := io.wb.dat_r
                     goto(start)
-                    io.wb.stb := False
                 }
+            }
+            onExit {
+                io.wb.stb := False
             }
         }
         val wb_fetch: State = new State {
-            whenIsActive {
+            onEntry {
                 req()
+            }
+            whenIsActive {
                 when (io.wb.ack) {
                     io.toMEM.ack := True
                     goto(start)
                 }
+            }
+            onExit {
+                io.wb.stb := False
             }
         }
     }

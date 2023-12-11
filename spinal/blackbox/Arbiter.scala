@@ -32,7 +32,7 @@ class Arbiter (
 
         val grant = out Bits(config.ports bits)
         val grant_valid = out Bool()
-        val grant_encoded = out UInt(log2Up(config.ports) bits)
+        val grant_encoded = out UInt(log2Up(config.ports) bits) allowPruning()
     }
 
     noIoPrefix()

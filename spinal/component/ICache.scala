@@ -6,9 +6,6 @@ import spinal.lib._
 import spinal.lib.fsm._
 
 import Instr._
-import spinal.lib.cpu.riscv.impl.RegFileReadKind
-import spinal.lib.bus.tilelink.coherent.Cache
-
 
 case class ICacheConfig (
     lineNums: Int = 8,

@@ -15,21 +15,50 @@ class EXE extends Component {
 
         // Hazard handling
         val stall = in Bool()
+        val bubble = in Bool()
         val flush_req = out Bool()
+
+        // Trap
+        val trap = out Bool()
 
         // Alu
         val alu = master port AluPorts()
     }
 
+    def bubble() = {
+        io.o.real := False
+        io.o.pc := 0
+        io.o.csr_op := CsrOp.N
+        io.o.mem_en := False
+        io.o.reg_we := False
+
+        io.trap := False
+        io.o.trap.epc := 0
+        io.o.trap.cause := 0
+        io.o.trap.tval := 0
+    }
+
+    io.o.real.setAsReg() init(False)
     io.o.pc.setAsReg() init(0)
     io.o.reg_data_b.setAsReg() init(0)
     io.o.reg_addr_d.setAsReg() init(0)
+    io.o.csr_op.setAsReg() init(CsrOp.N)
+    io.o.imm.setAsReg() init(0)
     io.o.mem_en.setAsReg() init(False)
     io.o.mem_we.setAsReg() init(False)
     io.o.mem_sel.setAsReg() init(0)
+    io.o.mem_unsigned.setAsReg() init(False)
     io.o.reg_we.setAsReg() init(False)
     io.o.reg_sel.setAsReg() init(RegSel.ALU)
     io.o.alu_y.setAsReg() init(0)
+
+    io.o.trap.trap.setAsReg() init(False)
+    io.o.trap.epc.setAsReg() init(0)
+    io.o.trap.cause.setAsReg() init(0)
+    io.o.trap.tval.setAsReg() init(0)
+
+    io.o.trap.trap := io.trap
+    io.trap := io.o.trap.trap
 
     val reg_a = CombInit(io.i.reg_data_a)
     val reg_b = CombInit(io.i.reg_data_b)
@@ -46,21 +75,32 @@ class EXE extends Component {
         }
     }
 
-    io.alu.a := io.i.use_pc ? io.i.pc.asBits | reg_a
+    io.alu.a := io.i.use_pc ? io.i.pc.asBits | (
+        io.i.use_uimm ? Util.zero_extend(io.i.reg_addr_a.asBits) | reg_a
+    )
     io.alu.b := io.i.use_rs2 ? reg_b | io.i.imm
     io.alu.op := io.i.alu_op
 
     when (io.stall) {
         // Pass
+    } elsewhen (io.bubble) {
+        bubble()
+    } elsewhen (io.i.trap.trap) {
+        io.trap := True
+        io.o.trap <> io.i.trap
     } otherwise {
         io.o.alu_y := io.alu.y
 
+        io.o.real := io.i.real
         io.o.pc := io.i.pc
         io.o.reg_data_b := reg_b
         io.o.reg_addr_d := io.i.reg_addr_d
+        io.o.csr_op := io.i.csr_op
+        io.o.imm := io.i.imm
         io.o.mem_en := io.i.mem_en
         io.o.mem_we := io.i.mem_we
         io.o.mem_sel := io.i.mem_sel
+        io.o.mem_unsigned := io.i.mem_unsigned
         io.o.reg_we := io.i.reg_we
         io.o.reg_sel := io.i.reg_sel
     }
@@ -81,7 +121,24 @@ class EXE extends Component {
         is (NE) {
             io.br.br := reg_a =/= reg_b
         }
+        is (LT) {
+            io.br.br := reg_a.asSInt < reg_b.asSInt
+        }
+        is (GE) {
+            io.br.br := reg_a.asSInt >= reg_b.asSInt
+        }
+        is (LTU) {
+            io.br.br := reg_a.asUInt < reg_b.asUInt
+        }
+        is (GEU) {
+            io.br.br := reg_a.asUInt >= reg_b.asUInt
+        }
     }
 
-    io.flush_req := io.br.br
+    // Trapped
+    when (io.i.trap.trap) {
+        io.br.br := False
+    }
+
+    io.flush_req := io.br.br || io.i.csr_op =/= CsrOp.N
 }

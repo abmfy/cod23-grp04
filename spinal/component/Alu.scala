@@ -20,6 +20,8 @@ class Alu(width: Int = 32) extends Component {
 
     val s_a = io.a asSInt
     val s_b = io.b asSInt
+    val u_a = io.a asUInt
+    val u_b = io.b asUInt
 
     val high_bit = log2Up(width) - 1
     val shamt = io.b(high_bit downto 0).asUInt
@@ -57,6 +59,12 @@ class Alu(width: Int = 32) extends Component {
         }
         is (AluOp.ROL) {
             io.y := io.a rotateLeft shamt
+        }
+        is (AluOp.SLT) {
+            io.y := (s_a < s_b).asBits.resized
+        }
+        is (AluOp.SLTU) {
+            io.y := (u_a < u_b).asBits.resized
         }
         is (AluOp.OP2) {
             io.y := io.b
