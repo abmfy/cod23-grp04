@@ -23,6 +23,9 @@ class ID extends Component {
         // Privilege mode
         val prv = in port PrivilegeMode()
 
+        // FENCE.I
+        val fence = out Bool()
+        
         // RegFile
         val reg = master port RegFileReadPorts()
     }
@@ -876,6 +879,8 @@ class ID extends Component {
 
     io.o.trap.trap := io.trap
     io.trap := io.o.trap.trap
+
+    io.fence := instr_kind === FENCE_I
 
     io.reg.addr_a := rs1
     io.reg.addr_b := rs2

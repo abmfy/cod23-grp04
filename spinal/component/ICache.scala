@@ -34,6 +34,8 @@ class ICache(
     val io = new Bundle {
         val toIF = slave port ICachePorts()
         val wb = master port WishbonePorts()
+
+        val fence = in Bool()
     }
     val offsetBitsNum = log2Up(config.linewordsNum)
     val indexBitsNum = log2Up(config.lineNums)
@@ -47,6 +49,13 @@ class ICache(
     }
     def getIndex(addr: UInt): UInt = {
         addr(2 + offsetBitsNum + indexBitsNum - 1 downto 2 + offsetBitsNum)
+    }
+    def clear(): Unit = {
+        for (i <- 0 until config.setsNum){
+            for (j <- 0 until config.lineNums){
+                caches.sets(i).set(j).valid := False
+            }
+        }
     }
     val caches = new CacheSets(tagBits = tagBitsNum, dataWidth = config.dataWidth, 
                                 wordNums = linewordsNum, lineNums = config.lineNums, setNums = config.setsNum)
@@ -96,7 +105,9 @@ class ICache(
         io.toIF.ack := False
         val start: State = new State with EntryPoint {
             whenIsActive {
-                when(io.toIF.icache_en){
+                when (io.fence) {
+                    clear()
+                } elsewhen (io.toIF.icache_en){
                     when(hit){
                         io.toIF.ack := True
                         goto(start)

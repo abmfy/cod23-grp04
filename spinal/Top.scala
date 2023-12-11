@@ -19,7 +19,9 @@ class Top (
     val trap = new Trap
     val timer = new Timer
     val IF_page_table = new PageTable
-    val MEM_page_table = new PageTable    
+    val MEM_page_table = new PageTable
+    val ICache = new ICache
+    val DCache = new DCache
 
     // Pipelines
     val If = new IF
@@ -27,8 +29,6 @@ class Top (
     val Exe = new EXE
     val Mem = new MEM
     val Wb = new WB
-    val ICache = new ICache
-    val DCache = new DCache
 
     If.io.o <> Id.io.i
     Id.io.o <> Exe.io.i
@@ -77,6 +77,8 @@ class Top (
     trap.io.trap(0) := Id.io.trap
 
     Id.io.prv := trap.io.prv
+
+    ICache.io.fence := Id.io.fence
 
     // EXE
     Exe.io.alu <> alu.io
