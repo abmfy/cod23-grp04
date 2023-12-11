@@ -140,5 +140,5 @@ class EXE extends Component {
         io.br.br := False
     }
 
-    io.flush_req := io.br.br || io.i.csr_op =/= CsrOp.N
+    io.flush_req := io.br.br || !io.stall && io.i.csr_op =/= CsrOp.N
 }

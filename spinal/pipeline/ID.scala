@@ -886,7 +886,7 @@ class ID extends Component {
     io.reg.addr_b := rs2
 
     // Wait for control state to update
-    io.flush_req := csr_op =/= CsrOp.N
+    io.flush_req := !io.stall && csr_op =/= CsrOp.N
 
     when (io.stall) {
         // Pass
