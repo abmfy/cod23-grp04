@@ -77,7 +77,6 @@ class MEM extends Component {
     def bubble(): Unit = {
         io.o.real := False
         io.o.pc := 0
-        io.o.reg_we := False
 
         io.trap := False
         io.o.trap.epc := 0
