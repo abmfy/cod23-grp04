@@ -5,7 +5,7 @@ import spinal.lib._
 
 case class BPConfig (
     BHT_WIDTH: Int = 2,
-    count: Int = 16,
+    count: Int = 32,
     BTB_WIDTH: Int = 32,
     TAG_WIDTH: Int = 32
 )
@@ -43,11 +43,11 @@ class BranchPredict(config: BPConfig = BPConfig()) extends  Component {
     val is_IF_branch_type = io.if_instr(0, 7 bits) === B"1101111" || io.if_instr(0, 7 bits) === B"1100011"  // 不涉及加减，可以不用buffer
     val is_EXE_branch_type = io.exe_instr(0, 7 bits) === B"1101111" || io.exe_instr(0, 7 bits) === B"1100011"
     val exe_branch_type_buffer = Reg(Bool()) init(False) // 一个周期只触发一次exe的结果回传
-    val if_index = io.IF_pc(5 downto 2)
+    val if_index = io.IF_pc(6 downto 2)
     // val next_taken_reg= is_IF_branch_type  && (BHT(if_index) >= 2)
     io.next_pc := BTB(if_index)
     io.next_taken := is_IF_branch_type  && io.IF_pc === TAG(if_index) && (BHT(if_index) >= 2)
-    val exe_index = io.exe_pc(5 downto 2)
+    val exe_index = io.exe_pc(6 downto 2)
 
     when (is_EXE_branch_type && !exe_branch_type_buffer) {
         when (io.exe_pc =/= TAG(exe_index)) { // 新指令，从零开始的预测

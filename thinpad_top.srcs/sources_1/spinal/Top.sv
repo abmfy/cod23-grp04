@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : 036821e8d939be948a5fee7478bbda03fc5240a1
+// Git hash  : 46a303d78963788d7fea0ba2dc6c572a497dd651
 
 `timescale 1ns/1ps
 
@@ -4884,23 +4884,23 @@ module IF_1 (
   reg                 fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
-  wire                when_IF_l163;
+  wire                when_IF_l160;
   reg        [1:0]    fsm_stateReg;
   reg        [1:0]    fsm_stateNext;
   wire                _zz_when_StateMachine_l237;
   wire                _zz_when_StateMachine_l237_1;
   wire                _zz_when_StateMachine_l237_2;
   wire                _zz_when_StateMachine_l237_3;
-  wire                when_IF_l176;
-  wire                when_IF_l216;
+  wire                when_IF_l173;
+  wire                when_IF_l213;
   wire       [31:0]   _zz_io_o_instr;
-  wire                when_IF_l138;
+  wire                when_IF_l131;
   wire                when_IF_l112;
   wire                when_IF_l114;
   wire                when_IF_l112_1;
   wire                when_IF_l114_1;
-  wire                when_IF_l140;
-  wire                when_IF_l227;
+  wire                when_IF_l133;
+  wire                when_IF_l224;
   wire                when_StateMachine_l237;
   wire                when_StateMachine_l237_1;
   wire                when_StateMachine_l253;
@@ -4963,9 +4963,9 @@ module IF_1 (
       fsm_enumDef_1_translate : begin
       end
       fsm_enumDef_1_fetch : begin
-        if(when_IF_l216) begin
+        if(when_IF_l213) begin
           if(!io_stall) begin
-            if(!when_IF_l227) begin
+            if(!when_IF_l224) begin
               io_instr = _zz_io_o_instr;
             end
           end
@@ -4997,13 +4997,13 @@ module IF_1 (
       end
       fsm_enumDef_1_fetch : begin
         io_trap = 1'b0;
-        if(when_IF_l216) begin
+        if(when_IF_l213) begin
           if(!io_stall) begin
-            if(!when_IF_l227) begin
-              if(when_IF_l138) begin
+            if(!when_IF_l224) begin
+              if(when_IF_l131) begin
                 io_trap = 1'b1;
               end else begin
-                if(when_IF_l140) begin
+                if(when_IF_l133) begin
                   io_trap = 1'b1;
                 end else begin
                   io_trap = 1'b0;
@@ -5057,7 +5057,7 @@ module IF_1 (
   end
 
   assign fsm_wantKill = 1'b0;
-  assign when_IF_l163 = (io_br_br && (io_br_pc != pc));
+  assign when_IF_l160 = (io_br_br && (io_br_pc != pc));
   assign _zz_when_StateMachine_l237 = (fsm_stateReg == fsm_enumDef_1_translate);
   assign _zz_when_StateMachine_l237_1 = (fsm_stateReg == fsm_enumDef_1_fetch);
   assign _zz_when_StateMachine_l237_2 = (fsm_stateNext == fsm_enumDef_1_translate);
@@ -5086,9 +5086,9 @@ module IF_1 (
         end
       end
       fsm_enumDef_1_fetch : begin
-        if(when_IF_l216) begin
+        if(when_IF_l213) begin
           if(!io_stall) begin
-            if(when_IF_l227) begin
+            if(when_IF_l224) begin
               fsm_stateNext = fsm_enumDef_1_start;
             end else begin
               fsm_stateNext = fsm_enumDef_1_start;
@@ -5107,16 +5107,16 @@ module IF_1 (
     end
   end
 
-  assign when_IF_l176 = (io_br_br || delay_br);
-  assign when_IF_l216 = (io_wb_ack || delay_ack);
+  assign when_IF_l173 = (io_br_br || delay_br);
+  assign when_IF_l213 = (io_wb_ack || delay_ack);
   assign _zz_io_o_instr = (delay_ack ? delay_instr : io_wb_dat_r);
-  assign when_IF_l138 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l131 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
   assign when_IF_l112 = interrupt_masked[7];
   assign when_IF_l114 = interrupt_masked[5];
   assign when_IF_l112_1 = interrupt_delegated[7];
   assign when_IF_l114_1 = interrupt_delegated[5];
-  assign when_IF_l140 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l227 = (io_br_br || delay_br);
+  assign when_IF_l133 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l224 = (io_br_br || delay_br);
   assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_2));
   assign when_StateMachine_l237_1 = (_zz_when_StateMachine_l237_1 && (! _zz_when_StateMachine_l237_3));
   assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_2);
@@ -5144,7 +5144,7 @@ module IF_1 (
       fsm_stateReg <= fsm_enumDef_1_BOOT;
     end else begin
       io_o_trap_trap <= io_trap;
-      if(when_IF_l163) begin
+      if(when_IF_l160) begin
         delay_br <= 1'b1;
         pc <= io_br_pc;
       end
@@ -5166,7 +5166,7 @@ module IF_1 (
               io_o_trap_epc <= 32'h00000000;
               io_o_trap_cause <= 32'h00000000;
               io_o_trap_tval <= 32'h00000000;
-              if(when_IF_l176) begin
+              if(when_IF_l173) begin
                 delay_br <= 1'b0;
               end
             end
@@ -5188,7 +5188,7 @@ module IF_1 (
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
           io_o_trap_tval <= 32'h00000000;
-          if(when_IF_l216) begin
+          if(when_IF_l213) begin
             delay_ack <= 1'b0;
             if(io_stall) begin
               delay_ack <= 1'b1;
@@ -5197,19 +5197,12 @@ module IF_1 (
                 delay_instr <= io_wb_dat_r;
               end
             end else begin
-              if(when_IF_l227) begin
+              if(when_IF_l224) begin
                 delay_br <= 1'b0;
               end else begin
-                io_o_pc <= pc;
-                io_o_instr <= _zz_io_o_instr;
                 io_o_next_pc <= io_next_pc;
                 io_o_next_taken <= io_next_taken;
-                if(io_next_taken) begin
-                  pc <= io_next_pc;
-                end else begin
-                  pc <= (pc + 32'h00000004);
-                end
-                if(when_IF_l138) begin
+                if(when_IF_l131) begin
                   io_o_trap_epc <= pc;
                   if(when_IF_l112) begin
                     io_o_trap_cause <= 32'h80000007;
@@ -5222,7 +5215,7 @@ module IF_1 (
                   end
                   io_o_trap_tval <= 32'h00000000;
                 end else begin
-                  if(when_IF_l140) begin
+                  if(when_IF_l133) begin
                     io_o_trap_epc <= pc;
                     if(when_IF_l112_1) begin
                       io_o_trap_cause <= 32'h80000007;
@@ -5238,7 +5231,11 @@ module IF_1 (
                     io_o_real <= 1'b1;
                     io_o_pc <= pc;
                     io_o_instr <= _zz_io_o_instr;
-                    pc <= (pc + 32'h00000004);
+                    if(io_next_taken) begin
+                      pc <= io_next_pc;
+                    end else begin
+                      pc <= (pc + 32'h00000004);
+                    end
                   end
                 end
               end
@@ -7869,6 +7866,22 @@ module BranchPredict (
   reg        [31:0]   BTB_13;
   reg        [31:0]   BTB_14;
   reg        [31:0]   BTB_15;
+  reg        [31:0]   BTB_16;
+  reg        [31:0]   BTB_17;
+  reg        [31:0]   BTB_18;
+  reg        [31:0]   BTB_19;
+  reg        [31:0]   BTB_20;
+  reg        [31:0]   BTB_21;
+  reg        [31:0]   BTB_22;
+  reg        [31:0]   BTB_23;
+  reg        [31:0]   BTB_24;
+  reg        [31:0]   BTB_25;
+  reg        [31:0]   BTB_26;
+  reg        [31:0]   BTB_27;
+  reg        [31:0]   BTB_28;
+  reg        [31:0]   BTB_29;
+  reg        [31:0]   BTB_30;
+  reg        [31:0]   BTB_31;
   reg        [31:0]   TAG_0;
   reg        [31:0]   TAG_1;
   reg        [31:0]   TAG_2;
@@ -7885,6 +7898,22 @@ module BranchPredict (
   reg        [31:0]   TAG_13;
   reg        [31:0]   TAG_14;
   reg        [31:0]   TAG_15;
+  reg        [31:0]   TAG_16;
+  reg        [31:0]   TAG_17;
+  reg        [31:0]   TAG_18;
+  reg        [31:0]   TAG_19;
+  reg        [31:0]   TAG_20;
+  reg        [31:0]   TAG_21;
+  reg        [31:0]   TAG_22;
+  reg        [31:0]   TAG_23;
+  reg        [31:0]   TAG_24;
+  reg        [31:0]   TAG_25;
+  reg        [31:0]   TAG_26;
+  reg        [31:0]   TAG_27;
+  reg        [31:0]   TAG_28;
+  reg        [31:0]   TAG_29;
+  reg        [31:0]   TAG_30;
+  reg        [31:0]   TAG_31;
   reg        [1:0]    BHT_0;
   reg        [1:0]    BHT_1;
   reg        [1:0]    BHT_2;
@@ -7901,13 +7930,29 @@ module BranchPredict (
   reg        [1:0]    BHT_13;
   reg        [1:0]    BHT_14;
   reg        [1:0]    BHT_15;
+  reg        [1:0]    BHT_16;
+  reg        [1:0]    BHT_17;
+  reg        [1:0]    BHT_18;
+  reg        [1:0]    BHT_19;
+  reg        [1:0]    BHT_20;
+  reg        [1:0]    BHT_21;
+  reg        [1:0]    BHT_22;
+  reg        [1:0]    BHT_23;
+  reg        [1:0]    BHT_24;
+  reg        [1:0]    BHT_25;
+  reg        [1:0]    BHT_26;
+  reg        [1:0]    BHT_27;
+  reg        [1:0]    BHT_28;
+  reg        [1:0]    BHT_29;
+  reg        [1:0]    BHT_30;
+  reg        [1:0]    BHT_31;
   wire                is_IF_branch_type;
   wire                is_EXE_branch_type;
   reg                 exe_branch_type_buffer;
-  wire       [3:0]    if_index;
-  wire       [3:0]    exe_index;
+  wire       [4:0]    if_index;
+  wire       [4:0]    exe_index;
   wire                when_BranchPredict_l52;
-  wire       [15:0]   _zz_1;
+  wire       [31:0]   _zz_1;
   wire                _zz_2;
   wire                _zz_3;
   wire                _zz_4;
@@ -7924,9 +7969,7 @@ module BranchPredict (
   wire                _zz_15;
   wire                _zz_16;
   wire                _zz_17;
-  wire                when_BranchPredict_l53;
-  wire       [1:0]    switch_BranchPredict_l61;
-  wire       [15:0]   _zz_18;
+  wire                _zz_18;
   wire                _zz_19;
   wire                _zz_20;
   wire                _zz_21;
@@ -7942,190 +7985,384 @@ module BranchPredict (
   wire                _zz_31;
   wire                _zz_32;
   wire                _zz_33;
-  wire                _zz_34;
+  wire                when_BranchPredict_l53;
+  wire       [1:0]    switch_BranchPredict_l61;
+  wire       [31:0]   _zz_34;
+  wire                _zz_35;
+  wire                _zz_36;
+  wire                _zz_37;
+  wire                _zz_38;
+  wire                _zz_39;
+  wire                _zz_40;
+  wire                _zz_41;
+  wire                _zz_42;
+  wire                _zz_43;
+  wire                _zz_44;
+  wire                _zz_45;
+  wire                _zz_46;
+  wire                _zz_47;
+  wire                _zz_48;
+  wire                _zz_49;
+  wire                _zz_50;
+  wire                _zz_51;
+  wire                _zz_52;
+  wire                _zz_53;
+  wire                _zz_54;
+  wire                _zz_55;
+  wire                _zz_56;
+  wire                _zz_57;
+  wire                _zz_58;
+  wire                _zz_59;
+  wire                _zz_60;
+  wire                _zz_61;
+  wire                _zz_62;
+  wire                _zz_63;
+  wire                _zz_64;
+  wire                _zz_65;
+  wire                _zz_66;
   wire       [31:0]   _zz_when_BranchPredict_l75;
-  wire       [15:0]   _zz_35;
+  wire       [31:0]   _zz_67;
   wire                when_BranchPredict_l75;
   wire                when_BranchPredict_l83;
 
   always @(*) begin
     case(if_index)
-      4'b0000 : begin
+      5'b00000 : begin
         _zz_io_next_pc = BTB_0;
         _zz_io_next_taken = TAG_0;
         _zz_io_next_taken_1 = BHT_0;
       end
-      4'b0001 : begin
+      5'b00001 : begin
         _zz_io_next_pc = BTB_1;
         _zz_io_next_taken = TAG_1;
         _zz_io_next_taken_1 = BHT_1;
       end
-      4'b0010 : begin
+      5'b00010 : begin
         _zz_io_next_pc = BTB_2;
         _zz_io_next_taken = TAG_2;
         _zz_io_next_taken_1 = BHT_2;
       end
-      4'b0011 : begin
+      5'b00011 : begin
         _zz_io_next_pc = BTB_3;
         _zz_io_next_taken = TAG_3;
         _zz_io_next_taken_1 = BHT_3;
       end
-      4'b0100 : begin
+      5'b00100 : begin
         _zz_io_next_pc = BTB_4;
         _zz_io_next_taken = TAG_4;
         _zz_io_next_taken_1 = BHT_4;
       end
-      4'b0101 : begin
+      5'b00101 : begin
         _zz_io_next_pc = BTB_5;
         _zz_io_next_taken = TAG_5;
         _zz_io_next_taken_1 = BHT_5;
       end
-      4'b0110 : begin
+      5'b00110 : begin
         _zz_io_next_pc = BTB_6;
         _zz_io_next_taken = TAG_6;
         _zz_io_next_taken_1 = BHT_6;
       end
-      4'b0111 : begin
+      5'b00111 : begin
         _zz_io_next_pc = BTB_7;
         _zz_io_next_taken = TAG_7;
         _zz_io_next_taken_1 = BHT_7;
       end
-      4'b1000 : begin
+      5'b01000 : begin
         _zz_io_next_pc = BTB_8;
         _zz_io_next_taken = TAG_8;
         _zz_io_next_taken_1 = BHT_8;
       end
-      4'b1001 : begin
+      5'b01001 : begin
         _zz_io_next_pc = BTB_9;
         _zz_io_next_taken = TAG_9;
         _zz_io_next_taken_1 = BHT_9;
       end
-      4'b1010 : begin
+      5'b01010 : begin
         _zz_io_next_pc = BTB_10;
         _zz_io_next_taken = TAG_10;
         _zz_io_next_taken_1 = BHT_10;
       end
-      4'b1011 : begin
+      5'b01011 : begin
         _zz_io_next_pc = BTB_11;
         _zz_io_next_taken = TAG_11;
         _zz_io_next_taken_1 = BHT_11;
       end
-      4'b1100 : begin
+      5'b01100 : begin
         _zz_io_next_pc = BTB_12;
         _zz_io_next_taken = TAG_12;
         _zz_io_next_taken_1 = BHT_12;
       end
-      4'b1101 : begin
+      5'b01101 : begin
         _zz_io_next_pc = BTB_13;
         _zz_io_next_taken = TAG_13;
         _zz_io_next_taken_1 = BHT_13;
       end
-      4'b1110 : begin
+      5'b01110 : begin
         _zz_io_next_pc = BTB_14;
         _zz_io_next_taken = TAG_14;
         _zz_io_next_taken_1 = BHT_14;
       end
-      default : begin
+      5'b01111 : begin
         _zz_io_next_pc = BTB_15;
         _zz_io_next_taken = TAG_15;
         _zz_io_next_taken_1 = BHT_15;
+      end
+      5'b10000 : begin
+        _zz_io_next_pc = BTB_16;
+        _zz_io_next_taken = TAG_16;
+        _zz_io_next_taken_1 = BHT_16;
+      end
+      5'b10001 : begin
+        _zz_io_next_pc = BTB_17;
+        _zz_io_next_taken = TAG_17;
+        _zz_io_next_taken_1 = BHT_17;
+      end
+      5'b10010 : begin
+        _zz_io_next_pc = BTB_18;
+        _zz_io_next_taken = TAG_18;
+        _zz_io_next_taken_1 = BHT_18;
+      end
+      5'b10011 : begin
+        _zz_io_next_pc = BTB_19;
+        _zz_io_next_taken = TAG_19;
+        _zz_io_next_taken_1 = BHT_19;
+      end
+      5'b10100 : begin
+        _zz_io_next_pc = BTB_20;
+        _zz_io_next_taken = TAG_20;
+        _zz_io_next_taken_1 = BHT_20;
+      end
+      5'b10101 : begin
+        _zz_io_next_pc = BTB_21;
+        _zz_io_next_taken = TAG_21;
+        _zz_io_next_taken_1 = BHT_21;
+      end
+      5'b10110 : begin
+        _zz_io_next_pc = BTB_22;
+        _zz_io_next_taken = TAG_22;
+        _zz_io_next_taken_1 = BHT_22;
+      end
+      5'b10111 : begin
+        _zz_io_next_pc = BTB_23;
+        _zz_io_next_taken = TAG_23;
+        _zz_io_next_taken_1 = BHT_23;
+      end
+      5'b11000 : begin
+        _zz_io_next_pc = BTB_24;
+        _zz_io_next_taken = TAG_24;
+        _zz_io_next_taken_1 = BHT_24;
+      end
+      5'b11001 : begin
+        _zz_io_next_pc = BTB_25;
+        _zz_io_next_taken = TAG_25;
+        _zz_io_next_taken_1 = BHT_25;
+      end
+      5'b11010 : begin
+        _zz_io_next_pc = BTB_26;
+        _zz_io_next_taken = TAG_26;
+        _zz_io_next_taken_1 = BHT_26;
+      end
+      5'b11011 : begin
+        _zz_io_next_pc = BTB_27;
+        _zz_io_next_taken = TAG_27;
+        _zz_io_next_taken_1 = BHT_27;
+      end
+      5'b11100 : begin
+        _zz_io_next_pc = BTB_28;
+        _zz_io_next_taken = TAG_28;
+        _zz_io_next_taken_1 = BHT_28;
+      end
+      5'b11101 : begin
+        _zz_io_next_pc = BTB_29;
+        _zz_io_next_taken = TAG_29;
+        _zz_io_next_taken_1 = BHT_29;
+      end
+      5'b11110 : begin
+        _zz_io_next_pc = BTB_30;
+        _zz_io_next_taken = TAG_30;
+        _zz_io_next_taken_1 = BHT_30;
+      end
+      default : begin
+        _zz_io_next_pc = BTB_31;
+        _zz_io_next_taken = TAG_31;
+        _zz_io_next_taken_1 = BHT_31;
       end
     endcase
   end
 
   always @(*) begin
     case(exe_index)
-      4'b0000 : begin
+      5'b00000 : begin
         _zz_when_BranchPredict_l53 = TAG_0;
         _zz_switch_BranchPredict_l61 = BHT_0;
         _zz__zz_when_BranchPredict_l75 = BTB_0;
       end
-      4'b0001 : begin
+      5'b00001 : begin
         _zz_when_BranchPredict_l53 = TAG_1;
         _zz_switch_BranchPredict_l61 = BHT_1;
         _zz__zz_when_BranchPredict_l75 = BTB_1;
       end
-      4'b0010 : begin
+      5'b00010 : begin
         _zz_when_BranchPredict_l53 = TAG_2;
         _zz_switch_BranchPredict_l61 = BHT_2;
         _zz__zz_when_BranchPredict_l75 = BTB_2;
       end
-      4'b0011 : begin
+      5'b00011 : begin
         _zz_when_BranchPredict_l53 = TAG_3;
         _zz_switch_BranchPredict_l61 = BHT_3;
         _zz__zz_when_BranchPredict_l75 = BTB_3;
       end
-      4'b0100 : begin
+      5'b00100 : begin
         _zz_when_BranchPredict_l53 = TAG_4;
         _zz_switch_BranchPredict_l61 = BHT_4;
         _zz__zz_when_BranchPredict_l75 = BTB_4;
       end
-      4'b0101 : begin
+      5'b00101 : begin
         _zz_when_BranchPredict_l53 = TAG_5;
         _zz_switch_BranchPredict_l61 = BHT_5;
         _zz__zz_when_BranchPredict_l75 = BTB_5;
       end
-      4'b0110 : begin
+      5'b00110 : begin
         _zz_when_BranchPredict_l53 = TAG_6;
         _zz_switch_BranchPredict_l61 = BHT_6;
         _zz__zz_when_BranchPredict_l75 = BTB_6;
       end
-      4'b0111 : begin
+      5'b00111 : begin
         _zz_when_BranchPredict_l53 = TAG_7;
         _zz_switch_BranchPredict_l61 = BHT_7;
         _zz__zz_when_BranchPredict_l75 = BTB_7;
       end
-      4'b1000 : begin
+      5'b01000 : begin
         _zz_when_BranchPredict_l53 = TAG_8;
         _zz_switch_BranchPredict_l61 = BHT_8;
         _zz__zz_when_BranchPredict_l75 = BTB_8;
       end
-      4'b1001 : begin
+      5'b01001 : begin
         _zz_when_BranchPredict_l53 = TAG_9;
         _zz_switch_BranchPredict_l61 = BHT_9;
         _zz__zz_when_BranchPredict_l75 = BTB_9;
       end
-      4'b1010 : begin
+      5'b01010 : begin
         _zz_when_BranchPredict_l53 = TAG_10;
         _zz_switch_BranchPredict_l61 = BHT_10;
         _zz__zz_when_BranchPredict_l75 = BTB_10;
       end
-      4'b1011 : begin
+      5'b01011 : begin
         _zz_when_BranchPredict_l53 = TAG_11;
         _zz_switch_BranchPredict_l61 = BHT_11;
         _zz__zz_when_BranchPredict_l75 = BTB_11;
       end
-      4'b1100 : begin
+      5'b01100 : begin
         _zz_when_BranchPredict_l53 = TAG_12;
         _zz_switch_BranchPredict_l61 = BHT_12;
         _zz__zz_when_BranchPredict_l75 = BTB_12;
       end
-      4'b1101 : begin
+      5'b01101 : begin
         _zz_when_BranchPredict_l53 = TAG_13;
         _zz_switch_BranchPredict_l61 = BHT_13;
         _zz__zz_when_BranchPredict_l75 = BTB_13;
       end
-      4'b1110 : begin
+      5'b01110 : begin
         _zz_when_BranchPredict_l53 = TAG_14;
         _zz_switch_BranchPredict_l61 = BHT_14;
         _zz__zz_when_BranchPredict_l75 = BTB_14;
       end
-      default : begin
+      5'b01111 : begin
         _zz_when_BranchPredict_l53 = TAG_15;
         _zz_switch_BranchPredict_l61 = BHT_15;
         _zz__zz_when_BranchPredict_l75 = BTB_15;
+      end
+      5'b10000 : begin
+        _zz_when_BranchPredict_l53 = TAG_16;
+        _zz_switch_BranchPredict_l61 = BHT_16;
+        _zz__zz_when_BranchPredict_l75 = BTB_16;
+      end
+      5'b10001 : begin
+        _zz_when_BranchPredict_l53 = TAG_17;
+        _zz_switch_BranchPredict_l61 = BHT_17;
+        _zz__zz_when_BranchPredict_l75 = BTB_17;
+      end
+      5'b10010 : begin
+        _zz_when_BranchPredict_l53 = TAG_18;
+        _zz_switch_BranchPredict_l61 = BHT_18;
+        _zz__zz_when_BranchPredict_l75 = BTB_18;
+      end
+      5'b10011 : begin
+        _zz_when_BranchPredict_l53 = TAG_19;
+        _zz_switch_BranchPredict_l61 = BHT_19;
+        _zz__zz_when_BranchPredict_l75 = BTB_19;
+      end
+      5'b10100 : begin
+        _zz_when_BranchPredict_l53 = TAG_20;
+        _zz_switch_BranchPredict_l61 = BHT_20;
+        _zz__zz_when_BranchPredict_l75 = BTB_20;
+      end
+      5'b10101 : begin
+        _zz_when_BranchPredict_l53 = TAG_21;
+        _zz_switch_BranchPredict_l61 = BHT_21;
+        _zz__zz_when_BranchPredict_l75 = BTB_21;
+      end
+      5'b10110 : begin
+        _zz_when_BranchPredict_l53 = TAG_22;
+        _zz_switch_BranchPredict_l61 = BHT_22;
+        _zz__zz_when_BranchPredict_l75 = BTB_22;
+      end
+      5'b10111 : begin
+        _zz_when_BranchPredict_l53 = TAG_23;
+        _zz_switch_BranchPredict_l61 = BHT_23;
+        _zz__zz_when_BranchPredict_l75 = BTB_23;
+      end
+      5'b11000 : begin
+        _zz_when_BranchPredict_l53 = TAG_24;
+        _zz_switch_BranchPredict_l61 = BHT_24;
+        _zz__zz_when_BranchPredict_l75 = BTB_24;
+      end
+      5'b11001 : begin
+        _zz_when_BranchPredict_l53 = TAG_25;
+        _zz_switch_BranchPredict_l61 = BHT_25;
+        _zz__zz_when_BranchPredict_l75 = BTB_25;
+      end
+      5'b11010 : begin
+        _zz_when_BranchPredict_l53 = TAG_26;
+        _zz_switch_BranchPredict_l61 = BHT_26;
+        _zz__zz_when_BranchPredict_l75 = BTB_26;
+      end
+      5'b11011 : begin
+        _zz_when_BranchPredict_l53 = TAG_27;
+        _zz_switch_BranchPredict_l61 = BHT_27;
+        _zz__zz_when_BranchPredict_l75 = BTB_27;
+      end
+      5'b11100 : begin
+        _zz_when_BranchPredict_l53 = TAG_28;
+        _zz_switch_BranchPredict_l61 = BHT_28;
+        _zz__zz_when_BranchPredict_l75 = BTB_28;
+      end
+      5'b11101 : begin
+        _zz_when_BranchPredict_l53 = TAG_29;
+        _zz_switch_BranchPredict_l61 = BHT_29;
+        _zz__zz_when_BranchPredict_l75 = BTB_29;
+      end
+      5'b11110 : begin
+        _zz_when_BranchPredict_l53 = TAG_30;
+        _zz_switch_BranchPredict_l61 = BHT_30;
+        _zz__zz_when_BranchPredict_l75 = BTB_30;
+      end
+      default : begin
+        _zz_when_BranchPredict_l53 = TAG_31;
+        _zz_switch_BranchPredict_l61 = BHT_31;
+        _zz__zz_when_BranchPredict_l75 = BTB_31;
       end
     endcase
   end
 
   assign is_IF_branch_type = ((io_if_instr[6 : 0] == 7'h6f) || (io_if_instr[6 : 0] == 7'h63));
   assign is_EXE_branch_type = ((io_exe_instr[6 : 0] == 7'h6f) || (io_exe_instr[6 : 0] == 7'h63));
-  assign if_index = io_IF_pc[5 : 2];
+  assign if_index = io_IF_pc[6 : 2];
   assign io_next_pc = _zz_io_next_pc;
   assign io_next_taken = ((is_IF_branch_type && (io_IF_pc == _zz_io_next_taken)) && (2'b10 <= _zz_io_next_taken_1));
-  assign exe_index = io_exe_pc[5 : 2];
+  assign exe_index = io_exe_pc[6 : 2];
   assign when_BranchPredict_l52 = (is_EXE_branch_type && (! exe_branch_type_buffer));
-  assign _zz_1 = ({15'd0,1'b1} <<< exe_index);
+  assign _zz_1 = ({31'd0,1'b1} <<< exe_index);
   assign _zz_2 = _zz_1[0];
   assign _zz_3 = _zz_1[1];
   assign _zz_4 = _zz_1[2];
@@ -8142,27 +8379,59 @@ module BranchPredict (
   assign _zz_15 = _zz_1[13];
   assign _zz_16 = _zz_1[14];
   assign _zz_17 = _zz_1[15];
+  assign _zz_18 = _zz_1[16];
+  assign _zz_19 = _zz_1[17];
+  assign _zz_20 = _zz_1[18];
+  assign _zz_21 = _zz_1[19];
+  assign _zz_22 = _zz_1[20];
+  assign _zz_23 = _zz_1[21];
+  assign _zz_24 = _zz_1[22];
+  assign _zz_25 = _zz_1[23];
+  assign _zz_26 = _zz_1[24];
+  assign _zz_27 = _zz_1[25];
+  assign _zz_28 = _zz_1[26];
+  assign _zz_29 = _zz_1[27];
+  assign _zz_30 = _zz_1[28];
+  assign _zz_31 = _zz_1[29];
+  assign _zz_32 = _zz_1[30];
+  assign _zz_33 = _zz_1[31];
   assign when_BranchPredict_l53 = (io_exe_pc != _zz_when_BranchPredict_l53);
   assign switch_BranchPredict_l61 = _zz_switch_BranchPredict_l61;
-  assign _zz_18 = ({15'd0,1'b1} <<< exe_index);
-  assign _zz_19 = _zz_18[0];
-  assign _zz_20 = _zz_18[1];
-  assign _zz_21 = _zz_18[2];
-  assign _zz_22 = _zz_18[3];
-  assign _zz_23 = _zz_18[4];
-  assign _zz_24 = _zz_18[5];
-  assign _zz_25 = _zz_18[6];
-  assign _zz_26 = _zz_18[7];
-  assign _zz_27 = _zz_18[8];
-  assign _zz_28 = _zz_18[9];
-  assign _zz_29 = _zz_18[10];
-  assign _zz_30 = _zz_18[11];
-  assign _zz_31 = _zz_18[12];
-  assign _zz_32 = _zz_18[13];
-  assign _zz_33 = _zz_18[14];
-  assign _zz_34 = _zz_18[15];
+  assign _zz_34 = ({31'd0,1'b1} <<< exe_index);
+  assign _zz_35 = _zz_34[0];
+  assign _zz_36 = _zz_34[1];
+  assign _zz_37 = _zz_34[2];
+  assign _zz_38 = _zz_34[3];
+  assign _zz_39 = _zz_34[4];
+  assign _zz_40 = _zz_34[5];
+  assign _zz_41 = _zz_34[6];
+  assign _zz_42 = _zz_34[7];
+  assign _zz_43 = _zz_34[8];
+  assign _zz_44 = _zz_34[9];
+  assign _zz_45 = _zz_34[10];
+  assign _zz_46 = _zz_34[11];
+  assign _zz_47 = _zz_34[12];
+  assign _zz_48 = _zz_34[13];
+  assign _zz_49 = _zz_34[14];
+  assign _zz_50 = _zz_34[15];
+  assign _zz_51 = _zz_34[16];
+  assign _zz_52 = _zz_34[17];
+  assign _zz_53 = _zz_34[18];
+  assign _zz_54 = _zz_34[19];
+  assign _zz_55 = _zz_34[20];
+  assign _zz_56 = _zz_34[21];
+  assign _zz_57 = _zz_34[22];
+  assign _zz_58 = _zz_34[23];
+  assign _zz_59 = _zz_34[24];
+  assign _zz_60 = _zz_34[25];
+  assign _zz_61 = _zz_34[26];
+  assign _zz_62 = _zz_34[27];
+  assign _zz_63 = _zz_34[28];
+  assign _zz_64 = _zz_34[29];
+  assign _zz_65 = _zz_34[30];
+  assign _zz_66 = _zz_34[31];
   assign _zz_when_BranchPredict_l75 = _zz__zz_when_BranchPredict_l75;
-  assign _zz_35 = ({15'd0,1'b1} <<< exe_index);
+  assign _zz_67 = ({31'd0,1'b1} <<< exe_index);
   assign when_BranchPredict_l75 = (io_br_we && (_zz_when_BranchPredict_l75 == io_br_addr));
   assign when_BranchPredict_l83 = (! (io_br_we && (_zz_when_BranchPredict_l75 == io_br_addr)));
   always @(posedge sys_clk or posedge sys_reset) begin
@@ -8183,6 +8452,22 @@ module BranchPredict (
       BTB_13 <= 32'h00000000;
       BTB_14 <= 32'h00000000;
       BTB_15 <= 32'h00000000;
+      BTB_16 <= 32'h00000000;
+      BTB_17 <= 32'h00000000;
+      BTB_18 <= 32'h00000000;
+      BTB_19 <= 32'h00000000;
+      BTB_20 <= 32'h00000000;
+      BTB_21 <= 32'h00000000;
+      BTB_22 <= 32'h00000000;
+      BTB_23 <= 32'h00000000;
+      BTB_24 <= 32'h00000000;
+      BTB_25 <= 32'h00000000;
+      BTB_26 <= 32'h00000000;
+      BTB_27 <= 32'h00000000;
+      BTB_28 <= 32'h00000000;
+      BTB_29 <= 32'h00000000;
+      BTB_30 <= 32'h00000000;
+      BTB_31 <= 32'h00000000;
       TAG_0 <= 32'h00000000;
       TAG_1 <= 32'h00000000;
       TAG_2 <= 32'h00000000;
@@ -8199,6 +8484,22 @@ module BranchPredict (
       TAG_13 <= 32'h00000000;
       TAG_14 <= 32'h00000000;
       TAG_15 <= 32'h00000000;
+      TAG_16 <= 32'h00000000;
+      TAG_17 <= 32'h00000000;
+      TAG_18 <= 32'h00000000;
+      TAG_19 <= 32'h00000000;
+      TAG_20 <= 32'h00000000;
+      TAG_21 <= 32'h00000000;
+      TAG_22 <= 32'h00000000;
+      TAG_23 <= 32'h00000000;
+      TAG_24 <= 32'h00000000;
+      TAG_25 <= 32'h00000000;
+      TAG_26 <= 32'h00000000;
+      TAG_27 <= 32'h00000000;
+      TAG_28 <= 32'h00000000;
+      TAG_29 <= 32'h00000000;
+      TAG_30 <= 32'h00000000;
+      TAG_31 <= 32'h00000000;
       BHT_0 <= 2'b00;
       BHT_1 <= 2'b00;
       BHT_2 <= 2'b00;
@@ -8215,107 +8516,219 @@ module BranchPredict (
       BHT_13 <= 2'b00;
       BHT_14 <= 2'b00;
       BHT_15 <= 2'b00;
+      BHT_16 <= 2'b00;
+      BHT_17 <= 2'b00;
+      BHT_18 <= 2'b00;
+      BHT_19 <= 2'b00;
+      BHT_20 <= 2'b00;
+      BHT_21 <= 2'b00;
+      BHT_22 <= 2'b00;
+      BHT_23 <= 2'b00;
+      BHT_24 <= 2'b00;
+      BHT_25 <= 2'b00;
+      BHT_26 <= 2'b00;
+      BHT_27 <= 2'b00;
+      BHT_28 <= 2'b00;
+      BHT_29 <= 2'b00;
+      BHT_30 <= 2'b00;
+      BHT_31 <= 2'b00;
       exe_branch_type_buffer <= 1'b0;
     end else begin
       if(when_BranchPredict_l52) begin
         if(when_BranchPredict_l53) begin
           if(io_br_we) begin
-            if(_zz_19) begin
+            if(_zz_35) begin
               BHT_0 <= 2'b01;
             end
-            if(_zz_20) begin
+            if(_zz_36) begin
               BHT_1 <= 2'b01;
             end
-            if(_zz_21) begin
+            if(_zz_37) begin
               BHT_2 <= 2'b01;
             end
-            if(_zz_22) begin
+            if(_zz_38) begin
               BHT_3 <= 2'b01;
             end
-            if(_zz_23) begin
+            if(_zz_39) begin
               BHT_4 <= 2'b01;
             end
-            if(_zz_24) begin
+            if(_zz_40) begin
               BHT_5 <= 2'b01;
             end
-            if(_zz_25) begin
+            if(_zz_41) begin
               BHT_6 <= 2'b01;
             end
-            if(_zz_26) begin
+            if(_zz_42) begin
               BHT_7 <= 2'b01;
             end
-            if(_zz_27) begin
+            if(_zz_43) begin
               BHT_8 <= 2'b01;
             end
-            if(_zz_28) begin
+            if(_zz_44) begin
               BHT_9 <= 2'b01;
             end
-            if(_zz_29) begin
+            if(_zz_45) begin
               BHT_10 <= 2'b01;
             end
-            if(_zz_30) begin
+            if(_zz_46) begin
               BHT_11 <= 2'b01;
             end
-            if(_zz_31) begin
+            if(_zz_47) begin
               BHT_12 <= 2'b01;
             end
-            if(_zz_32) begin
+            if(_zz_48) begin
               BHT_13 <= 2'b01;
             end
-            if(_zz_33) begin
+            if(_zz_49) begin
               BHT_14 <= 2'b01;
             end
-            if(_zz_34) begin
+            if(_zz_50) begin
               BHT_15 <= 2'b01;
             end
+            if(_zz_51) begin
+              BHT_16 <= 2'b01;
+            end
+            if(_zz_52) begin
+              BHT_17 <= 2'b01;
+            end
+            if(_zz_53) begin
+              BHT_18 <= 2'b01;
+            end
+            if(_zz_54) begin
+              BHT_19 <= 2'b01;
+            end
+            if(_zz_55) begin
+              BHT_20 <= 2'b01;
+            end
+            if(_zz_56) begin
+              BHT_21 <= 2'b01;
+            end
+            if(_zz_57) begin
+              BHT_22 <= 2'b01;
+            end
+            if(_zz_58) begin
+              BHT_23 <= 2'b01;
+            end
+            if(_zz_59) begin
+              BHT_24 <= 2'b01;
+            end
+            if(_zz_60) begin
+              BHT_25 <= 2'b01;
+            end
+            if(_zz_61) begin
+              BHT_26 <= 2'b01;
+            end
+            if(_zz_62) begin
+              BHT_27 <= 2'b01;
+            end
+            if(_zz_63) begin
+              BHT_28 <= 2'b01;
+            end
+            if(_zz_64) begin
+              BHT_29 <= 2'b01;
+            end
+            if(_zz_65) begin
+              BHT_30 <= 2'b01;
+            end
+            if(_zz_66) begin
+              BHT_31 <= 2'b01;
+            end
           end else begin
-            if(_zz_19) begin
+            if(_zz_35) begin
               BHT_0 <= 2'b00;
             end
-            if(_zz_20) begin
+            if(_zz_36) begin
               BHT_1 <= 2'b00;
             end
-            if(_zz_21) begin
+            if(_zz_37) begin
               BHT_2 <= 2'b00;
             end
-            if(_zz_22) begin
+            if(_zz_38) begin
               BHT_3 <= 2'b00;
             end
-            if(_zz_23) begin
+            if(_zz_39) begin
               BHT_4 <= 2'b00;
             end
-            if(_zz_24) begin
+            if(_zz_40) begin
               BHT_5 <= 2'b00;
             end
-            if(_zz_25) begin
+            if(_zz_41) begin
               BHT_6 <= 2'b00;
             end
-            if(_zz_26) begin
+            if(_zz_42) begin
               BHT_7 <= 2'b00;
             end
-            if(_zz_27) begin
+            if(_zz_43) begin
               BHT_8 <= 2'b00;
             end
-            if(_zz_28) begin
+            if(_zz_44) begin
               BHT_9 <= 2'b00;
             end
-            if(_zz_29) begin
+            if(_zz_45) begin
               BHT_10 <= 2'b00;
             end
-            if(_zz_30) begin
+            if(_zz_46) begin
               BHT_11 <= 2'b00;
             end
-            if(_zz_31) begin
+            if(_zz_47) begin
               BHT_12 <= 2'b00;
             end
-            if(_zz_32) begin
+            if(_zz_48) begin
               BHT_13 <= 2'b00;
             end
-            if(_zz_33) begin
+            if(_zz_49) begin
               BHT_14 <= 2'b00;
             end
-            if(_zz_34) begin
+            if(_zz_50) begin
               BHT_15 <= 2'b00;
+            end
+            if(_zz_51) begin
+              BHT_16 <= 2'b00;
+            end
+            if(_zz_52) begin
+              BHT_17 <= 2'b00;
+            end
+            if(_zz_53) begin
+              BHT_18 <= 2'b00;
+            end
+            if(_zz_54) begin
+              BHT_19 <= 2'b00;
+            end
+            if(_zz_55) begin
+              BHT_20 <= 2'b00;
+            end
+            if(_zz_56) begin
+              BHT_21 <= 2'b00;
+            end
+            if(_zz_57) begin
+              BHT_22 <= 2'b00;
+            end
+            if(_zz_58) begin
+              BHT_23 <= 2'b00;
+            end
+            if(_zz_59) begin
+              BHT_24 <= 2'b00;
+            end
+            if(_zz_60) begin
+              BHT_25 <= 2'b00;
+            end
+            if(_zz_61) begin
+              BHT_26 <= 2'b00;
+            end
+            if(_zz_62) begin
+              BHT_27 <= 2'b00;
+            end
+            if(_zz_63) begin
+              BHT_28 <= 2'b00;
+            end
+            if(_zz_64) begin
+              BHT_29 <= 2'b00;
+            end
+            if(_zz_65) begin
+              BHT_30 <= 2'b00;
+            end
+            if(_zz_66) begin
+              BHT_31 <= 2'b00;
             end
           end
           if(_zz_2) begin
@@ -8366,311 +8779,647 @@ module BranchPredict (
           if(_zz_17) begin
             TAG_15 <= io_exe_pc;
           end
+          if(_zz_18) begin
+            TAG_16 <= io_exe_pc;
+          end
+          if(_zz_19) begin
+            TAG_17 <= io_exe_pc;
+          end
+          if(_zz_20) begin
+            TAG_18 <= io_exe_pc;
+          end
+          if(_zz_21) begin
+            TAG_19 <= io_exe_pc;
+          end
+          if(_zz_22) begin
+            TAG_20 <= io_exe_pc;
+          end
+          if(_zz_23) begin
+            TAG_21 <= io_exe_pc;
+          end
+          if(_zz_24) begin
+            TAG_22 <= io_exe_pc;
+          end
+          if(_zz_25) begin
+            TAG_23 <= io_exe_pc;
+          end
+          if(_zz_26) begin
+            TAG_24 <= io_exe_pc;
+          end
+          if(_zz_27) begin
+            TAG_25 <= io_exe_pc;
+          end
+          if(_zz_28) begin
+            TAG_26 <= io_exe_pc;
+          end
+          if(_zz_29) begin
+            TAG_27 <= io_exe_pc;
+          end
+          if(_zz_30) begin
+            TAG_28 <= io_exe_pc;
+          end
+          if(_zz_31) begin
+            TAG_29 <= io_exe_pc;
+          end
+          if(_zz_32) begin
+            TAG_30 <= io_exe_pc;
+          end
+          if(_zz_33) begin
+            TAG_31 <= io_exe_pc;
+          end
         end else begin
           case(switch_BranchPredict_l61)
             2'b00 : begin
               if(io_br_we) begin
-                if(_zz_19) begin
+                if(_zz_35) begin
                   BHT_0 <= 2'b01;
                 end
-                if(_zz_20) begin
+                if(_zz_36) begin
                   BHT_1 <= 2'b01;
                 end
-                if(_zz_21) begin
+                if(_zz_37) begin
                   BHT_2 <= 2'b01;
                 end
-                if(_zz_22) begin
+                if(_zz_38) begin
                   BHT_3 <= 2'b01;
                 end
-                if(_zz_23) begin
+                if(_zz_39) begin
                   BHT_4 <= 2'b01;
                 end
-                if(_zz_24) begin
+                if(_zz_40) begin
                   BHT_5 <= 2'b01;
                 end
-                if(_zz_25) begin
+                if(_zz_41) begin
                   BHT_6 <= 2'b01;
                 end
-                if(_zz_26) begin
+                if(_zz_42) begin
                   BHT_7 <= 2'b01;
                 end
-                if(_zz_27) begin
+                if(_zz_43) begin
                   BHT_8 <= 2'b01;
                 end
-                if(_zz_28) begin
+                if(_zz_44) begin
                   BHT_9 <= 2'b01;
                 end
-                if(_zz_29) begin
+                if(_zz_45) begin
                   BHT_10 <= 2'b01;
                 end
-                if(_zz_30) begin
+                if(_zz_46) begin
                   BHT_11 <= 2'b01;
                 end
-                if(_zz_31) begin
+                if(_zz_47) begin
                   BHT_12 <= 2'b01;
                 end
-                if(_zz_32) begin
+                if(_zz_48) begin
                   BHT_13 <= 2'b01;
                 end
-                if(_zz_33) begin
+                if(_zz_49) begin
                   BHT_14 <= 2'b01;
                 end
-                if(_zz_34) begin
+                if(_zz_50) begin
                   BHT_15 <= 2'b01;
+                end
+                if(_zz_51) begin
+                  BHT_16 <= 2'b01;
+                end
+                if(_zz_52) begin
+                  BHT_17 <= 2'b01;
+                end
+                if(_zz_53) begin
+                  BHT_18 <= 2'b01;
+                end
+                if(_zz_54) begin
+                  BHT_19 <= 2'b01;
+                end
+                if(_zz_55) begin
+                  BHT_20 <= 2'b01;
+                end
+                if(_zz_56) begin
+                  BHT_21 <= 2'b01;
+                end
+                if(_zz_57) begin
+                  BHT_22 <= 2'b01;
+                end
+                if(_zz_58) begin
+                  BHT_23 <= 2'b01;
+                end
+                if(_zz_59) begin
+                  BHT_24 <= 2'b01;
+                end
+                if(_zz_60) begin
+                  BHT_25 <= 2'b01;
+                end
+                if(_zz_61) begin
+                  BHT_26 <= 2'b01;
+                end
+                if(_zz_62) begin
+                  BHT_27 <= 2'b01;
+                end
+                if(_zz_63) begin
+                  BHT_28 <= 2'b01;
+                end
+                if(_zz_64) begin
+                  BHT_29 <= 2'b01;
+                end
+                if(_zz_65) begin
+                  BHT_30 <= 2'b01;
+                end
+                if(_zz_66) begin
+                  BHT_31 <= 2'b01;
                 end
               end
             end
             2'b01 : begin
               if(io_br_we) begin
-                if(_zz_19) begin
+                if(_zz_35) begin
                   BHT_0 <= 2'b10;
                 end
-                if(_zz_20) begin
+                if(_zz_36) begin
                   BHT_1 <= 2'b10;
                 end
-                if(_zz_21) begin
+                if(_zz_37) begin
                   BHT_2 <= 2'b10;
                 end
-                if(_zz_22) begin
+                if(_zz_38) begin
                   BHT_3 <= 2'b10;
                 end
-                if(_zz_23) begin
+                if(_zz_39) begin
                   BHT_4 <= 2'b10;
                 end
-                if(_zz_24) begin
+                if(_zz_40) begin
                   BHT_5 <= 2'b10;
                 end
-                if(_zz_25) begin
+                if(_zz_41) begin
                   BHT_6 <= 2'b10;
                 end
-                if(_zz_26) begin
+                if(_zz_42) begin
                   BHT_7 <= 2'b10;
                 end
-                if(_zz_27) begin
+                if(_zz_43) begin
                   BHT_8 <= 2'b10;
                 end
-                if(_zz_28) begin
+                if(_zz_44) begin
                   BHT_9 <= 2'b10;
                 end
-                if(_zz_29) begin
+                if(_zz_45) begin
                   BHT_10 <= 2'b10;
                 end
-                if(_zz_30) begin
+                if(_zz_46) begin
                   BHT_11 <= 2'b10;
                 end
-                if(_zz_31) begin
+                if(_zz_47) begin
                   BHT_12 <= 2'b10;
                 end
-                if(_zz_32) begin
+                if(_zz_48) begin
                   BHT_13 <= 2'b10;
                 end
-                if(_zz_33) begin
+                if(_zz_49) begin
                   BHT_14 <= 2'b10;
                 end
-                if(_zz_34) begin
+                if(_zz_50) begin
                   BHT_15 <= 2'b10;
                 end
+                if(_zz_51) begin
+                  BHT_16 <= 2'b10;
+                end
+                if(_zz_52) begin
+                  BHT_17 <= 2'b10;
+                end
+                if(_zz_53) begin
+                  BHT_18 <= 2'b10;
+                end
+                if(_zz_54) begin
+                  BHT_19 <= 2'b10;
+                end
+                if(_zz_55) begin
+                  BHT_20 <= 2'b10;
+                end
+                if(_zz_56) begin
+                  BHT_21 <= 2'b10;
+                end
+                if(_zz_57) begin
+                  BHT_22 <= 2'b10;
+                end
+                if(_zz_58) begin
+                  BHT_23 <= 2'b10;
+                end
+                if(_zz_59) begin
+                  BHT_24 <= 2'b10;
+                end
+                if(_zz_60) begin
+                  BHT_25 <= 2'b10;
+                end
+                if(_zz_61) begin
+                  BHT_26 <= 2'b10;
+                end
+                if(_zz_62) begin
+                  BHT_27 <= 2'b10;
+                end
+                if(_zz_63) begin
+                  BHT_28 <= 2'b10;
+                end
+                if(_zz_64) begin
+                  BHT_29 <= 2'b10;
+                end
+                if(_zz_65) begin
+                  BHT_30 <= 2'b10;
+                end
+                if(_zz_66) begin
+                  BHT_31 <= 2'b10;
+                end
               end else begin
-                if(_zz_19) begin
+                if(_zz_35) begin
                   BHT_0 <= 2'b00;
                 end
-                if(_zz_20) begin
+                if(_zz_36) begin
                   BHT_1 <= 2'b00;
                 end
-                if(_zz_21) begin
+                if(_zz_37) begin
                   BHT_2 <= 2'b00;
                 end
-                if(_zz_22) begin
+                if(_zz_38) begin
                   BHT_3 <= 2'b00;
                 end
-                if(_zz_23) begin
+                if(_zz_39) begin
                   BHT_4 <= 2'b00;
                 end
-                if(_zz_24) begin
+                if(_zz_40) begin
                   BHT_5 <= 2'b00;
                 end
-                if(_zz_25) begin
+                if(_zz_41) begin
                   BHT_6 <= 2'b00;
                 end
-                if(_zz_26) begin
+                if(_zz_42) begin
                   BHT_7 <= 2'b00;
                 end
-                if(_zz_27) begin
+                if(_zz_43) begin
                   BHT_8 <= 2'b00;
                 end
-                if(_zz_28) begin
+                if(_zz_44) begin
                   BHT_9 <= 2'b00;
                 end
-                if(_zz_29) begin
+                if(_zz_45) begin
                   BHT_10 <= 2'b00;
                 end
-                if(_zz_30) begin
+                if(_zz_46) begin
                   BHT_11 <= 2'b00;
                 end
-                if(_zz_31) begin
+                if(_zz_47) begin
                   BHT_12 <= 2'b00;
                 end
-                if(_zz_32) begin
+                if(_zz_48) begin
                   BHT_13 <= 2'b00;
                 end
-                if(_zz_33) begin
+                if(_zz_49) begin
                   BHT_14 <= 2'b00;
                 end
-                if(_zz_34) begin
+                if(_zz_50) begin
                   BHT_15 <= 2'b00;
+                end
+                if(_zz_51) begin
+                  BHT_16 <= 2'b00;
+                end
+                if(_zz_52) begin
+                  BHT_17 <= 2'b00;
+                end
+                if(_zz_53) begin
+                  BHT_18 <= 2'b00;
+                end
+                if(_zz_54) begin
+                  BHT_19 <= 2'b00;
+                end
+                if(_zz_55) begin
+                  BHT_20 <= 2'b00;
+                end
+                if(_zz_56) begin
+                  BHT_21 <= 2'b00;
+                end
+                if(_zz_57) begin
+                  BHT_22 <= 2'b00;
+                end
+                if(_zz_58) begin
+                  BHT_23 <= 2'b00;
+                end
+                if(_zz_59) begin
+                  BHT_24 <= 2'b00;
+                end
+                if(_zz_60) begin
+                  BHT_25 <= 2'b00;
+                end
+                if(_zz_61) begin
+                  BHT_26 <= 2'b00;
+                end
+                if(_zz_62) begin
+                  BHT_27 <= 2'b00;
+                end
+                if(_zz_63) begin
+                  BHT_28 <= 2'b00;
+                end
+                if(_zz_64) begin
+                  BHT_29 <= 2'b00;
+                end
+                if(_zz_65) begin
+                  BHT_30 <= 2'b00;
+                end
+                if(_zz_66) begin
+                  BHT_31 <= 2'b00;
                 end
               end
             end
             2'b10 : begin
               if(when_BranchPredict_l75) begin
-                if(_zz_19) begin
+                if(_zz_35) begin
                   BHT_0 <= 2'b11;
                 end
-                if(_zz_20) begin
+                if(_zz_36) begin
                   BHT_1 <= 2'b11;
                 end
-                if(_zz_21) begin
+                if(_zz_37) begin
                   BHT_2 <= 2'b11;
                 end
-                if(_zz_22) begin
+                if(_zz_38) begin
                   BHT_3 <= 2'b11;
                 end
-                if(_zz_23) begin
+                if(_zz_39) begin
                   BHT_4 <= 2'b11;
                 end
-                if(_zz_24) begin
+                if(_zz_40) begin
                   BHT_5 <= 2'b11;
                 end
-                if(_zz_25) begin
+                if(_zz_41) begin
                   BHT_6 <= 2'b11;
                 end
-                if(_zz_26) begin
+                if(_zz_42) begin
                   BHT_7 <= 2'b11;
                 end
-                if(_zz_27) begin
+                if(_zz_43) begin
                   BHT_8 <= 2'b11;
                 end
-                if(_zz_28) begin
+                if(_zz_44) begin
                   BHT_9 <= 2'b11;
                 end
-                if(_zz_29) begin
+                if(_zz_45) begin
                   BHT_10 <= 2'b11;
                 end
-                if(_zz_30) begin
+                if(_zz_46) begin
                   BHT_11 <= 2'b11;
                 end
-                if(_zz_31) begin
+                if(_zz_47) begin
                   BHT_12 <= 2'b11;
                 end
-                if(_zz_32) begin
+                if(_zz_48) begin
                   BHT_13 <= 2'b11;
                 end
-                if(_zz_33) begin
+                if(_zz_49) begin
                   BHT_14 <= 2'b11;
                 end
-                if(_zz_34) begin
+                if(_zz_50) begin
                   BHT_15 <= 2'b11;
                 end
+                if(_zz_51) begin
+                  BHT_16 <= 2'b11;
+                end
+                if(_zz_52) begin
+                  BHT_17 <= 2'b11;
+                end
+                if(_zz_53) begin
+                  BHT_18 <= 2'b11;
+                end
+                if(_zz_54) begin
+                  BHT_19 <= 2'b11;
+                end
+                if(_zz_55) begin
+                  BHT_20 <= 2'b11;
+                end
+                if(_zz_56) begin
+                  BHT_21 <= 2'b11;
+                end
+                if(_zz_57) begin
+                  BHT_22 <= 2'b11;
+                end
+                if(_zz_58) begin
+                  BHT_23 <= 2'b11;
+                end
+                if(_zz_59) begin
+                  BHT_24 <= 2'b11;
+                end
+                if(_zz_60) begin
+                  BHT_25 <= 2'b11;
+                end
+                if(_zz_61) begin
+                  BHT_26 <= 2'b11;
+                end
+                if(_zz_62) begin
+                  BHT_27 <= 2'b11;
+                end
+                if(_zz_63) begin
+                  BHT_28 <= 2'b11;
+                end
+                if(_zz_64) begin
+                  BHT_29 <= 2'b11;
+                end
+                if(_zz_65) begin
+                  BHT_30 <= 2'b11;
+                end
+                if(_zz_66) begin
+                  BHT_31 <= 2'b11;
+                end
               end else begin
-                if(_zz_19) begin
+                if(_zz_35) begin
                   BHT_0 <= 2'b01;
                 end
-                if(_zz_20) begin
+                if(_zz_36) begin
                   BHT_1 <= 2'b01;
                 end
-                if(_zz_21) begin
+                if(_zz_37) begin
                   BHT_2 <= 2'b01;
                 end
-                if(_zz_22) begin
+                if(_zz_38) begin
                   BHT_3 <= 2'b01;
                 end
-                if(_zz_23) begin
+                if(_zz_39) begin
                   BHT_4 <= 2'b01;
                 end
-                if(_zz_24) begin
+                if(_zz_40) begin
                   BHT_5 <= 2'b01;
                 end
-                if(_zz_25) begin
+                if(_zz_41) begin
                   BHT_6 <= 2'b01;
                 end
-                if(_zz_26) begin
+                if(_zz_42) begin
                   BHT_7 <= 2'b01;
                 end
-                if(_zz_27) begin
+                if(_zz_43) begin
                   BHT_8 <= 2'b01;
                 end
-                if(_zz_28) begin
+                if(_zz_44) begin
                   BHT_9 <= 2'b01;
                 end
-                if(_zz_29) begin
+                if(_zz_45) begin
                   BHT_10 <= 2'b01;
                 end
-                if(_zz_30) begin
+                if(_zz_46) begin
                   BHT_11 <= 2'b01;
                 end
-                if(_zz_31) begin
+                if(_zz_47) begin
                   BHT_12 <= 2'b01;
                 end
-                if(_zz_32) begin
+                if(_zz_48) begin
                   BHT_13 <= 2'b01;
                 end
-                if(_zz_33) begin
+                if(_zz_49) begin
                   BHT_14 <= 2'b01;
                 end
-                if(_zz_34) begin
+                if(_zz_50) begin
                   BHT_15 <= 2'b01;
+                end
+                if(_zz_51) begin
+                  BHT_16 <= 2'b01;
+                end
+                if(_zz_52) begin
+                  BHT_17 <= 2'b01;
+                end
+                if(_zz_53) begin
+                  BHT_18 <= 2'b01;
+                end
+                if(_zz_54) begin
+                  BHT_19 <= 2'b01;
+                end
+                if(_zz_55) begin
+                  BHT_20 <= 2'b01;
+                end
+                if(_zz_56) begin
+                  BHT_21 <= 2'b01;
+                end
+                if(_zz_57) begin
+                  BHT_22 <= 2'b01;
+                end
+                if(_zz_58) begin
+                  BHT_23 <= 2'b01;
+                end
+                if(_zz_59) begin
+                  BHT_24 <= 2'b01;
+                end
+                if(_zz_60) begin
+                  BHT_25 <= 2'b01;
+                end
+                if(_zz_61) begin
+                  BHT_26 <= 2'b01;
+                end
+                if(_zz_62) begin
+                  BHT_27 <= 2'b01;
+                end
+                if(_zz_63) begin
+                  BHT_28 <= 2'b01;
+                end
+                if(_zz_64) begin
+                  BHT_29 <= 2'b01;
+                end
+                if(_zz_65) begin
+                  BHT_30 <= 2'b01;
+                end
+                if(_zz_66) begin
+                  BHT_31 <= 2'b01;
                 end
               end
             end
             default : begin
               if(when_BranchPredict_l83) begin
-                if(_zz_19) begin
+                if(_zz_35) begin
                   BHT_0 <= 2'b10;
                 end
-                if(_zz_20) begin
+                if(_zz_36) begin
                   BHT_1 <= 2'b10;
                 end
-                if(_zz_21) begin
+                if(_zz_37) begin
                   BHT_2 <= 2'b10;
                 end
-                if(_zz_22) begin
+                if(_zz_38) begin
                   BHT_3 <= 2'b10;
                 end
-                if(_zz_23) begin
+                if(_zz_39) begin
                   BHT_4 <= 2'b10;
                 end
-                if(_zz_24) begin
+                if(_zz_40) begin
                   BHT_5 <= 2'b10;
                 end
-                if(_zz_25) begin
+                if(_zz_41) begin
                   BHT_6 <= 2'b10;
                 end
-                if(_zz_26) begin
+                if(_zz_42) begin
                   BHT_7 <= 2'b10;
                 end
-                if(_zz_27) begin
+                if(_zz_43) begin
                   BHT_8 <= 2'b10;
                 end
-                if(_zz_28) begin
+                if(_zz_44) begin
                   BHT_9 <= 2'b10;
                 end
-                if(_zz_29) begin
+                if(_zz_45) begin
                   BHT_10 <= 2'b10;
                 end
-                if(_zz_30) begin
+                if(_zz_46) begin
                   BHT_11 <= 2'b10;
                 end
-                if(_zz_31) begin
+                if(_zz_47) begin
                   BHT_12 <= 2'b10;
                 end
-                if(_zz_32) begin
+                if(_zz_48) begin
                   BHT_13 <= 2'b10;
                 end
-                if(_zz_33) begin
+                if(_zz_49) begin
                   BHT_14 <= 2'b10;
                 end
-                if(_zz_34) begin
+                if(_zz_50) begin
                   BHT_15 <= 2'b10;
+                end
+                if(_zz_51) begin
+                  BHT_16 <= 2'b10;
+                end
+                if(_zz_52) begin
+                  BHT_17 <= 2'b10;
+                end
+                if(_zz_53) begin
+                  BHT_18 <= 2'b10;
+                end
+                if(_zz_54) begin
+                  BHT_19 <= 2'b10;
+                end
+                if(_zz_55) begin
+                  BHT_20 <= 2'b10;
+                end
+                if(_zz_56) begin
+                  BHT_21 <= 2'b10;
+                end
+                if(_zz_57) begin
+                  BHT_22 <= 2'b10;
+                end
+                if(_zz_58) begin
+                  BHT_23 <= 2'b10;
+                end
+                if(_zz_59) begin
+                  BHT_24 <= 2'b10;
+                end
+                if(_zz_60) begin
+                  BHT_25 <= 2'b10;
+                end
+                if(_zz_61) begin
+                  BHT_26 <= 2'b10;
+                end
+                if(_zz_62) begin
+                  BHT_27 <= 2'b10;
+                end
+                if(_zz_63) begin
+                  BHT_28 <= 2'b10;
+                end
+                if(_zz_64) begin
+                  BHT_29 <= 2'b10;
+                end
+                if(_zz_65) begin
+                  BHT_30 <= 2'b10;
+                end
+                if(_zz_66) begin
+                  BHT_31 <= 2'b10;
                 end
               end
             end
@@ -8724,53 +9473,149 @@ module BranchPredict (
         if(_zz_17) begin
           TAG_15 <= io_exe_pc;
         end
-        if(_zz_35[0]) begin
+        if(_zz_18) begin
+          TAG_16 <= io_exe_pc;
+        end
+        if(_zz_19) begin
+          TAG_17 <= io_exe_pc;
+        end
+        if(_zz_20) begin
+          TAG_18 <= io_exe_pc;
+        end
+        if(_zz_21) begin
+          TAG_19 <= io_exe_pc;
+        end
+        if(_zz_22) begin
+          TAG_20 <= io_exe_pc;
+        end
+        if(_zz_23) begin
+          TAG_21 <= io_exe_pc;
+        end
+        if(_zz_24) begin
+          TAG_22 <= io_exe_pc;
+        end
+        if(_zz_25) begin
+          TAG_23 <= io_exe_pc;
+        end
+        if(_zz_26) begin
+          TAG_24 <= io_exe_pc;
+        end
+        if(_zz_27) begin
+          TAG_25 <= io_exe_pc;
+        end
+        if(_zz_28) begin
+          TAG_26 <= io_exe_pc;
+        end
+        if(_zz_29) begin
+          TAG_27 <= io_exe_pc;
+        end
+        if(_zz_30) begin
+          TAG_28 <= io_exe_pc;
+        end
+        if(_zz_31) begin
+          TAG_29 <= io_exe_pc;
+        end
+        if(_zz_32) begin
+          TAG_30 <= io_exe_pc;
+        end
+        if(_zz_33) begin
+          TAG_31 <= io_exe_pc;
+        end
+        if(_zz_67[0]) begin
           BTB_0 <= io_br_addr;
         end
-        if(_zz_35[1]) begin
+        if(_zz_67[1]) begin
           BTB_1 <= io_br_addr;
         end
-        if(_zz_35[2]) begin
+        if(_zz_67[2]) begin
           BTB_2 <= io_br_addr;
         end
-        if(_zz_35[3]) begin
+        if(_zz_67[3]) begin
           BTB_3 <= io_br_addr;
         end
-        if(_zz_35[4]) begin
+        if(_zz_67[4]) begin
           BTB_4 <= io_br_addr;
         end
-        if(_zz_35[5]) begin
+        if(_zz_67[5]) begin
           BTB_5 <= io_br_addr;
         end
-        if(_zz_35[6]) begin
+        if(_zz_67[6]) begin
           BTB_6 <= io_br_addr;
         end
-        if(_zz_35[7]) begin
+        if(_zz_67[7]) begin
           BTB_7 <= io_br_addr;
         end
-        if(_zz_35[8]) begin
+        if(_zz_67[8]) begin
           BTB_8 <= io_br_addr;
         end
-        if(_zz_35[9]) begin
+        if(_zz_67[9]) begin
           BTB_9 <= io_br_addr;
         end
-        if(_zz_35[10]) begin
+        if(_zz_67[10]) begin
           BTB_10 <= io_br_addr;
         end
-        if(_zz_35[11]) begin
+        if(_zz_67[11]) begin
           BTB_11 <= io_br_addr;
         end
-        if(_zz_35[12]) begin
+        if(_zz_67[12]) begin
           BTB_12 <= io_br_addr;
         end
-        if(_zz_35[13]) begin
+        if(_zz_67[13]) begin
           BTB_13 <= io_br_addr;
         end
-        if(_zz_35[14]) begin
+        if(_zz_67[14]) begin
           BTB_14 <= io_br_addr;
         end
-        if(_zz_35[15]) begin
+        if(_zz_67[15]) begin
           BTB_15 <= io_br_addr;
+        end
+        if(_zz_67[16]) begin
+          BTB_16 <= io_br_addr;
+        end
+        if(_zz_67[17]) begin
+          BTB_17 <= io_br_addr;
+        end
+        if(_zz_67[18]) begin
+          BTB_18 <= io_br_addr;
+        end
+        if(_zz_67[19]) begin
+          BTB_19 <= io_br_addr;
+        end
+        if(_zz_67[20]) begin
+          BTB_20 <= io_br_addr;
+        end
+        if(_zz_67[21]) begin
+          BTB_21 <= io_br_addr;
+        end
+        if(_zz_67[22]) begin
+          BTB_22 <= io_br_addr;
+        end
+        if(_zz_67[23]) begin
+          BTB_23 <= io_br_addr;
+        end
+        if(_zz_67[24]) begin
+          BTB_24 <= io_br_addr;
+        end
+        if(_zz_67[25]) begin
+          BTB_25 <= io_br_addr;
+        end
+        if(_zz_67[26]) begin
+          BTB_26 <= io_br_addr;
+        end
+        if(_zz_67[27]) begin
+          BTB_27 <= io_br_addr;
+        end
+        if(_zz_67[28]) begin
+          BTB_28 <= io_br_addr;
+        end
+        if(_zz_67[29]) begin
+          BTB_29 <= io_br_addr;
+        end
+        if(_zz_67[30]) begin
+          BTB_30 <= io_br_addr;
+        end
+        if(_zz_67[31]) begin
+          BTB_31 <= io_br_addr;
         end
         exe_branch_type_buffer <= 1'b1;
       end else begin
