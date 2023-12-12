@@ -141,7 +141,7 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
                 when (!pte_v || !pte_r && pte_w) {
                     // raise page fault
                     raise_page_fault()
-                    exit()
+                    goto(idle)
                 } otherwise {
                     // pte valid step 5
                     when (pte_r || pte_x) { // leaf ppn
@@ -151,7 +151,7 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
                         ) {
                             // Prevent unaccessible page
                             raise_page_fault()
-                            exit()
+                            goto(idle)
                         } elsewhen (
                             io.privilege_mode === PrivilegeMode.S
                         &&  trans_io.access_type === MemAccessType.Fetch
@@ -159,32 +159,32 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
                         ) {
                             // Prevent user code execution in S mode
                             raise_page_fault()
-                            exit()
+                            goto(idle)
                         } elsewhen (io.privilege_mode === PrivilegeMode.U && !pte_u) {
                             // Prevent user access supervisor page
                             raise_page_fault()
-                            exit()
+                            goto(idle)
                         } elsewhen (io.privilege_mode === PrivilegeMode.S && pte_u && !io.mstatus_SUM) {
                             // Prevent supervisor access user page, when SUM = 0
                             raise_page_fault()
-                            exit()
+                            goto(idle)
                         } elsewhen (trans_io.access_type === MemAccessType.Store && !pte_w) {
                             // Write denied
                             raise_page_fault()
-                            exit()
+                            goto(idle)
                         } elsewhen (trans_io.access_type === MemAccessType.Fetch && !pte_x) {
                             // Execution denied
                             raise_page_fault()
-                            exit()
+                            goto(idle)
                         } elsewhen (i > 0 && pte_ppn(i) =/= 0) {
                             // Misaligned superpage
                             raise_page_fault()
-                            exit()
+                            goto(idle)
                         // uCore does not use a and d bits
                         // } elsewhen (!pte_a || trans_io.access_type === MemAccessType.Store && !pte_d) {
                         //     // step 7
                         //     raise_page_fault()
-                        //     exit()
+                        //     goto(idle)
                         } otherwise { // success translation
                             // pa.pgoff = va.pgoff
                             trans_io.physical_addr(0, 12 bits) := trans_io.look_up_addr(0, 12 bits)
@@ -200,7 +200,7 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
                                     trans_io.physical_addr(22, 10 bits) := pte_ppn(1)(0, 10 bits)
                                 }
                             }
-                            exit()
+                            goto(idle)
                         }
                     } otherwise { // read next page
                         when (i > 0) {
@@ -211,7 +211,7 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
                             goto(read)
                         } otherwise { // page-fault
                             raise_page_fault()
-                            exit()
+                            goto(idle)
                         }
                     }
                 }

@@ -41,7 +41,7 @@ class SramController extends Component {
         }
         val read: State = new State {
             whenIsActive {
-                exit()
+                goto(idle)
             }
         }
         val write: State = new State {
@@ -60,7 +60,7 @@ class SramController extends Component {
             whenIsActive {
                 io.sram.oe_n := True
                 io.sram.data.writeEnable := True
-                exit()
+                goto(idle)
             }
         }
     }    
