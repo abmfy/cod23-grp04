@@ -120,16 +120,9 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     }
 
     def output(instr: Bits): Unit = {
-        io.o.pc := pc
-        io.o.instr := instr
         io.o.next_pc := io.next_pc
         io.o.next_taken := io.next_taken
         io.instr := instr
-        when (io.next_taken) {
-            pc := io.next_pc
-        } otherwise {
-            pc := pc + 4
-        }
         // Mask out delegated interrupts
         when (interrupt_masked.orR && (
             io.prv === PrivilegeMode.M && io.mie
@@ -147,7 +140,11 @@ class IF(config: IFConfig = IFConfig()) extends Component {
             io.o.real := True
             io.o.pc := pc
             io.o.instr := instr
-            pc := pc + 4
+            when (io.next_taken) {
+                pc := io.next_pc
+            } otherwise {
+                pc := pc + 4
+            }
         }
     }
 
