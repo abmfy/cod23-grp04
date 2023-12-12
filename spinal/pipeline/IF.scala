@@ -172,17 +172,35 @@ class IF(config: IFConfig = IFConfig()) extends Component {
             }
             whenIsActive {
                 bubble()
-                when (io.pt.look_up_ack) {
-                    when (io.pt.look_up_valid) {
-                        io.cache.icache_en := True
-                        io.cache.addr := page_en ? pa | (io.br.br ? io.br.pc | pc)
-                        when (io.cache.ack) {
-                            output(io.cache.data)
+                when (io.pt.look_up_ack || delay_ack) {
+                    delay_ack := False
+
+                    when (io.pt.look_up_valid || delay_ack) {
+                        // If stalled, store ack for next cycle
+                        when (io.stall) {
+                            delay_ack := True
+                            // Store physical address and store requesting when first acked
+                            when (io.pt.look_up_valid) {
+                                pa_reg := pa
+                                io.pt.look_up_req := False
+                            }
+                        } elsewhen (io.br.br || delay_br) {
+                            // Don't proceed when branching
+                            delay_br := False
                             goto(start)
                         } otherwise {
-                            // Store physical address for fetch
-                            pa_reg := pa
-                            goto(fetch)
+                            io.cache.icache_en := True
+                            io.cache.addr := page_en ? pa | (io.br.br ? io.br.pc | pc)
+                            when (io.cache.ack) {
+                                output(io.cache.data)
+                                goto(start)
+                            } otherwise {
+                                // Store physical address for fetch
+                                when (io.pt.look_up_valid) {
+                                    pa_reg := pa
+                                }
+                                goto(fetch)
+                            }
                         }
                     } otherwise {
                         raise_page_fault()
