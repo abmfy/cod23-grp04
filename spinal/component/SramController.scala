@@ -13,6 +13,8 @@ class SramController extends Component {
         val sram = master port SramPorts()
     }
 
+    io.wb.ack.setAsReg() init(False)
+
     io.wb.dat_r := io.sram.data.read
     io.sram.data.write := io.wb.dat_w
 
@@ -21,13 +23,12 @@ class SramController extends Component {
     io.sram.be_n := ~io.wb.sel
 
     val fsm = new StateMachine {
-        io.wb.ack := False
         io.sram.oe_n := False
         io.sram.we_n := True
         io.sram.data.writeEnable := False
         val idle: State = new State with EntryPoint {
             onEntry {
-                io.wb.ack := True
+                io.wb.ack := False
             }
             whenIsActive {
                 when (io.wb.cyc && io.wb.stb) {
@@ -40,6 +41,9 @@ class SramController extends Component {
             }
         }
         val read: State = new State {
+            onEntry {
+                io.wb.ack := False
+            }
             whenIsActive {
                 goto(idle)
             }
@@ -57,6 +61,9 @@ class SramController extends Component {
             }
         }
         val write_2: State = new State {
+            onEntry {
+                io.wb.ack := True
+            }
             whenIsActive {
                 io.sram.oe_n := True
                 io.sram.data.writeEnable := True
