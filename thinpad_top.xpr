@@ -400,6 +400,7 @@
       </File>
       <File Path="$PSRCDIR/sources_1/ip/vga_ram/vga_ram.xci">
         <FileInfo>
+          <Attr Name="IsGlobalInclude" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
