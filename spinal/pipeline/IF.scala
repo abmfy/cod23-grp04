@@ -42,6 +42,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
 
     val va = pc
     val pa = io.pt.physical_addr
+    val pa_reg = Reg(Types.addr) init(0)
 
     // Delayed branch signal
     val delay_br = Reg(Bool()) init(False)
@@ -170,12 +171,17 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                 io.pt.look_up_req := True
             }
             whenIsActive {
+                bubble()
                 when (io.pt.look_up_ack) {
                     when (io.pt.look_up_valid) {
+                        io.cache.icache_en := True
                         io.cache.addr := page_en ? pa | (io.br.br ? io.br.pc | pc)
                         when (io.cache.ack) {
                             output(io.cache.data)
+                            goto(start)
                         } otherwise {
+                            // Store physical address for fetch
+                            pa_reg := pa
                             goto(fetch)
                         }
                     } otherwise {
@@ -192,7 +198,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
             whenIsActive {
                 bubble()
                 io.cache.icache_en := True
-                io.cache.addr := page_en ? pa | pc
+                io.cache.addr := page_en ? pa_reg | pc
                 // Fetch complete
                 when (io.cache.ack || delay_ack) {
                     delay_ack := False
