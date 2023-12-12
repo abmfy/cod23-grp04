@@ -42,7 +42,7 @@ class SramController extends Component {
         }
         val read: State = new State {
             onEntry {
-                io.wb.ack := False
+                io.wb.ack := True
             }
             whenIsActive {
                 goto(idle)
