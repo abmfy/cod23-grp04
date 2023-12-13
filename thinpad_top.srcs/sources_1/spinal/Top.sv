@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : e4f88ddf53f25d652e755d4466fa019ab38285b1
+// Git hash  : f29bb5280ad1f949a5e91c25ab02881747483cdd
 
 `timescale 1ns/1ps
 
@@ -4968,6 +4968,7 @@ module IF_1 (
   reg                 delay_br;
   reg                 delay_ack;
   reg        [31:0]   delay_instr;
+  reg        [31:0]   delay_pa;
   wire       [31:0]   interrupt;
   wire       [31:0]   interrupt_delegated;
   wire       [31:0]   interrupt_masked;
@@ -4979,30 +4980,30 @@ module IF_1 (
   reg        [1:0]    fsm_stateNext;
   wire                _zz_when_StateMachine_l237;
   wire                _zz_when_StateMachine_l237_1;
-  wire                when_IF_l157;
-  wire                when_IF_l114;
-  wire                when_IF_l96;
-  wire                when_IF_l98;
-  wire                when_IF_l96_1;
-  wire                when_IF_l98_1;
-  wire                when_IF_l116;
-  wire                when_IF_l182;
-  wire                when_IF_l185;
-  wire                when_IF_l114_1;
-  wire                when_IF_l96_2;
-  wire                when_IF_l98_2;
-  wire                when_IF_l96_3;
-  wire                when_IF_l98_3;
-  wire                when_IF_l116_1;
-  wire                when_IF_l193;
-  wire                when_IF_l224;
-  wire                when_IF_l114_2;
-  wire                when_IF_l96_4;
-  wire                when_IF_l98_4;
-  wire                when_IF_l96_5;
-  wire                when_IF_l98_5;
-  wire                when_IF_l116_2;
-  wire                when_IF_l234;
+  wire                when_IF_l158;
+  wire                when_IF_l115;
+  wire                when_IF_l97;
+  wire                when_IF_l99;
+  wire                when_IF_l97_1;
+  wire                when_IF_l99_1;
+  wire                when_IF_l117;
+  wire                when_IF_l183;
+  wire                when_IF_l186;
+  wire                when_IF_l115_1;
+  wire                when_IF_l97_2;
+  wire                when_IF_l99_2;
+  wire                when_IF_l97_3;
+  wire                when_IF_l99_3;
+  wire                when_IF_l117_1;
+  wire                when_IF_l195;
+  wire                when_IF_l226;
+  wire                when_IF_l115_2;
+  wire                when_IF_l97_4;
+  wire                when_IF_l99_4;
+  wire                when_IF_l97_5;
+  wire                when_IF_l99_5;
+  wire                when_IF_l117_2;
+  wire                when_IF_l236;
   wire                when_StateMachine_l237;
   wire                when_StateMachine_l253;
   `ifndef SYNTHESIS
@@ -5065,10 +5066,10 @@ module IF_1 (
             io_trap = 1'b0;
             if(!page_en) begin
               if(io_cache_ack) begin
-                if(when_IF_l114) begin
+                if(when_IF_l115) begin
                   io_trap = 1'b1;
                 end else begin
-                  if(when_IF_l116) begin
+                  if(when_IF_l117) begin
                     io_trap = 1'b1;
                   end else begin
                     io_trap = 1'b0;
@@ -5081,15 +5082,15 @@ module IF_1 (
       end
       fsm_enumDef_3_translate : begin
         io_trap = 1'b0;
-        if(when_IF_l182) begin
-          if(when_IF_l185) begin
+        if(when_IF_l183) begin
+          if(when_IF_l186) begin
             if(!io_stall) begin
-              if(!when_IF_l193) begin
+              if(!when_IF_l195) begin
                 if(io_cache_ack) begin
-                  if(when_IF_l114_1) begin
+                  if(when_IF_l115_1) begin
                     io_trap = 1'b1;
                   end else begin
-                    if(when_IF_l116_1) begin
+                    if(when_IF_l117_1) begin
                       io_trap = 1'b1;
                     end else begin
                       io_trap = 1'b0;
@@ -5105,13 +5106,13 @@ module IF_1 (
       end
       fsm_enumDef_3_fetch : begin
         io_trap = 1'b0;
-        if(when_IF_l224) begin
+        if(when_IF_l226) begin
           if(!io_stall) begin
-            if(!when_IF_l234) begin
-              if(when_IF_l114_2) begin
+            if(!when_IF_l236) begin
+              if(when_IF_l115_2) begin
                 io_trap = 1'b1;
               end else begin
-                if(when_IF_l116_2) begin
+                if(when_IF_l117_2) begin
                   io_trap = 1'b1;
                 end else begin
                   io_trap = 1'b0;
@@ -5157,10 +5158,10 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_translate : begin
-        if(when_IF_l182) begin
-          if(when_IF_l185) begin
+        if(when_IF_l183) begin
+          if(when_IF_l186) begin
             if(!io_stall) begin
-              if(!when_IF_l193) begin
+              if(!when_IF_l195) begin
                 io_cache_icache_en = 1'b1;
               end
             end
@@ -5188,11 +5189,11 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_translate : begin
-        if(when_IF_l182) begin
-          if(when_IF_l185) begin
+        if(when_IF_l183) begin
+          if(when_IF_l186) begin
             if(!io_stall) begin
-              if(!when_IF_l193) begin
-                io_cache_addr = (page_en ? io_pt_physical_addr : (io_br_br ? io_br_pc : pc));
+              if(!when_IF_l195) begin
+                io_cache_addr = (page_en ? (delay_ack ? delay_pa : io_pt_physical_addr) : pc);
               end
             end
           end
@@ -5225,10 +5226,10 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_translate : begin
-        if(when_IF_l182) begin
-          if(when_IF_l185) begin
+        if(when_IF_l183) begin
+          if(when_IF_l186) begin
             if(!io_stall) begin
-              if(when_IF_l193) begin
+              if(when_IF_l195) begin
                 fsm_stateNext = fsm_enumDef_3_start;
               end else begin
                 if(io_cache_ack) begin
@@ -5244,9 +5245,9 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_fetch : begin
-        if(when_IF_l224) begin
+        if(when_IF_l226) begin
           if(!io_stall) begin
-            if(when_IF_l234) begin
+            if(when_IF_l236) begin
               fsm_stateNext = fsm_enumDef_3_start;
             end else begin
               fsm_stateNext = fsm_enumDef_3_start;
@@ -5265,30 +5266,30 @@ module IF_1 (
     end
   end
 
-  assign when_IF_l157 = (io_br_br || delay_br);
-  assign when_IF_l114 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l96 = interrupt_masked[7];
-  assign when_IF_l98 = interrupt_masked[5];
-  assign when_IF_l96_1 = interrupt_delegated[7];
-  assign when_IF_l98_1 = interrupt_delegated[5];
-  assign when_IF_l116 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l182 = (io_pt_look_up_ack || delay_ack);
-  assign when_IF_l185 = (io_pt_look_up_valid || delay_ack);
-  assign when_IF_l114_1 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l96_2 = interrupt_masked[7];
-  assign when_IF_l98_2 = interrupt_masked[5];
-  assign when_IF_l96_3 = interrupt_delegated[7];
-  assign when_IF_l98_3 = interrupt_delegated[5];
-  assign when_IF_l116_1 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l193 = (io_br_br || delay_br);
-  assign when_IF_l224 = (io_cache_ack || delay_ack);
-  assign when_IF_l114_2 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l96_4 = interrupt_masked[7];
-  assign when_IF_l98_4 = interrupt_masked[5];
-  assign when_IF_l96_5 = interrupt_delegated[7];
-  assign when_IF_l98_5 = interrupt_delegated[5];
-  assign when_IF_l116_2 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l234 = (io_br_br || delay_br);
+  assign when_IF_l158 = (io_br_br || delay_br);
+  assign when_IF_l115 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l97 = interrupt_masked[7];
+  assign when_IF_l99 = interrupt_masked[5];
+  assign when_IF_l97_1 = interrupt_delegated[7];
+  assign when_IF_l99_1 = interrupt_delegated[5];
+  assign when_IF_l117 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l183 = (io_pt_look_up_ack || delay_ack);
+  assign when_IF_l186 = (io_pt_look_up_valid || delay_ack);
+  assign when_IF_l115_1 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l97_2 = interrupt_masked[7];
+  assign when_IF_l99_2 = interrupt_masked[5];
+  assign when_IF_l97_3 = interrupt_delegated[7];
+  assign when_IF_l99_3 = interrupt_delegated[5];
+  assign when_IF_l117_1 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l195 = (io_br_br || delay_br);
+  assign when_IF_l226 = (io_cache_ack || delay_ack);
+  assign when_IF_l115_2 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l97_4 = interrupt_masked[7];
+  assign when_IF_l99_4 = interrupt_masked[5];
+  assign when_IF_l97_5 = interrupt_delegated[7];
+  assign when_IF_l99_5 = interrupt_delegated[5];
+  assign when_IF_l117_2 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l236 = (io_br_br || delay_br);
   assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_1));
   assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_1);
   always @(posedge sys_clk or posedge sys_reset) begin
@@ -5298,6 +5299,7 @@ module IF_1 (
       delay_br <= 1'b0;
       delay_ack <= 1'b0;
       delay_instr <= 32'h00000013;
+      delay_pa <= 32'h00000000;
       io_o_real <= 1'b0;
       io_o_pc <= 32'h80000000;
       io_o_instr <= 32'h00000013;
@@ -5332,18 +5334,18 @@ module IF_1 (
               io_o_trap_epc <= 32'h00000000;
               io_o_trap_cause <= 32'h00000000;
               io_o_trap_tval <= 32'h00000000;
-              if(when_IF_l157) begin
+              if(when_IF_l158) begin
                 delay_br <= 1'b0;
               end
               if(!page_en) begin
                 cache_addr <= (page_en ? io_pt_physical_addr : (io_br_br ? io_br_pc : pc));
                 if(io_cache_ack) begin
-                  if(when_IF_l114) begin
+                  if(when_IF_l115) begin
                     io_o_trap_epc <= pc;
-                    if(when_IF_l96) begin
+                    if(when_IF_l97) begin
                       io_o_trap_cause <= 32'h80000007;
                     end else begin
-                      if(when_IF_l98) begin
+                      if(when_IF_l99) begin
                         io_o_trap_cause <= 32'h80000005;
                       end else begin
                         io_o_trap_cause <= 32'h80000010;
@@ -5352,12 +5354,12 @@ module IF_1 (
                     io_o_trap_tval <= 32'h00000000;
                     io_o_real <= 1'b0;
                   end else begin
-                    if(when_IF_l116) begin
+                    if(when_IF_l117) begin
                       io_o_trap_epc <= pc;
-                      if(when_IF_l96_1) begin
+                      if(when_IF_l97_1) begin
                         io_o_trap_cause <= 32'h80000007;
                       end else begin
-                        if(when_IF_l98_1) begin
+                        if(when_IF_l99_1) begin
                           io_o_trap_cause <= 32'h80000005;
                         end else begin
                           io_o_trap_cause <= 32'h80000010;
@@ -5384,26 +5386,27 @@ module IF_1 (
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
           io_o_trap_tval <= 32'h00000000;
-          if(when_IF_l182) begin
+          if(when_IF_l183) begin
             delay_ack <= 1'b0;
-            if(when_IF_l185) begin
+            if(when_IF_l186) begin
               if(io_stall) begin
                 delay_ack <= 1'b1;
                 if(io_pt_look_up_valid) begin
                   io_pt_look_up_req <= 1'b0;
+                  delay_pa <= io_pt_physical_addr;
                 end
               end else begin
-                if(when_IF_l193) begin
+                if(when_IF_l195) begin
                   delay_br <= 1'b0;
                 end else begin
-                  cache_addr <= (page_en ? io_pt_physical_addr : (io_br_br ? io_br_pc : pc));
+                  cache_addr <= (page_en ? (delay_ack ? delay_pa : io_pt_physical_addr) : pc);
                   if(io_cache_ack) begin
-                    if(when_IF_l114_1) begin
+                    if(when_IF_l115_1) begin
                       io_o_trap_epc <= pc;
-                      if(when_IF_l96_2) begin
+                      if(when_IF_l97_2) begin
                         io_o_trap_cause <= 32'h80000007;
                       end else begin
-                        if(when_IF_l98_2) begin
+                        if(when_IF_l99_2) begin
                           io_o_trap_cause <= 32'h80000005;
                         end else begin
                           io_o_trap_cause <= 32'h80000010;
@@ -5412,12 +5415,12 @@ module IF_1 (
                       io_o_trap_tval <= 32'h00000000;
                       io_o_real <= 1'b0;
                     end else begin
-                      if(when_IF_l116_1) begin
+                      if(when_IF_l117_1) begin
                         io_o_trap_epc <= pc;
-                        if(when_IF_l96_3) begin
+                        if(when_IF_l97_3) begin
                           io_o_trap_cause <= 32'h80000007;
                         end else begin
-                          if(when_IF_l98_3) begin
+                          if(when_IF_l99_3) begin
                             io_o_trap_cause <= 32'h80000005;
                           end else begin
                             io_o_trap_cause <= 32'h80000010;
@@ -5450,7 +5453,7 @@ module IF_1 (
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
           io_o_trap_tval <= 32'h00000000;
-          if(when_IF_l224) begin
+          if(when_IF_l226) begin
             delay_ack <= 1'b0;
             if(io_stall) begin
               delay_ack <= 1'b1;
@@ -5458,15 +5461,15 @@ module IF_1 (
                 delay_instr <= io_cache_data;
               end
             end else begin
-              if(when_IF_l234) begin
+              if(when_IF_l236) begin
                 delay_br <= 1'b0;
               end else begin
-                if(when_IF_l114_2) begin
+                if(when_IF_l115_2) begin
                   io_o_trap_epc <= pc;
-                  if(when_IF_l96_4) begin
+                  if(when_IF_l97_4) begin
                     io_o_trap_cause <= 32'h80000007;
                   end else begin
-                    if(when_IF_l98_4) begin
+                    if(when_IF_l99_4) begin
                       io_o_trap_cause <= 32'h80000005;
                     end else begin
                       io_o_trap_cause <= 32'h80000010;
@@ -5475,12 +5478,12 @@ module IF_1 (
                   io_o_trap_tval <= 32'h00000000;
                   io_o_real <= 1'b0;
                 end else begin
-                  if(when_IF_l116_2) begin
+                  if(when_IF_l117_2) begin
                     io_o_trap_epc <= pc;
-                    if(when_IF_l96_5) begin
+                    if(when_IF_l97_5) begin
                       io_o_trap_cause <= 32'h80000007;
                     end else begin
-                      if(when_IF_l98_5) begin
+                      if(when_IF_l99_5) begin
                         io_o_trap_cause <= 32'h80000005;
                       end else begin
                         io_o_trap_cause <= 32'h80000010;

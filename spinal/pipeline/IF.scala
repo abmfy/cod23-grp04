@@ -52,6 +52,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     // Delayed ack signal
     val delay_ack = Reg(Bool()) init(False)
     val delay_instr = Reg(Types.data) init(Instr.NOP)
+    val delay_pa = Reg(Types.addr) init(0)
 
     // Interrupt
     val interrupt = io.ie & io.ip
@@ -189,6 +190,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                             // Store physical address and store requesting when first acked
                             when (io.pt.look_up_valid) {
                                 io.pt.look_up_req := False
+                                delay_pa := pa
                             }
                         } elsewhen (io.br.br || delay_br) {
                             // Don't proceed when branching
@@ -196,8 +198,8 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                             goto(start)
                         } otherwise {
                             io.cache.icache_en := True
-                            cache_addr := page_en ? pa | (io.br.br ? io.br.pc | pc)
-                            io.cache.addr := page_en ? pa | (io.br.br ? io.br.pc | pc)
+                            cache_addr := page_en ? (delay_ack ? delay_pa | pa) | pc
+                            io.cache.addr := page_en ? (delay_ack ? delay_pa | pa) | pc
                             when (io.cache.ack) {
                                 output(io.cache.data)
                                 goto(start)
