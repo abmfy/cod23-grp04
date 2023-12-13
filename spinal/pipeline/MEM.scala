@@ -212,6 +212,8 @@ class MEM extends Component {
         io.o.trap.epc := io.i.pc
         io.o.trap.cause := io.pt.exception_code
         io.o.trap.tval := va.asBits
+
+        io.o.real := False
     }
 
     val fsm = new StateMachine {
@@ -228,6 +230,7 @@ class MEM extends Component {
                 when (io.i.trap.trap) {
                     io.trap := True
                     io.o.trap <> io.i.trap
+                    io.o.real := False
                 } elsewhen (io.i.mem_en) {
                     bubble()
 

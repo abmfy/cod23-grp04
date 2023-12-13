@@ -849,6 +849,8 @@ class ID extends Component {
                 io.o.trap.tval := 0
             }
         }
+
+        io.o.real := False
     }
 
     io.o.real.setAsReg() init(False)
@@ -895,6 +897,7 @@ class ID extends Component {
     } elsewhen (io.i.trap.trap) {
         io.trap := True
         io.o.trap <> io.i.trap
+        io.o.real := False
     } elsewhen (instr_kind === EBREAK) {
         raise(TrapCause.BREAKPOINT)
     } elsewhen (instr_kind === ECALL) {

@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : c07609e9319b9cac03c3cd32bbcf97f97dd4c48d
+// Git hash  : 47e06c1517775fa749d429bd3675f03797848140
 
 `timescale 1ns/1ps
 
@@ -3291,6 +3291,7 @@ module MEM (
             io_o_trap_epc <= io_i_trap_epc;
             io_o_trap_cause <= io_i_trap_cause;
             io_o_trap_tval <= io_i_trap_tval;
+            io_o_real <= 1'b0;
           end else begin
             if(io_i_mem_en) begin
               io_o_real <= 1'b0;
@@ -3345,6 +3346,7 @@ module MEM (
               io_o_trap_epc <= io_i_pc;
               io_o_trap_cause <= io_pt_exception_code;
               io_o_trap_tval <= mem_adr;
+              io_o_real <= 1'b0;
             end
           end
         end
@@ -3723,6 +3725,7 @@ module EXE (
             io_o_trap_epc <= io_i_trap_epc;
             io_o_trap_cause <= io_i_trap_cause;
             io_o_trap_tval <= io_i_trap_tval;
+            io_o_real <= 1'b0;
           end else begin
             io_o_alu_y <= io_alu_y;
             io_o_real <= io_i_real;
@@ -3917,11 +3920,11 @@ module ID (
   reg                 mem_unsigned;
   reg                 reg_we;
   reg        [1:0]    reg_sel;
-  wire                when_ID_l898;
-  wire                when_ID_l900;
-  wire                when_ID_l912;
-  wire                when_ID_l914;
-  wire                when_ID_l916;
+  wire                when_ID_l901;
+  wire                when_ID_l903;
+  wire                when_ID_l915;
+  wire                when_ID_l917;
+  wire                when_ID_l919;
   `ifndef SYNTHESIS
   reg [39:0] io_o_alu_op_string;
   reg [7:0] io_o_csr_op_string;
@@ -4742,10 +4745,10 @@ module ID (
         if(io_i_trap_trap) begin
           io_trap = 1'b1;
         end else begin
-          if(when_ID_l898) begin
+          if(when_ID_l901) begin
             io_trap = 1'b1;
           end else begin
-            if(when_ID_l900) begin
+            if(when_ID_l903) begin
               case(io_prv)
                 PrivilegeMode_U : begin
                   io_trap = 1'b1;
@@ -4758,13 +4761,13 @@ module ID (
                 end
               endcase
             end else begin
-              if(when_ID_l912) begin
+              if(when_ID_l915) begin
                 io_trap = 1'b1;
               end else begin
-                if(when_ID_l914) begin
+                if(when_ID_l917) begin
                   io_trap = 1'b1;
                 end else begin
-                  if(when_ID_l916) begin
+                  if(when_ID_l919) begin
                     io_trap = 1'b1;
                   end
                 end
@@ -4780,11 +4783,11 @@ module ID (
   assign io_reg_addr_a = rs1;
   assign io_reg_addr_b = rs2;
   assign io_flush_req = ((! io_stall) && (csr_op != CsrOp_N));
-  assign when_ID_l898 = (instr_kind == Instr_EBREAK);
-  assign when_ID_l900 = (instr_kind == Instr_ECALL);
-  assign when_ID_l912 = (instr_kind == Instr_SRET);
-  assign when_ID_l914 = (instr_kind == Instr_MRET);
-  assign when_ID_l916 = (instr_kind == Instr_UNK);
+  assign when_ID_l901 = (instr_kind == Instr_EBREAK);
+  assign when_ID_l903 = (instr_kind == Instr_ECALL);
+  assign when_ID_l915 = (instr_kind == Instr_SRET);
+  assign when_ID_l917 = (instr_kind == Instr_MRET);
+  assign when_ID_l919 = (instr_kind == Instr_UNK);
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       io_o_real <= 1'b0;
@@ -4830,45 +4833,53 @@ module ID (
             io_o_trap_epc <= io_i_trap_epc;
             io_o_trap_cause <= io_i_trap_cause;
             io_o_trap_tval <= io_i_trap_tval;
+            io_o_real <= 1'b0;
           end else begin
-            if(when_ID_l898) begin
+            if(when_ID_l901) begin
               io_o_trap_epc <= io_i_pc;
               io_o_trap_cause <= 32'h00000003;
               io_o_trap_tval <= io_i_pc;
+              io_o_real <= 1'b0;
             end else begin
-              if(when_ID_l900) begin
+              if(when_ID_l903) begin
                 case(io_prv)
                   PrivilegeMode_U : begin
                     io_o_trap_epc <= io_i_pc;
                     io_o_trap_cause <= 32'h00000008;
                     io_o_trap_tval <= 32'h00000000;
+                    io_o_real <= 1'b0;
                   end
                   PrivilegeMode_S : begin
                     io_o_trap_epc <= io_i_pc;
                     io_o_trap_cause <= 32'h00000009;
                     io_o_trap_tval <= 32'h00000000;
+                    io_o_real <= 1'b0;
                   end
                   default : begin
                     io_o_trap_epc <= io_i_pc;
                     io_o_trap_cause <= 32'h0000000b;
                     io_o_trap_tval <= 32'h00000000;
+                    io_o_real <= 1'b0;
                   end
                 endcase
               end else begin
-                if(when_ID_l912) begin
+                if(when_ID_l915) begin
                   io_o_trap_epc <= io_i_pc;
                   io_o_trap_cause <= 32'h00000019;
                   io_o_trap_tval <= 32'h00000000;
+                  io_o_real <= 1'b0;
                 end else begin
-                  if(when_ID_l914) begin
+                  if(when_ID_l917) begin
                     io_o_trap_epc <= io_i_pc;
                     io_o_trap_cause <= 32'h0000001b;
                     io_o_trap_tval <= 32'h00000000;
+                    io_o_real <= 1'b0;
                   end else begin
-                    if(when_ID_l916) begin
+                    if(when_ID_l919) begin
                       io_o_trap_epc <= io_i_pc;
                       io_o_trap_cause <= 32'h00000002;
                       io_o_trap_tval <= io_i_instr;
+                      io_o_real <= 1'b0;
                     end else begin
                       io_o_real <= io_i_real;
                       io_o_pc <= io_i_pc;
@@ -4965,30 +4976,30 @@ module IF_1 (
   reg        [1:0]    fsm_stateNext;
   wire                _zz_when_StateMachine_l237;
   wire                _zz_when_StateMachine_l237_1;
-  wire                when_IF_l151;
-  wire                when_IF_l110;
+  wire                when_IF_l155;
+  wire                when_IF_l112;
   wire                when_IF_l94;
   wire                when_IF_l96;
   wire                when_IF_l94_1;
   wire                when_IF_l96_1;
-  wire                when_IF_l112;
-  wire                when_IF_l175;
-  wire                when_IF_l178;
-  wire                when_IF_l110_1;
+  wire                when_IF_l114;
+  wire                when_IF_l179;
+  wire                when_IF_l182;
+  wire                when_IF_l112_1;
   wire                when_IF_l94_2;
   wire                when_IF_l96_2;
   wire                when_IF_l94_3;
   wire                when_IF_l96_3;
-  wire                when_IF_l112_1;
-  wire                when_IF_l187;
-  wire                when_IF_l221;
-  wire                when_IF_l110_2;
+  wire                when_IF_l114_1;
+  wire                when_IF_l191;
+  wire                when_IF_l225;
+  wire                when_IF_l112_2;
   wire                when_IF_l94_4;
   wire                when_IF_l96_4;
   wire                when_IF_l94_5;
   wire                when_IF_l96_5;
-  wire                when_IF_l112_2;
-  wire                when_IF_l231;
+  wire                when_IF_l114_2;
+  wire                when_IF_l235;
   wire                when_StateMachine_l237;
   wire                when_StateMachine_l253;
   `ifndef SYNTHESIS
@@ -5051,10 +5062,10 @@ module IF_1 (
             io_trap = 1'b0;
             if(!page_en) begin
               if(io_cache_ack) begin
-                if(when_IF_l110) begin
+                if(when_IF_l112) begin
                   io_trap = 1'b1;
                 end else begin
-                  if(when_IF_l112) begin
+                  if(when_IF_l114) begin
                     io_trap = 1'b1;
                   end else begin
                     io_trap = 1'b0;
@@ -5067,15 +5078,15 @@ module IF_1 (
       end
       fsm_enumDef_3_translate : begin
         io_trap = 1'b0;
-        if(when_IF_l175) begin
-          if(when_IF_l178) begin
+        if(when_IF_l179) begin
+          if(when_IF_l182) begin
             if(!io_stall) begin
-              if(!when_IF_l187) begin
+              if(!when_IF_l191) begin
                 if(io_cache_ack) begin
-                  if(when_IF_l110_1) begin
+                  if(when_IF_l112_1) begin
                     io_trap = 1'b1;
                   end else begin
-                    if(when_IF_l112_1) begin
+                    if(when_IF_l114_1) begin
                       io_trap = 1'b1;
                     end else begin
                       io_trap = 1'b0;
@@ -5091,13 +5102,13 @@ module IF_1 (
       end
       fsm_enumDef_3_fetch : begin
         io_trap = 1'b0;
-        if(when_IF_l221) begin
+        if(when_IF_l225) begin
           if(!io_stall) begin
-            if(!when_IF_l231) begin
-              if(when_IF_l110_2) begin
+            if(!when_IF_l235) begin
+              if(when_IF_l112_2) begin
                 io_trap = 1'b1;
               end else begin
-                if(when_IF_l112_2) begin
+                if(when_IF_l114_2) begin
                   io_trap = 1'b1;
                 end else begin
                   io_trap = 1'b0;
@@ -5143,10 +5154,10 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_translate : begin
-        if(when_IF_l175) begin
-          if(when_IF_l178) begin
+        if(when_IF_l179) begin
+          if(when_IF_l182) begin
             if(!io_stall) begin
-              if(!when_IF_l187) begin
+              if(!when_IF_l191) begin
                 io_cache_icache_en = 1'b1;
               end
             end
@@ -5174,10 +5185,10 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_translate : begin
-        if(when_IF_l175) begin
-          if(when_IF_l178) begin
+        if(when_IF_l179) begin
+          if(when_IF_l182) begin
             if(!io_stall) begin
-              if(!when_IF_l187) begin
+              if(!when_IF_l191) begin
                 io_cache_addr = (page_en ? io_pt_physical_addr : (io_br_br ? io_br_pc : pc));
               end
             end
@@ -5211,10 +5222,10 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_translate : begin
-        if(when_IF_l175) begin
-          if(when_IF_l178) begin
+        if(when_IF_l179) begin
+          if(when_IF_l182) begin
             if(!io_stall) begin
-              if(when_IF_l187) begin
+              if(when_IF_l191) begin
                 fsm_stateNext = fsm_enumDef_3_start;
               end else begin
                 if(io_cache_ack) begin
@@ -5230,9 +5241,9 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_fetch : begin
-        if(when_IF_l221) begin
+        if(when_IF_l225) begin
           if(!io_stall) begin
-            if(when_IF_l231) begin
+            if(when_IF_l235) begin
               fsm_stateNext = fsm_enumDef_3_start;
             end else begin
               fsm_stateNext = fsm_enumDef_3_start;
@@ -5251,30 +5262,30 @@ module IF_1 (
     end
   end
 
-  assign when_IF_l151 = (io_br_br || delay_br);
-  assign when_IF_l110 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l155 = (io_br_br || delay_br);
+  assign when_IF_l112 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
   assign when_IF_l94 = interrupt_masked[7];
   assign when_IF_l96 = interrupt_masked[5];
   assign when_IF_l94_1 = interrupt_delegated[7];
   assign when_IF_l96_1 = interrupt_delegated[5];
-  assign when_IF_l112 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l175 = (io_pt_look_up_ack || delay_ack);
-  assign when_IF_l178 = (io_pt_look_up_valid || delay_ack);
-  assign when_IF_l110_1 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l114 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l179 = (io_pt_look_up_ack || delay_ack);
+  assign when_IF_l182 = (io_pt_look_up_valid || delay_ack);
+  assign when_IF_l112_1 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
   assign when_IF_l94_2 = interrupt_masked[7];
   assign when_IF_l96_2 = interrupt_masked[5];
   assign when_IF_l94_3 = interrupt_delegated[7];
   assign when_IF_l96_3 = interrupt_delegated[5];
-  assign when_IF_l112_1 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l187 = (io_br_br || delay_br);
-  assign when_IF_l221 = (io_cache_ack || delay_ack);
-  assign when_IF_l110_2 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l114_1 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l191 = (io_br_br || delay_br);
+  assign when_IF_l225 = (io_cache_ack || delay_ack);
+  assign when_IF_l112_2 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
   assign when_IF_l94_4 = interrupt_masked[7];
   assign when_IF_l96_4 = interrupt_masked[5];
   assign when_IF_l94_5 = interrupt_delegated[7];
   assign when_IF_l96_5 = interrupt_delegated[5];
-  assign when_IF_l112_2 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l231 = (io_br_br || delay_br);
+  assign when_IF_l114_2 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l235 = (io_br_br || delay_br);
   assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_1));
   assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_1);
   always @(posedge sys_clk or posedge sys_reset) begin
@@ -5318,12 +5329,12 @@ module IF_1 (
               io_o_trap_epc <= 32'h00000000;
               io_o_trap_cause <= 32'h00000000;
               io_o_trap_tval <= 32'h00000000;
-              if(when_IF_l151) begin
+              if(when_IF_l155) begin
                 delay_br <= 1'b0;
               end
               if(!page_en) begin
                 if(io_cache_ack) begin
-                  if(when_IF_l110) begin
+                  if(when_IF_l112) begin
                     io_o_trap_epc <= pc;
                     if(when_IF_l94) begin
                       io_o_trap_cause <= 32'h80000007;
@@ -5335,8 +5346,9 @@ module IF_1 (
                       end
                     end
                     io_o_trap_tval <= 32'h00000000;
+                    io_o_real <= 1'b0;
                   end else begin
-                    if(when_IF_l112) begin
+                    if(when_IF_l114) begin
                       io_o_trap_epc <= pc;
                       if(when_IF_l94_1) begin
                         io_o_trap_cause <= 32'h80000007;
@@ -5348,6 +5360,7 @@ module IF_1 (
                         end
                       end
                       io_o_trap_tval <= 32'h00000000;
+                      io_o_real <= 1'b0;
                     end else begin
                       io_o_real <= 1'b1;
                       io_o_pc <= pc;
@@ -5367,9 +5380,9 @@ module IF_1 (
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
           io_o_trap_tval <= 32'h00000000;
-          if(when_IF_l175) begin
+          if(when_IF_l179) begin
             delay_ack <= 1'b0;
-            if(when_IF_l178) begin
+            if(when_IF_l182) begin
               if(io_stall) begin
                 delay_ack <= 1'b1;
                 if(io_pt_look_up_valid) begin
@@ -5377,11 +5390,11 @@ module IF_1 (
                   io_pt_look_up_req <= 1'b0;
                 end
               end else begin
-                if(when_IF_l187) begin
+                if(when_IF_l191) begin
                   delay_br <= 1'b0;
                 end else begin
                   if(io_cache_ack) begin
-                    if(when_IF_l110_1) begin
+                    if(when_IF_l112_1) begin
                       io_o_trap_epc <= pc;
                       if(when_IF_l94_2) begin
                         io_o_trap_cause <= 32'h80000007;
@@ -5393,8 +5406,9 @@ module IF_1 (
                         end
                       end
                       io_o_trap_tval <= 32'h00000000;
+                      io_o_real <= 1'b0;
                     end else begin
-                      if(when_IF_l112_1) begin
+                      if(when_IF_l114_1) begin
                         io_o_trap_epc <= pc;
                         if(when_IF_l94_3) begin
                           io_o_trap_cause <= 32'h80000007;
@@ -5406,6 +5420,7 @@ module IF_1 (
                           end
                         end
                         io_o_trap_tval <= 32'h00000000;
+                        io_o_real <= 1'b0;
                       end else begin
                         io_o_real <= 1'b1;
                         io_o_pc <= pc;
@@ -5424,6 +5439,7 @@ module IF_1 (
               io_o_trap_epc <= pc;
               io_o_trap_cause <= io_pt_exception_code;
               io_o_trap_tval <= pc;
+              io_o_real <= 1'b0;
             end
           end
         end
@@ -5434,7 +5450,7 @@ module IF_1 (
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
           io_o_trap_tval <= 32'h00000000;
-          if(when_IF_l221) begin
+          if(when_IF_l225) begin
             delay_ack <= 1'b0;
             if(io_stall) begin
               delay_ack <= 1'b1;
@@ -5442,10 +5458,10 @@ module IF_1 (
                 delay_instr <= io_cache_data;
               end
             end else begin
-              if(when_IF_l231) begin
+              if(when_IF_l235) begin
                 delay_br <= 1'b0;
               end else begin
-                if(when_IF_l110_2) begin
+                if(when_IF_l112_2) begin
                   io_o_trap_epc <= pc;
                   if(when_IF_l94_4) begin
                     io_o_trap_cause <= 32'h80000007;
@@ -5457,8 +5473,9 @@ module IF_1 (
                     end
                   end
                   io_o_trap_tval <= 32'h00000000;
+                  io_o_real <= 1'b0;
                 end else begin
-                  if(when_IF_l112_2) begin
+                  if(when_IF_l114_2) begin
                     io_o_trap_epc <= pc;
                     if(when_IF_l94_5) begin
                       io_o_trap_cause <= 32'h80000007;
@@ -5470,6 +5487,7 @@ module IF_1 (
                       end
                     end
                     io_o_trap_tval <= 32'h00000000;
+                    io_o_real <= 1'b0;
                   end else begin
                     io_o_real <= 1'b1;
                     io_o_pc <= pc;

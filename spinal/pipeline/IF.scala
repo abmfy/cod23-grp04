@@ -99,6 +99,8 @@ class IF(config: IFConfig = IFConfig()) extends Component {
             io.o.trap.cause := TrapCause.UNKNOWN_INTERRUPT
         }
         io.o.trap.tval := 0
+
+        io.o.real := False
     }
 
     def output(instr: Bits): Unit = {
@@ -128,6 +130,8 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         io.o.trap.epc := pc
         io.o.trap.cause := io.pt.exception_code
         io.o.trap.tval := va.asBits
+
+        io.o.real := False
     }
 
     val fsm = new StateMachine {

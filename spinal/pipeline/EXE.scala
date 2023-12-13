@@ -88,6 +88,7 @@ class EXE extends Component {
     } elsewhen (io.i.trap.trap) {
         io.trap := True
         io.o.trap <> io.i.trap
+        io.o.real := False
     } otherwise {
         io.o.alu_y := io.alu.y
 
