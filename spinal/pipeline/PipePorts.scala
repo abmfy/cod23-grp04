@@ -35,7 +35,7 @@ case class ID_EXE() extends Bundle with IMasterSlave {
     val reg_sel = RegSel()
     val next_taken = Bool()
     val next_pc = Types.addr
-    
+    val sfence_req = Bool()
     val trap = TrapPorts()
 
     override def asMaster(): Unit = {
@@ -56,6 +56,7 @@ case class ID_EXE() extends Bundle with IMasterSlave {
             reg_sel,
             next_taken,
             next_pc,
+            sfence_req,
         )
         master(trap)
     }

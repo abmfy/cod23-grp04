@@ -66,6 +66,8 @@ class Top (
     IF_page_table.io.mstatus_SUM := csr.io.mstatus.r(StatusField.SUM)
     IF_page_table.io.mstatus_MXR := csr.io.mstatus.r(StatusField.MXR)
 
+    IF_page_table.io.clear_tlb := Id.io.o.sfence_req
+
     branchPredict.io.if_instr := If.io.instr
     branchPredict.io.IF_pc := If.io.pc
 
@@ -114,6 +116,8 @@ class Top (
     MEM_page_table.io.privilege_mode := trap.io.prv
     MEM_page_table.io.mstatus_SUM := csr.io.mstatus.r(StatusField.SUM)
     MEM_page_table.io.mstatus_MXR := csr.io.mstatus.r(StatusField.MXR)
+
+    MEM_page_table.io.clear_tlb := Id.io.o.sfence_req
 
     // WB
     Wb.io.reg <> reg_file.io.w

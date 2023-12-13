@@ -824,6 +824,7 @@ class ID extends Component {
         io.o.br_type := BrType.F
         io.o.mem_en := False
         io.o.reg_we := False
+        io.o.sfence_req := False
 
         io.trap := False
         io.o.trap.epc := 0
@@ -873,6 +874,7 @@ class ID extends Component {
     io.o.mem_unsigned.setAsReg() init(False)
     io.o.reg_we.setAsReg() init(False)
     io.o.reg_sel.setAsReg() init(RegSel.ALU)
+    io.o.sfence_req.setAsReg() init(False)
     io.instr.setAsReg() init(0)
 
     io.o.trap.trap.setAsReg() init(False)
@@ -887,7 +889,7 @@ class ID extends Component {
     io.reg.addr_b := rs2
 
     // Wait for control state to update
-    io.flush_req := csr_op =/= CsrOp.N
+    io.flush_req := csr_op =/= CsrOp.N ||  instr_kind === SFENCE_VMA
 
     when (io.stall) {
         // Pass
@@ -941,5 +943,6 @@ class ID extends Component {
         io.o.mem_unsigned := mem_unsigned
         io.o.reg_we := reg_we
         io.o.reg_sel := reg_sel
+        io.o.sfence_req := instr_kind === SFENCE_VMA
     }
 }

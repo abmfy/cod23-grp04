@@ -11,6 +11,12 @@ case class PageTableConfig (
     PTE_SIZE: Int = 4,
 )
 
+case class TLBEntry() extends Bundle {
+    val valid = Reg(Bool()) init(False)
+    val vpn = Reg(UInt(20 bits)) init(0)
+    val pte = Reg(Bits(32 bits)) init(0)
+}
+
 case class PageTableTranslatePorts() extends Bundle with IMasterSlave {
     // virtual address
     val look_up_addr = Types.addr
@@ -44,12 +50,14 @@ case class PageTablePorts() extends Bundle with IMasterSlave {
     val mstatus_SUM = Bool() // 0: S-mode memory access by U-mode will fault if va is in effect
     val mstatus_MXR = Bool() // 0: only load from r=1; 1: only load from r or x = 1
 
+    val clear_tlb = Bool() // clear TLB
     // physical address
     def asMaster(): Unit = {
         out(
             satp,
             privilege_mode,
             mstatus_MXR, mstatus_SUM,
+            clear_tlb,
         )
     }
 }
@@ -63,6 +71,10 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
     val va_vpn = Vec(Types.addr(10), 2) // va.vpn
     va_vpn(1) := trans_io.look_up_addr(22, 10 bits)
     va_vpn(0) := trans_io.look_up_addr(12, 10 bits)
+    // ADD TLB 64 entries full associative
+    val TLBTable = Vec(TLBEntry() , 64) 
+
+    val TLBIndex  = trans_io.look_up_addr(12, 6 bits)
 
     def raise_page_fault() {
         trans_io.look_up_ack := True
@@ -83,6 +95,10 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
     // Very good function name, love from RISC-V spec
     def a(ppn: UInt, i: UInt) = {
         (ppn * config.PAGE_SIZE + va_vpn(i) * config.PTE_SIZE).resized
+    }
+
+    def TLBEntryValid(i: UInt) :Bool = {
+        TLBTable(i).valid && TLBTable(i).vpn === trans_io.look_up_addr(12, 20 bits)
     }
     
     val i = Reg(UInt(1 bits)) init(0)
@@ -107,6 +123,12 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
     pte_ppn(0) := pte(10, 10 bits).resize(12 bits).asUInt
     pte_ppn(1) := pte(20, 12 bits).asUInt
 
+    when (io.clear_tlb) {
+        for (i <- 0 until 64) {
+            TLBTable(i).valid := False
+        }
+    }
+
     val fsm = new StateMachine {
         trans_io.exception_code := 0
         trans_io.look_up_valid := False
@@ -120,10 +142,20 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
                 trans_io.look_up_ack := False
                 trans_io.look_up_valid := False
                 when (trans_io.look_up_req) {
-                    wb.adr := a(satp_ppn, i)
-                    wb.stb := True
-                    wb.sel := Sel.WORD
-                    goto(read)
+                    //  wb.adr := a(satp_ppn, i)
+                    //     wb.stb := True
+                    //     wb.sel := Sel.WORD
+                    //     goto(read)
+                    when (TLBEntryValid(TLBIndex)) { // TLB hit
+                        pte := TLBTable(TLBIndex).pte
+                        i := 0
+                        goto(translate)
+                    } otherwise {
+                        wb.adr := a(satp_ppn, i)
+                        wb.stb := True
+                        wb.sel := Sel.WORD
+                        goto(read)
+                    }
                 }
             }
         }
@@ -132,6 +164,12 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
                 when (wb.ack) {
                     wb.stb := False
                     pte := wb.dat_r
+                    // update TLB
+                    when (i === 0) {
+                    TLBTable(TLBIndex).pte := wb.dat_r
+                    TLBTable(TLBIndex).vpn := trans_io.look_up_addr(12, 20 bits)
+                    TLBTable(TLBIndex).valid := True
+                }
                     goto(translate)
                 }
             }

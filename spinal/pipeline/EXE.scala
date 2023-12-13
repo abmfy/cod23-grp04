@@ -23,6 +23,9 @@ class EXE extends Component {
 
         // Alu
         val alu = master port AluPorts()
+
+        // SFENCE
+        val sfence_req = out Bool()
     }
 
     def bubble() = {
@@ -56,6 +59,8 @@ class EXE extends Component {
     io.o.trap.epc.setAsReg() init(0)
     io.o.trap.cause.setAsReg() init(0)
     io.o.trap.tval.setAsReg() init(0)
+    
+    io.sfence_req := io.i.sfence_req
 
     io.o.trap.trap := io.trap
     io.trap := io.o.trap.trap
