@@ -106,51 +106,41 @@ class EXE extends Component {
         io.o.reg_sel := io.i.reg_sel
     }
 
-    val fail = Bool()
-
-    io.br.pc := fail ? (io.i.pc + 4) | (io.alu.y ^ io.alu.y(0).asBits.resized).asUInt
+    val branch = Bool()
 
     import BrType._
     switch (io.i.br_type) {
         is (F) {
-            io.br.br := False
-            fail := False
+            branch := False
         }
         is (T) {
-            io.br.br := True
-            fail := False
+            branch := True
         }
         is (EQ) {
-            io.br.br := reg_a === reg_b || fail
-            fail := (reg_a =/= reg_b) && io.i.next_taken
+            branch := reg_a === reg_b
         }
         is (NE) {
-            io.br.br := reg_a =/= reg_b || fail
-            fail := (reg_a === reg_b) && io.i.next_taken
+            branch := reg_a =/= reg_b
         }
         is (LT) {
-            io.br.br := reg_a.asSInt < reg_b.asSInt || fail
-            fail := (reg_a.asSInt >= reg_b.asSInt) && io.i.next_taken
+            branch := reg_a.asSInt < reg_b.asSInt
         }
         is (GE) {
-            io.br.br := reg_a.asSInt >= reg_b.asSInt || fail
-            fail := (reg_a.asSInt < reg_b.asSInt) && io.i.next_taken
+            branch := reg_a.asSInt >= reg_b.asSInt
         }
         is (LTU) {
-            io.br.br := reg_a.asUInt < reg_b.asUInt || fail
-            fail := (reg_a.asUInt >= reg_b.asUInt) && io.i.next_taken
+            branch := reg_a.asUInt < reg_b.asUInt
         }
         is (GEU) {
-            io.br.br := reg_a.asUInt >= reg_b.asUInt || fail
-            fail := (reg_a.asUInt < reg_b.asUInt) && io.i.next_taken
+            branch := reg_a.asUInt >= reg_b.asUInt
         }
     }
 
-    io.flush_req := !io.stall && (
-        io.br.br && (
-            !io.i.next_taken || (io.i.next_pc =/= io.br.pc) || fail
-        ) || io.i.csr_op =/= CsrOp.N
-    )
+    // Prediction failure
+    io.br.br := branch ^ io.i.next_taken
+    io.br.pc := io.i.next_taken ? (io.i.pc + 4) | (io.alu.y ^ io.alu.y(0).asBits.resized).asUInt
+
+    io.flush_req := !io.stall && (io.br.br || io.i.csr_op =/= CsrOp.N)
 
     // Trapped
     when (io.i.trap.trap) {

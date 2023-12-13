@@ -825,6 +825,7 @@ class ID extends Component {
         io.o.pc := 0
         io.o.csr_op := CsrOp.N
         io.o.br_type := BrType.F
+        io.o.next_taken := False
         io.o.mem_en := False
         io.o.reg_we := False
 
@@ -858,7 +859,6 @@ class ID extends Component {
 
     io.o.real.setAsReg() init(False)
     io.o.pc.setAsReg() init(0)
-    io.o.next_pc setAsReg() init(0)
     io.o.next_taken setAsReg() init(False)
     io.o.reg_data_a.setAsReg() init(0)
     io.o.reg_data_b.setAsReg() init(0)
@@ -929,7 +929,6 @@ class ID extends Component {
 
         io.o.real := io.i.real
         io.o.pc := io.i.pc
-        io.o.next_pc := io.i.next_pc
         io.o.next_taken := io.i.next_taken
         io.o.reg_data_a := io.reg.data_a
         io.o.reg_data_b := io.reg.data_b

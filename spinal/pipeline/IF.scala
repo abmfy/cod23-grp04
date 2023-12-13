@@ -72,7 +72,6 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     io.o.real.setAsReg() init(False)
     io.o.pc.setAsReg() init(config.start)
     io.o.instr.setAsReg() init(Instr.NOP)
-    io.o.next_pc.setAsReg() init(0)
     io.o.next_taken.setAsReg() init(False)
 
     io.instr := 0
@@ -94,6 +93,8 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         io.o.real := False
         io.o.pc := 0
         io.o.instr := Instr.NOP
+
+        io.o.next_taken := False
 
         io.trap := False
         io.o.trap.epc := 0
@@ -118,7 +119,6 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     }
 
     def output(instr: Bits): Unit = {
-        io.o.next_pc := io.next_pc
         io.o.next_taken := io.next_taken
         io.instr := instr
         // Mask out delegated interrupts
@@ -160,7 +160,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         io.cache.addr := 0
 
         // Delayed branching
-        when (io.br.br && io.br.pc =/= pc) {
+        when (io.br.br) {
             delay_br := True
             pc := io.br.pc
         }
