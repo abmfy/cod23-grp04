@@ -18,6 +18,7 @@ object Tracer {
                     val reg_data = if (reg_we != 0 && reg_addr != 0) wb.io.i.reg_data_d.toLong else 0
                     if (reg_addr == 0) reg_we = 0
                     writer.write(f"$pc%08x $reg_we $reg_addr%02x $reg_data%08x\n")
+                    writer.flush()
                 }
                 sleep(clock_period)
             }
