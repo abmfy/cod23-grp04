@@ -75,7 +75,7 @@ case class EXE_MEM() extends Bundle with IMasterSlave {
     val reg_we = Bool()
     val reg_sel = RegSel()
     val alu_y = Types.data
-
+    val sfence_req = Bool()
     val trap = TrapPorts()
 
     override def asMaster(): Unit = {
@@ -92,6 +92,7 @@ case class EXE_MEM() extends Bundle with IMasterSlave {
             reg_we,
             reg_sel,
             alu_y,
+            sfence_req,
         )
         master(trap)
     }

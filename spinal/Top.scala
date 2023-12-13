@@ -117,7 +117,7 @@ class Top (
     MEM_page_table.io.mstatus_SUM := csr.io.mstatus.r(StatusField.SUM)
     MEM_page_table.io.mstatus_MXR := csr.io.mstatus.r(StatusField.MXR)
 
-    MEM_page_table.io.clear_tlb := Id.io.o.sfence_req
+    MEM_page_table.io.clear_tlb := Exe.io.o.sfence_req
 
     // WB
     Wb.io.reg <> reg_file.io.w
