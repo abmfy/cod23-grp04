@@ -149,9 +149,9 @@ class IF(config: IFConfig = IFConfig()) extends Component {
 
     def raise_page_fault(): Unit = {
         io.trap := True
-        io.o.trap.epc := pc
-        io.o.trap.cause := io.pt.exception_code
-        io.o.trap.tval := va.asBits
+        io.o.trap.epc := io.pt.look_up_addr
+        io.o.trap.cause := TrapCause.INSTRUCTION_PAGE_FAULT
+        io.o.trap.tval := io.pt.look_up_addr.asBits
 
         io.o.real := False
     }

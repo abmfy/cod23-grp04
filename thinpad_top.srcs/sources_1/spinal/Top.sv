@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : b3c99bad07865820bc7c2a15e32e6997ede16dfb
+// Git hash  : e79c9d8349ac340443e7ce1a08b98780dfbfbd7b
 
 `timescale 1ns/1ps
 
@@ -5576,9 +5576,9 @@ module IF_1 (
                     end
                   end
                 end else begin
-                  io_o_trap_epc <= pc;
-                  io_o_trap_cause <= io_pt_exception_code;
-                  io_o_trap_tval <= pc;
+                  io_o_trap_epc <= io_pt_look_up_addr;
+                  io_o_trap_cause <= 32'h0000000c;
+                  io_o_trap_tval <= io_pt_look_up_addr;
                   io_o_real <= 1'b0;
                 end
               end
