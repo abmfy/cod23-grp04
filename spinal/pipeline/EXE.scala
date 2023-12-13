@@ -141,5 +141,10 @@ class EXE extends Component {
         io.br.br := False
     }
 
+    // Do not branch when stalled
+    when (io.stall) {
+        io.br.br := False
+    }
+
     io.flush_req := !io.stall && (io.br.br || io.i.csr_op =/= CsrOp.N)
 }

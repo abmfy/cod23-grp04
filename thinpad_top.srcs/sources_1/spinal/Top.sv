@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : 47e06c1517775fa749d429bd3675f03797848140
+// Git hash  : dfef4da9c6e57e75fea62047a8c668c87a2e8947
 
 `timescale 1ns/1ps
 
@@ -3683,6 +3683,9 @@ module EXE (
       end
     endcase
     if(io_i_trap_trap) begin
+      io_br_br = 1'b0;
+    end
+    if(io_stall) begin
       io_br_br = 1'b0;
     end
   end
