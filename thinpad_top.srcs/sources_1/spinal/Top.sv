@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : 0d8aaa5204fc3b472e578ef8f8120a83e214567c
+// Git hash  : 1c8184e96b53470ea988cf89503a7fa7d69f62f9
 
 `timescale 1ns/1ps
 
@@ -2702,6 +2702,7 @@ module MEM (
   wire       [5:0]    _zz_mem_data_read_4;
   wire       [31:0]   mem_adr;
   wire       [1:0]    offset;
+  reg        [31:0]   cache_addr;
   wire       [3:0]    mem_sel;
   reg        [31:0]   mem_data_read;
   wire       [31:0]   mem_data_write;
@@ -2709,15 +2710,15 @@ module MEM (
   reg        [31:0]   reg_data;
   reg        [31:0]   _zz_reg_data;
   reg        [31:0]   _zz_reg_data_1;
-  wire                when_MEM_l71;
+  wire                when_MEM_l74;
   wire       [31:0]   timer_adr;
   wire                timer_mtime_req;
   wire                timer_mtimeh_req;
   wire                timer_mtimecmp_req;
   wire                timer_mtimecmph_req;
   wire                timer_req;
-  wire                when_MEM_l158;
-  wire                when_MEM_l186;
+  wire                when_MEM_l161;
+  wire                when_MEM_l189;
   wire                fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
@@ -2853,7 +2854,7 @@ module MEM (
         reg_data = _zz_reg_data_2;
       end
     endcase
-    if(when_MEM_l71) begin
+    if(when_MEM_l74) begin
       reg_data = io_csr_r;
     end
   end
@@ -2892,7 +2893,7 @@ module MEM (
     endcase
   end
 
-  assign when_MEM_l71 = (io_i_csr_op != CsrOp_N);
+  assign when_MEM_l74 = (io_i_csr_op != CsrOp_N);
   always @(*) begin
     io_trap = io_o_trap_trap;
     case(fsm_stateReg)
@@ -2949,7 +2950,7 @@ module MEM (
   assign timer_req = (((timer_mtime_req || timer_mtimeh_req) || timer_mtimecmp_req) || timer_mtimecmph_req);
   always @(*) begin
     io_timer_mtime_we = 1'b0;
-    if(when_MEM_l158) begin
+    if(when_MEM_l161) begin
       if(timer_mtime_req) begin
         io_timer_mtime_we = 1'b1;
       end
@@ -2958,7 +2959,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimeh_we = 1'b0;
-    if(when_MEM_l158) begin
+    if(when_MEM_l161) begin
       if(timer_mtimeh_req) begin
         io_timer_mtimeh_we = 1'b1;
       end
@@ -2967,7 +2968,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmp_we = 1'b0;
-    if(when_MEM_l158) begin
+    if(when_MEM_l161) begin
       if(timer_mtimecmp_req) begin
         io_timer_mtimecmp_we = 1'b1;
       end
@@ -2976,7 +2977,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmph_we = 1'b0;
-    if(when_MEM_l158) begin
+    if(when_MEM_l161) begin
       if(timer_mtimecmph_req) begin
         io_timer_mtimecmph_we = 1'b1;
       end
@@ -2985,7 +2986,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtime_w = 32'h00000000;
-    if(when_MEM_l158) begin
+    if(when_MEM_l161) begin
       if(timer_mtime_req) begin
         io_timer_mtime_w = mem_data_write;
       end
@@ -2994,7 +2995,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimeh_w = 32'h00000000;
-    if(when_MEM_l158) begin
+    if(when_MEM_l161) begin
       if(timer_mtimeh_req) begin
         io_timer_mtimeh_w = mem_data_write;
       end
@@ -3003,7 +3004,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmp_w = 32'h00000000;
-    if(when_MEM_l158) begin
+    if(when_MEM_l161) begin
       if(timer_mtimecmp_req) begin
         io_timer_mtimecmp_w = mem_data_write;
       end
@@ -3012,17 +3013,17 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmph_w = 32'h00000000;
-    if(when_MEM_l158) begin
+    if(when_MEM_l161) begin
       if(timer_mtimecmph_req) begin
         io_timer_mtimecmph_w = mem_data_write;
       end
     end
   end
 
-  assign when_MEM_l158 = (io_i_mem_en && io_i_mem_we);
+  assign when_MEM_l161 = (io_i_mem_en && io_i_mem_we);
   always @(*) begin
     io_csr_addr = 12'h000;
-    if(when_MEM_l186) begin
+    if(when_MEM_l189) begin
       io_csr_addr = io_i_imm[11 : 0];
     end
   end
@@ -3046,12 +3047,12 @@ module MEM (
 
   always @(*) begin
     io_csr_we = 1'b0;
-    if(when_MEM_l186) begin
+    if(when_MEM_l189) begin
       io_csr_we = 1'b1;
     end
   end
 
-  assign when_MEM_l186 = (io_i_csr_op != CsrOp_N);
+  assign when_MEM_l189 = (io_i_csr_op != CsrOp_N);
   assign io_stall_req = ((io_i_mem_en && (! timer_req)) && (! io_dcache_ack));
   assign io_flush_req = (io_i_csr_op != CsrOp_N);
   assign fsm_wantExit = 1'b0;
@@ -3137,7 +3138,7 @@ module MEM (
           if(io_i_mem_en) begin
             if(!timer_req) begin
               if(!page_en) begin
-                io_dcache_addr = (page_en ? io_pt_physical_addr : mem_adr);
+                io_dcache_addr = mem_adr;
               end
             end
           end
@@ -3146,12 +3147,12 @@ module MEM (
       fsm_enumDef_3_translate : begin
         if(io_pt_look_up_ack) begin
           if(io_pt_look_up_valid) begin
-            io_dcache_addr = (page_en ? io_pt_physical_addr : mem_adr);
+            io_dcache_addr = io_pt_physical_addr;
           end
         end
       end
       fsm_enumDef_3_fetch : begin
-        io_dcache_addr = (page_en ? io_pt_physical_addr : mem_adr);
+        io_dcache_addr = cache_addr;
       end
       default : begin
       end
@@ -3271,6 +3272,7 @@ module MEM (
   assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_1);
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
+      cache_addr <= 32'h00000000;
       io_o_real <= 1'b0;
       io_o_pc <= 32'h00000000;
       io_o_reg_we <= 1'b0;
@@ -3318,6 +3320,8 @@ module MEM (
                     io_o_reg_data_d <= reg_data;
                     io_o_trap_epc <= 32'h00000000;
                     io_o_trap_cause <= 32'h00000000;
+                  end else begin
+                    cache_addr <= mem_adr;
                   end
                 end
               end
@@ -3343,6 +3347,8 @@ module MEM (
                 io_o_reg_data_d <= reg_data;
                 io_o_trap_epc <= 32'h00000000;
                 io_o_trap_cause <= 32'h00000000;
+              end else begin
+                cache_addr <= io_pt_physical_addr;
               end
             end else begin
               io_o_trap_epc <= io_i_pc;

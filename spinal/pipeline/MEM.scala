@@ -44,6 +44,9 @@ class MEM extends Component {
     val va = mem_adr
     val pa = io.pt.physical_addr
 
+    // Register physical address from page table
+    val cache_addr = Reg(Types.addr) init(0)
+
     val mem_sel: Bits = io.i.mem_sel |<< offset
     val mem_data_read: Bits = io.dcache.data |>> (offset * 8)
     val mem_data_write: Bits = io.i.reg_data_b |<< (offset * 8)
@@ -83,10 +86,10 @@ class MEM extends Component {
         io.o.trap.cause := 0
     }
 
-    def req(): Unit = {
+    def req(addr: UInt): Unit = {
         io.dcache.dcache_en := True
         io.dcache.dcache_we := io.i.mem_we
-        io.dcache.addr := page_en ? pa | mem_adr
+        io.dcache.addr := addr
         io.dcache.dcache_sel := mem_sel
         io.dcache.data_w := mem_data_write
     }
@@ -240,10 +243,11 @@ class MEM extends Component {
                         when (page_en) {
                             goto(translate)
                         } otherwise {
-                            req()
+                            req(mem_adr)
                             when (io.dcache.ack) {
                                 proceed()
                             } otherwise {
+                                cache_addr := mem_adr
                                 goto(fetch) 
                             }
                         }
@@ -261,12 +265,13 @@ class MEM extends Component {
             whenIsActive {
                 when (io.pt.look_up_ack) {
                     when (io.pt.look_up_valid) {
-                        req()
+                        req(pa)
                         when (io.dcache.ack) {
                             proceed()
                             goto(start)
                         } otherwise {
                             goto(fetch) 
+                            cache_addr := pa
                         }
                     } otherwise {
                         raise_page_fault()
@@ -281,7 +286,7 @@ class MEM extends Component {
         val fetch: State = new State {
             whenIsActive {
                 bubble()
-                req()
+                req(cache_addr)
                 when (io.dcache.ack) {
                     proceed()
                     goto(start)
