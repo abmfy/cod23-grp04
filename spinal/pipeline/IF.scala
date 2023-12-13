@@ -11,7 +11,7 @@ case class IFConfig (
 class IF(config: IFConfig = IFConfig()) extends Component {
     val io = new Bundle {
         val o = master port IF_ID()
-
+        
         // Branching
         val br = slave port BranchPorts()
         
@@ -33,12 +33,19 @@ class IF(config: IFConfig = IFConfig()) extends Component {
 
         // ICache
         val cache = master port ICachePorts()
+        
+        // branchPredict
+        val instr = out port Types.data
+        val pc = out port Types.addr
+        val next_taken = in Bool()
+        val next_pc = in port Types.addr
 
         // Page table master
         val pt = master port PageTableTranslatePorts()
     }
 
     val pc = Reg(Types.addr) init(config.start)
+    io.pc := pc
 
     val va = pc
     val pa = io.pt.physical_addr
@@ -65,6 +72,10 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     io.o.real.setAsReg() init(False)
     io.o.pc.setAsReg() init(config.start)
     io.o.instr.setAsReg() init(Instr.NOP)
+    io.o.next_pc.setAsReg() init(0)
+    io.o.next_taken.setAsReg() init(False)
+
+    io.instr := 0
 
     io.o.trap.trap.setAsReg() init(False)
     io.o.trap.epc.setAsReg() init(0)
@@ -107,6 +118,9 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     }
 
     def output(instr: Bits): Unit = {
+        io.o.next_pc := io.next_pc
+        io.o.next_taken := io.next_taken
+        io.instr := instr
         // Mask out delegated interrupts
         when (interrupt_masked.orR && (
             io.prv === PrivilegeMode.M && io.mie
@@ -124,7 +138,11 @@ class IF(config: IFConfig = IFConfig()) extends Component {
             io.o.real := True
             io.o.pc := pc
             io.o.instr := instr
-            pc := pc + 4
+            when (io.next_taken) {
+                pc := io.next_pc
+            } otherwise {
+                pc := pc + 4
+            }
         }
     }
 
@@ -142,7 +160,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         io.cache.addr := 0
 
         // Delayed branching
-        when (io.br.br) {
+        when (io.br.br && io.br.pc =/= pc) {
             delay_br := True
             pc := io.br.pc
         }

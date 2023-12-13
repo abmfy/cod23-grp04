@@ -17,6 +17,9 @@ class ID extends Component {
         val bubble = in Bool()
         val flush_req = out Bool()
 
+        // Instruction
+        val instr = out port Types.data
+
         // Trap
         val trap = out Bool()
 
@@ -855,6 +858,8 @@ class ID extends Component {
 
     io.o.real.setAsReg() init(False)
     io.o.pc.setAsReg() init(0)
+    io.o.next_pc setAsReg() init(0)
+    io.o.next_taken setAsReg() init(False)
     io.o.reg_data_a.setAsReg() init(0)
     io.o.reg_data_b.setAsReg() init(0)
     io.o.reg_addr_a.setAsReg() init(0)
@@ -873,6 +878,7 @@ class ID extends Component {
     io.o.mem_unsigned.setAsReg() init(False)
     io.o.reg_we.setAsReg() init(False)
     io.o.reg_sel.setAsReg() init(RegSel.ALU)
+    io.instr.setAsReg() init(0)
 
     io.o.trap.trap.setAsReg() init(False)
     io.o.trap.epc.setAsReg() init(0)
@@ -919,9 +925,12 @@ class ID extends Component {
     } elsewhen (instr_kind === UNK) {
         raise(TrapCause.ILLEGAL_INSTRUCTION)
     } otherwise {
+        io.instr := io.i.instr
+
         io.o.real := io.i.real
         io.o.pc := io.i.pc
-        
+        io.o.next_pc := io.i.next_pc
+        io.o.next_taken := io.i.next_taken
         io.o.reg_data_a := io.reg.data_a
         io.o.reg_data_b := io.reg.data_b
         io.o.reg_addr_a := rs1

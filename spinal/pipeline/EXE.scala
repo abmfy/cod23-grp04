@@ -106,35 +106,51 @@ class EXE extends Component {
         io.o.reg_sel := io.i.reg_sel
     }
 
-    io.br.pc := (io.alu.y ^ io.alu.y(0).asBits.resized).asUInt
+    val fail = Bool()
+
+    io.br.pc := fail ? (io.i.pc + 4) | (io.alu.y ^ io.alu.y(0).asBits.resized).asUInt
 
     import BrType._
     switch (io.i.br_type) {
         is (F) {
             io.br.br := False
+            fail := False
         }
         is (T) {
             io.br.br := True
+            fail := False
         }
         is (EQ) {
-            io.br.br := reg_a === reg_b
+            io.br.br := reg_a === reg_b || fail
+            fail := (reg_a =/= reg_b) && io.i.next_taken
         }
         is (NE) {
-            io.br.br := reg_a =/= reg_b
+            io.br.br := reg_a =/= reg_b || fail
+            fail := (reg_a === reg_b) && io.i.next_taken
         }
         is (LT) {
-            io.br.br := reg_a.asSInt < reg_b.asSInt
+            io.br.br := reg_a.asSInt < reg_b.asSInt || fail
+            fail := (reg_a.asSInt >= reg_b.asSInt) && io.i.next_taken
         }
         is (GE) {
-            io.br.br := reg_a.asSInt >= reg_b.asSInt
+            io.br.br := reg_a.asSInt >= reg_b.asSInt || fail
+            fail := (reg_a.asSInt < reg_b.asSInt) && io.i.next_taken
         }
         is (LTU) {
-            io.br.br := reg_a.asUInt < reg_b.asUInt
+            io.br.br := reg_a.asUInt < reg_b.asUInt || fail
+            fail := (reg_a.asUInt >= reg_b.asUInt) && io.i.next_taken
         }
         is (GEU) {
-            io.br.br := reg_a.asUInt >= reg_b.asUInt
+            io.br.br := reg_a.asUInt >= reg_b.asUInt || fail
+            fail := (reg_a.asUInt < reg_b.asUInt) && io.i.next_taken
         }
     }
+
+    io.flush_req := !io.stall && (
+        io.br.br && (
+            !io.i.next_taken || (io.i.next_pc =/= io.br.pc) || fail
+        ) || io.i.csr_op =/= CsrOp.N
+    )
 
     // Trapped
     when (io.i.trap.trap) {
@@ -145,6 +161,4 @@ class EXE extends Component {
     when (io.stall) {
         io.br.br := False
     }
-
-    io.flush_req := !io.stall && (io.br.br || io.i.csr_op =/= CsrOp.N)
 }

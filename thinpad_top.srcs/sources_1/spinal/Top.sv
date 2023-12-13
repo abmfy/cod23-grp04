@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : 1c8184e96b53470ea988cf89503a7fa7d69f62f9
+// Git hash  : f8e3985d85ef9235166ba89d3d290f3e0f5afe4d
 
 `timescale 1ns/1ps
 
@@ -116,6 +116,8 @@ module Top (
   wire       [31:0]   reg_file_io_r_data_a;
   wire       [31:0]   reg_file_io_r_data_b;
   wire       [31:0]   alu_1_io_y;
+  wire       [31:0]   branchPredict_1_io_next_pc;
+  wire                branchPredict_1_io_next_taken;
   wire       [31:0]   csr_io_csr_r;
   wire       [31:0]   csr_io_time_r;
   wire       [31:0]   csr_io_timeh_r;
@@ -212,6 +214,8 @@ module Top (
   wire                If_2_io_o_real;
   wire       [31:0]   If_2_io_o_pc;
   wire       [31:0]   If_2_io_o_instr;
+  wire                If_2_io_o_next_taken;
+  wire       [31:0]   If_2_io_o_next_pc;
   wire                If_2_io_o_trap_trap;
   wire       [31:0]   If_2_io_o_trap_epc;
   wire       [31:0]   If_2_io_o_trap_cause;
@@ -219,6 +223,8 @@ module Top (
   wire                If_2_io_trap;
   wire       [31:0]   If_2_io_cache_addr;
   wire                If_2_io_cache_icache_en;
+  wire       [31:0]   If_2_io_instr;
+  wire       [31:0]   If_2_io_pc;
   wire       [31:0]   If_2_io_pt_look_up_addr;
   wire                If_2_io_pt_look_up_req;
   wire       [1:0]    If_2_io_pt_access_type;
@@ -242,11 +248,14 @@ module Top (
   wire                Id_1_io_o_mem_unsigned;
   wire                Id_1_io_o_reg_we;
   wire       [1:0]    Id_1_io_o_reg_sel;
+  wire                Id_1_io_o_next_taken;
+  wire       [31:0]   Id_1_io_o_next_pc;
   wire                Id_1_io_o_trap_trap;
   wire       [31:0]   Id_1_io_o_trap_epc;
   wire       [31:0]   Id_1_io_o_trap_cause;
   wire       [31:0]   Id_1_io_o_trap_tval;
   wire                Id_1_io_flush_req;
+  wire       [31:0]   Id_1_io_instr;
   wire                Id_1_io_trap;
   wire                Id_1_io_fence;
   wire       [4:0]    Id_1_io_reg_addr_a;
@@ -637,6 +646,18 @@ module Top (
     .io_op (Exe_1_io_alu_op[4:0]), //i
     .io_y  (alu_1_io_y[31:0]    )  //o
   );
+  BranchPredict branchPredict_1 (
+    .io_exe_pc     (Id_1_io_o_pc[31:0]              ), //i
+    .io_br_we      (Exe_1_io_br_br                  ), //i
+    .io_br_addr    (Exe_1_io_br_pc[31:0]            ), //i
+    .io_exe_instr  (Id_1_io_instr[31:0]             ), //i
+    .io_if_instr   (If_2_io_instr[31:0]             ), //i
+    .io_IF_pc      (If_2_io_pc[31:0]                ), //i
+    .io_next_pc    (branchPredict_1_io_next_pc[31:0]), //o
+    .io_next_taken (branchPredict_1_io_next_taken   ), //o
+    .sys_clk       (sys_clk                         ), //i
+    .sys_reset     (sys_reset                       )  //i
+  );
   CsrFile csr (
     .io_csr_addr    (Mem_1_io_csr_addr[11:0]  ), //i
     .io_csr_r       (csr_io_csr_r[31:0]       ), //o
@@ -867,6 +888,8 @@ module Top (
     .io_o_real            (If_2_io_o_real                             ), //o
     .io_o_pc              (If_2_io_o_pc[31:0]                         ), //o
     .io_o_instr           (If_2_io_o_instr[31:0]                      ), //o
+    .io_o_next_taken      (If_2_io_o_next_taken                       ), //o
+    .io_o_next_pc         (If_2_io_o_next_pc[31:0]                    ), //o
     .io_o_trap_trap       (If_2_io_o_trap_trap                        ), //o
     .io_o_trap_epc        (If_2_io_o_trap_epc[31:0]                   ), //o
     .io_o_trap_cause      (If_2_io_o_trap_cause[31:0]                 ), //o
@@ -887,6 +910,10 @@ module Top (
     .io_cache_ack         (ICache_1_io_toIF_ack                       ), //i
     .io_cache_data        (ICache_1_io_toIF_data[31:0]                ), //i
     .io_cache_icache_en   (If_2_io_cache_icache_en                    ), //o
+    .io_instr             (If_2_io_instr[31:0]                        ), //o
+    .io_pc                (If_2_io_pc[31:0]                           ), //o
+    .io_next_taken        (branchPredict_1_io_next_taken              ), //i
+    .io_next_pc           (branchPredict_1_io_next_pc[31:0]           ), //i
     .io_pt_look_up_addr   (If_2_io_pt_look_up_addr[31:0]              ), //o
     .io_pt_look_up_req    (If_2_io_pt_look_up_req                     ), //o
     .io_pt_access_type    (If_2_io_pt_access_type[1:0]                ), //o
@@ -901,6 +928,8 @@ module Top (
     .io_i_real         (If_2_io_o_real            ), //i
     .io_i_pc           (If_2_io_o_pc[31:0]        ), //i
     .io_i_instr        (If_2_io_o_instr[31:0]     ), //i
+    .io_i_next_taken   (If_2_io_o_next_taken      ), //i
+    .io_i_next_pc      (If_2_io_o_next_pc[31:0]   ), //i
     .io_i_trap_trap    (If_2_io_o_trap_trap       ), //i
     .io_i_trap_epc     (If_2_io_o_trap_epc[31:0]  ), //i
     .io_i_trap_cause   (If_2_io_o_trap_cause[31:0]), //i
@@ -925,6 +954,8 @@ module Top (
     .io_o_mem_unsigned (Id_1_io_o_mem_unsigned    ), //o
     .io_o_reg_we       (Id_1_io_o_reg_we          ), //o
     .io_o_reg_sel      (Id_1_io_o_reg_sel[1:0]    ), //o
+    .io_o_next_taken   (Id_1_io_o_next_taken      ), //o
+    .io_o_next_pc      (Id_1_io_o_next_pc[31:0]   ), //o
     .io_o_trap_trap    (Id_1_io_o_trap_trap       ), //o
     .io_o_trap_epc     (Id_1_io_o_trap_epc[31:0]  ), //o
     .io_o_trap_cause   (Id_1_io_o_trap_cause[31:0]), //o
@@ -932,6 +963,7 @@ module Top (
     .io_stall          (Id_1_io_stall             ), //i
     .io_bubble         (Id_1_io_bubble            ), //i
     .io_flush_req      (Id_1_io_flush_req         ), //o
+    .io_instr          (Id_1_io_instr[31:0]       ), //o
     .io_trap           (Id_1_io_trap              ), //o
     .io_prv            (trap_1_io_prv[1:0]        ), //i
     .io_fence          (Id_1_io_fence             ), //o
@@ -963,6 +995,8 @@ module Top (
     .io_i_mem_unsigned (Id_1_io_o_mem_unsigned     ), //i
     .io_i_reg_we       (Id_1_io_o_reg_we           ), //i
     .io_i_reg_sel      (Id_1_io_o_reg_sel[1:0]     ), //i
+    .io_i_next_taken   (Id_1_io_o_next_taken       ), //i
+    .io_i_next_pc      (Id_1_io_o_next_pc[31:0]    ), //i
     .io_i_trap_trap    (Id_1_io_o_trap_trap        ), //i
     .io_i_trap_epc     (Id_1_io_o_trap_epc[31:0]   ), //i
     .io_i_trap_cause   (Id_1_io_o_trap_cause[31:0] ), //i
@@ -3410,6 +3444,8 @@ module EXE (
   input  wire          io_i_mem_unsigned,
   input  wire          io_i_reg_we,
   input  wire [1:0]    io_i_reg_sel,
+  input  wire          io_i_next_taken,
+  input  wire [31:0]   io_i_next_pc,
   input  wire          io_i_trap_trap,
   input  wire [31:0]   io_i_trap_epc,
   input  wire [31:0]   io_i_trap_cause,
@@ -3486,11 +3522,16 @@ module EXE (
   wire       [31:0]   _zz_io_alu_a;
   wire       [4:0]    _zz_io_alu_a_1;
   wire       [31:0]   _zz_io_br_pc;
-  wire       [0:0]    _zz_io_br_pc_1;
+  wire       [31:0]   _zz_io_br_pc_1;
+  wire       [0:0]    _zz_io_br_pc_2;
   wire       [31:0]   _zz_io_br_br;
   wire       [31:0]   _zz_io_br_br_1;
+  wire       [31:0]   _zz_fail;
+  wire       [31:0]   _zz_fail_1;
   wire       [31:0]   _zz_io_br_br_2;
   wire       [31:0]   _zz_io_br_br_3;
+  wire       [31:0]   _zz_fail_2;
+  wire       [31:0]   _zz_fail_3;
   reg        [31:0]   reg_a;
   reg        [31:0]   reg_b;
   wire                when_EXE_l68;
@@ -3499,6 +3540,7 @@ module EXE (
   wire                when_EXE_l68_1;
   wire                when_EXE_l69_1;
   wire                when_EXE_l72_1;
+  reg                 fail;
   `ifndef SYNTHESIS
   reg [39:0] io_i_alu_op_string;
   reg [7:0] io_i_csr_op_string;
@@ -3512,12 +3554,17 @@ module EXE (
 
   assign _zz_io_alu_a_1 = io_i_reg_addr_a;
   assign _zz_io_alu_a = {27'd0, _zz_io_alu_a_1};
-  assign _zz_io_br_pc_1 = io_alu_y[0];
-  assign _zz_io_br_pc = {31'd0, _zz_io_br_pc_1};
+  assign _zz_io_br_pc = (io_i_pc + 32'h00000004);
+  assign _zz_io_br_pc_2 = io_alu_y[0];
+  assign _zz_io_br_pc_1 = {31'd0, _zz_io_br_pc_2};
   assign _zz_io_br_br = reg_a;
   assign _zz_io_br_br_1 = reg_b;
+  assign _zz_fail = reg_b;
+  assign _zz_fail_1 = reg_a;
   assign _zz_io_br_br_2 = reg_b;
   assign _zz_io_br_br_3 = reg_a;
+  assign _zz_fail_2 = reg_a;
+  assign _zz_fail_3 = reg_b;
   `ifndef SYNTHESIS
   always @(*) begin
     case(io_i_alu_op)
@@ -3662,7 +3709,7 @@ module EXE (
   assign io_alu_a = (io_i_use_pc ? io_i_pc : (io_i_use_uimm ? _zz_io_alu_a : reg_a));
   assign io_alu_b = (io_i_use_rs2 ? reg_b : io_i_imm);
   assign io_alu_op = io_i_alu_op;
-  assign io_br_pc = (io_alu_y ^ _zz_io_br_pc);
+  assign io_br_pc = (fail ? _zz_io_br_pc : (io_alu_y ^ _zz_io_br_pc_1));
   always @(*) begin
     case(io_i_br_type)
       BrType_F : begin
@@ -3672,22 +3719,22 @@ module EXE (
         io_br_br = 1'b1;
       end
       BrType_EQ : begin
-        io_br_br = (reg_a == reg_b);
+        io_br_br = ((reg_a == reg_b) || fail);
       end
       BrType_NE : begin
-        io_br_br = (reg_a != reg_b);
+        io_br_br = ((reg_a != reg_b) || fail);
       end
       BrType_LT : begin
-        io_br_br = ($signed(_zz_io_br_br) < $signed(_zz_io_br_br_1));
+        io_br_br = (($signed(_zz_io_br_br) < $signed(_zz_io_br_br_1)) || fail);
       end
       BrType_GE : begin
-        io_br_br = ($signed(_zz_io_br_br_2) <= $signed(_zz_io_br_br_3));
+        io_br_br = (($signed(_zz_io_br_br_2) <= $signed(_zz_io_br_br_3)) || fail);
       end
       BrType_LTU : begin
-        io_br_br = (reg_a < reg_b);
+        io_br_br = ((reg_a < reg_b) || fail);
       end
       default : begin
-        io_br_br = (reg_b <= reg_a);
+        io_br_br = ((reg_b <= reg_a) || fail);
       end
     endcase
     if(io_i_trap_trap) begin
@@ -3698,7 +3745,36 @@ module EXE (
     end
   end
 
-  assign io_flush_req = ((! io_stall) && (io_br_br || (io_i_csr_op != CsrOp_N)));
+  always @(*) begin
+    case(io_i_br_type)
+      BrType_F : begin
+        fail = 1'b0;
+      end
+      BrType_T : begin
+        fail = 1'b0;
+      end
+      BrType_EQ : begin
+        fail = ((reg_a != reg_b) && io_i_next_taken);
+      end
+      BrType_NE : begin
+        fail = ((reg_a == reg_b) && io_i_next_taken);
+      end
+      BrType_LT : begin
+        fail = (($signed(_zz_fail) <= $signed(_zz_fail_1)) && io_i_next_taken);
+      end
+      BrType_GE : begin
+        fail = (($signed(_zz_fail_2) < $signed(_zz_fail_3)) && io_i_next_taken);
+      end
+      BrType_LTU : begin
+        fail = ((reg_b <= reg_a) && io_i_next_taken);
+      end
+      default : begin
+        fail = ((reg_a < reg_b) && io_i_next_taken);
+      end
+    endcase
+  end
+
+  assign io_flush_req = ((! io_stall) && ((io_br_br && (((! io_i_next_taken) || (io_i_next_pc != io_br_pc)) || fail)) || (io_i_csr_op != CsrOp_N)));
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       io_o_real <= 1'b0;
@@ -3764,6 +3840,8 @@ module ID (
   input  wire          io_i_real,
   input  wire [31:0]   io_i_pc,
   input  wire [31:0]   io_i_instr,
+  input  wire          io_i_next_taken,
+  input  wire [31:0]   io_i_next_pc,
   input  wire          io_i_trap_trap,
   input  wire [31:0]   io_i_trap_epc,
   input  wire [31:0]   io_i_trap_cause,
@@ -3788,6 +3866,8 @@ module ID (
   output reg           io_o_mem_unsigned,
   output reg           io_o_reg_we,
   output reg  [1:0]    io_o_reg_sel,
+  output reg           io_o_next_taken,
+  output reg  [31:0]   io_o_next_pc,
   output reg           io_o_trap_trap,
   output reg  [31:0]   io_o_trap_epc,
   output reg  [31:0]   io_o_trap_cause,
@@ -3795,6 +3875,7 @@ module ID (
   input  wire          io_stall,
   input  wire          io_bubble,
   output wire          io_flush_req,
+  output reg  [31:0]   io_instr,
   output reg           io_trap,
   input  wire [1:0]    io_prv,
   output wire          io_fence,
@@ -3931,11 +4012,11 @@ module ID (
   reg                 mem_unsigned;
   reg                 reg_we;
   reg        [1:0]    reg_sel;
-  wire                when_ID_l901;
-  wire                when_ID_l903;
-  wire                when_ID_l915;
-  wire                when_ID_l917;
-  wire                when_ID_l919;
+  wire                when_ID_l907;
+  wire                when_ID_l909;
+  wire                when_ID_l921;
+  wire                when_ID_l923;
+  wire                when_ID_l925;
   `ifndef SYNTHESIS
   reg [39:0] io_o_alu_op_string;
   reg [7:0] io_o_csr_op_string;
@@ -4756,10 +4837,10 @@ module ID (
         if(io_i_trap_trap) begin
           io_trap = 1'b1;
         end else begin
-          if(when_ID_l901) begin
+          if(when_ID_l907) begin
             io_trap = 1'b1;
           end else begin
-            if(when_ID_l903) begin
+            if(when_ID_l909) begin
               case(io_prv)
                 PrivilegeMode_U : begin
                   io_trap = 1'b1;
@@ -4772,13 +4853,13 @@ module ID (
                 end
               endcase
             end else begin
-              if(when_ID_l915) begin
+              if(when_ID_l921) begin
                 io_trap = 1'b1;
               end else begin
-                if(when_ID_l917) begin
+                if(when_ID_l923) begin
                   io_trap = 1'b1;
                 end else begin
-                  if(when_ID_l919) begin
+                  if(when_ID_l925) begin
                     io_trap = 1'b1;
                   end
                 end
@@ -4794,15 +4875,17 @@ module ID (
   assign io_reg_addr_a = rs1;
   assign io_reg_addr_b = rs2;
   assign io_flush_req = ((! io_stall) && (csr_op != CsrOp_N));
-  assign when_ID_l901 = (instr_kind == Instr_EBREAK);
-  assign when_ID_l903 = (instr_kind == Instr_ECALL);
-  assign when_ID_l915 = (instr_kind == Instr_SRET);
-  assign when_ID_l917 = (instr_kind == Instr_MRET);
-  assign when_ID_l919 = (instr_kind == Instr_UNK);
+  assign when_ID_l907 = (instr_kind == Instr_EBREAK);
+  assign when_ID_l909 = (instr_kind == Instr_ECALL);
+  assign when_ID_l921 = (instr_kind == Instr_SRET);
+  assign when_ID_l923 = (instr_kind == Instr_MRET);
+  assign when_ID_l925 = (instr_kind == Instr_UNK);
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       io_o_real <= 1'b0;
       io_o_pc <= 32'h00000000;
+      io_o_next_pc <= 32'h00000000;
+      io_o_next_taken <= 1'b0;
       io_o_reg_data_a <= 32'h00000000;
       io_o_reg_data_b <= 32'h00000000;
       io_o_reg_addr_a <= 5'h00;
@@ -4821,6 +4904,7 @@ module ID (
       io_o_mem_unsigned <= 1'b0;
       io_o_reg_we <= 1'b0;
       io_o_reg_sel <= RegSel_ALU;
+      io_instr <= 32'h00000000;
       io_o_trap_trap <= 1'b0;
       io_o_trap_epc <= 32'h00000000;
       io_o_trap_cause <= 32'h00000000;
@@ -4846,13 +4930,13 @@ module ID (
             io_o_trap_tval <= io_i_trap_tval;
             io_o_real <= 1'b0;
           end else begin
-            if(when_ID_l901) begin
+            if(when_ID_l907) begin
               io_o_trap_epc <= io_i_pc;
               io_o_trap_cause <= 32'h00000003;
               io_o_trap_tval <= io_i_pc;
               io_o_real <= 1'b0;
             end else begin
-              if(when_ID_l903) begin
+              if(when_ID_l909) begin
                 case(io_prv)
                   PrivilegeMode_U : begin
                     io_o_trap_epc <= io_i_pc;
@@ -4874,26 +4958,29 @@ module ID (
                   end
                 endcase
               end else begin
-                if(when_ID_l915) begin
+                if(when_ID_l921) begin
                   io_o_trap_epc <= io_i_pc;
                   io_o_trap_cause <= 32'h00000019;
                   io_o_trap_tval <= 32'h00000000;
                   io_o_real <= 1'b0;
                 end else begin
-                  if(when_ID_l917) begin
+                  if(when_ID_l923) begin
                     io_o_trap_epc <= io_i_pc;
                     io_o_trap_cause <= 32'h0000001b;
                     io_o_trap_tval <= 32'h00000000;
                     io_o_real <= 1'b0;
                   end else begin
-                    if(when_ID_l919) begin
+                    if(when_ID_l925) begin
                       io_o_trap_epc <= io_i_pc;
                       io_o_trap_cause <= 32'h00000002;
                       io_o_trap_tval <= io_i_instr;
                       io_o_real <= 1'b0;
                     end else begin
+                      io_instr <= io_i_instr;
                       io_o_real <= io_i_real;
                       io_o_pc <= io_i_pc;
+                      io_o_next_pc <= io_i_next_pc;
+                      io_o_next_taken <= io_i_next_taken;
                       io_o_reg_data_a <= io_reg_data_a;
                       io_o_reg_data_b <= io_reg_data_b;
                       io_o_reg_addr_a <= rs1;
@@ -4930,6 +5017,8 @@ module IF_1 (
   output reg           io_o_real,
   output reg  [31:0]   io_o_pc,
   output reg  [31:0]   io_o_instr,
+  output reg           io_o_next_taken,
+  output reg  [31:0]   io_o_next_pc,
   output reg           io_o_trap_trap,
   output reg  [31:0]   io_o_trap_epc,
   output reg  [31:0]   io_o_trap_cause,
@@ -4950,6 +5039,10 @@ module IF_1 (
   input  wire          io_cache_ack,
   input  wire [31:0]   io_cache_data,
   output reg           io_cache_icache_en,
+  output reg  [31:0]   io_instr,
+  output wire [31:0]   io_pc,
+  input  wire          io_next_taken,
+  input  wire [31:0]   io_next_pc,
   output reg  [31:0]   io_pt_look_up_addr,
   output reg           io_pt_look_up_req,
   output wire [1:0]    io_pt_access_type,
@@ -4984,34 +5077,36 @@ module IF_1 (
   wire                fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
+  wire                when_IF_l163;
   reg        [1:0]    fsm_stateReg;
   reg        [1:0]    fsm_stateNext;
   wire                _zz_when_StateMachine_l237;
   wire                _zz_when_StateMachine_l237_1;
-  wire                when_IF_l158;
-  wire                when_IF_l115;
-  wire                when_IF_l97;
-  wire                when_IF_l99;
-  wire                when_IF_l97_1;
-  wire                when_IF_l99_1;
-  wire                when_IF_l117;
-  wire                when_IF_l183;
-  wire                when_IF_l186;
-  wire                when_IF_l115_1;
-  wire                when_IF_l97_2;
-  wire                when_IF_l99_2;
-  wire                when_IF_l97_3;
-  wire                when_IF_l99_3;
-  wire                when_IF_l117_1;
-  wire                when_IF_l195;
-  wire                when_IF_l226;
-  wire                when_IF_l115_2;
-  wire                when_IF_l97_4;
-  wire                when_IF_l99_4;
-  wire                when_IF_l97_5;
-  wire                when_IF_l99_5;
-  wire                when_IF_l117_2;
-  wire                when_IF_l236;
+  wire                when_IF_l176;
+  wire                when_IF_l129;
+  wire                when_IF_l108;
+  wire                when_IF_l110;
+  wire                when_IF_l108_1;
+  wire                when_IF_l110_1;
+  wire                when_IF_l131;
+  wire                when_IF_l201;
+  wire                when_IF_l204;
+  wire                when_IF_l129_1;
+  wire                when_IF_l108_2;
+  wire                when_IF_l110_2;
+  wire                when_IF_l108_3;
+  wire                when_IF_l110_3;
+  wire                when_IF_l131_1;
+  wire                when_IF_l213;
+  wire                when_IF_l244;
+  wire       [31:0]   _zz_io_o_instr;
+  wire                when_IF_l129_2;
+  wire                when_IF_l108_4;
+  wire                when_IF_l110_4;
+  wire                when_IF_l108_5;
+  wire                when_IF_l110_5;
+  wire                when_IF_l131_2;
+  wire                when_IF_l254;
   wire                when_StateMachine_l237;
   wire                when_StateMachine_l253;
   `ifndef SYNTHESIS
@@ -5059,10 +5154,52 @@ module IF_1 (
   end
   `endif
 
+  assign io_pc = pc;
   assign interrupt = (io_ie & io_ip);
   assign interrupt_delegated = (interrupt & io_mideleg);
   assign interrupt_masked = (interrupt & (~ io_mideleg));
   assign page_en = ((io_prv != PrivilegeMode_M) && io_satp_mode);
+  always @(*) begin
+    io_instr = 32'h00000000;
+    case(fsm_stateReg)
+      fsm_enumDef_3_start : begin
+        if(!io_stall) begin
+          if(!io_bubble) begin
+            if(!page_en) begin
+              if(io_cache_ack) begin
+                io_instr = io_cache_data;
+              end
+            end
+          end
+        end
+      end
+      fsm_enumDef_3_translate : begin
+        if(when_IF_l201) begin
+          if(when_IF_l204) begin
+            if(!io_stall) begin
+              if(!when_IF_l213) begin
+                if(io_cache_ack) begin
+                  io_instr = io_cache_data;
+                end
+              end
+            end
+          end
+        end
+      end
+      fsm_enumDef_3_fetch : begin
+        if(when_IF_l244) begin
+          if(!io_stall) begin
+            if(!when_IF_l254) begin
+              io_instr = _zz_io_o_instr;
+            end
+          end
+        end
+      end
+      default : begin
+      end
+    endcase
+  end
+
   always @(*) begin
     io_trap = io_o_trap_trap;
     case(fsm_stateReg)
@@ -5074,10 +5211,10 @@ module IF_1 (
             io_trap = 1'b0;
             if(!page_en) begin
               if(io_cache_ack) begin
-                if(when_IF_l115) begin
+                if(when_IF_l129) begin
                   io_trap = 1'b1;
                 end else begin
-                  if(when_IF_l117) begin
+                  if(when_IF_l131) begin
                     io_trap = 1'b1;
                   end else begin
                     io_trap = 1'b0;
@@ -5090,15 +5227,15 @@ module IF_1 (
       end
       fsm_enumDef_3_translate : begin
         io_trap = 1'b0;
-        if(when_IF_l183) begin
-          if(when_IF_l186) begin
+        if(when_IF_l201) begin
+          if(when_IF_l204) begin
             if(!io_stall) begin
-              if(!when_IF_l195) begin
+              if(!when_IF_l213) begin
                 if(io_cache_ack) begin
-                  if(when_IF_l115_1) begin
+                  if(when_IF_l129_1) begin
                     io_trap = 1'b1;
                   end else begin
-                    if(when_IF_l117_1) begin
+                    if(when_IF_l131_1) begin
                       io_trap = 1'b1;
                     end else begin
                       io_trap = 1'b0;
@@ -5114,13 +5251,13 @@ module IF_1 (
       end
       fsm_enumDef_3_fetch : begin
         io_trap = 1'b0;
-        if(when_IF_l226) begin
+        if(when_IF_l244) begin
           if(!io_stall) begin
-            if(!when_IF_l236) begin
-              if(when_IF_l115_2) begin
+            if(!when_IF_l254) begin
+              if(when_IF_l129_2) begin
                 io_trap = 1'b1;
               end else begin
-                if(when_IF_l117_2) begin
+                if(when_IF_l131_2) begin
                   io_trap = 1'b1;
                 end else begin
                   io_trap = 1'b0;
@@ -5166,10 +5303,10 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_translate : begin
-        if(when_IF_l183) begin
-          if(when_IF_l186) begin
+        if(when_IF_l201) begin
+          if(when_IF_l204) begin
             if(!io_stall) begin
-              if(!when_IF_l195) begin
+              if(!when_IF_l213) begin
                 io_cache_icache_en = 1'b1;
               end
             end
@@ -5197,10 +5334,10 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_translate : begin
-        if(when_IF_l183) begin
-          if(when_IF_l186) begin
+        if(when_IF_l201) begin
+          if(when_IF_l204) begin
             if(!io_stall) begin
-              if(!when_IF_l195) begin
+              if(!when_IF_l213) begin
                 io_cache_addr = (page_en ? (delay_ack ? delay_pa : io_pt_physical_addr) : pc);
               end
             end
@@ -5215,6 +5352,7 @@ module IF_1 (
     endcase
   end
 
+  assign when_IF_l163 = (io_br_br && (io_br_pc != pc));
   assign _zz_when_StateMachine_l237 = (fsm_stateReg == fsm_enumDef_3_translate);
   assign _zz_when_StateMachine_l237_1 = (fsm_stateNext == fsm_enumDef_3_translate);
   always @(*) begin
@@ -5234,10 +5372,10 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_translate : begin
-        if(when_IF_l183) begin
-          if(when_IF_l186) begin
+        if(when_IF_l201) begin
+          if(when_IF_l204) begin
             if(!io_stall) begin
-              if(when_IF_l195) begin
+              if(when_IF_l213) begin
                 fsm_stateNext = fsm_enumDef_3_start;
               end else begin
                 if(io_cache_ack) begin
@@ -5253,9 +5391,9 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_fetch : begin
-        if(when_IF_l226) begin
+        if(when_IF_l244) begin
           if(!io_stall) begin
-            if(when_IF_l236) begin
+            if(when_IF_l254) begin
               fsm_stateNext = fsm_enumDef_3_start;
             end else begin
               fsm_stateNext = fsm_enumDef_3_start;
@@ -5274,30 +5412,31 @@ module IF_1 (
     end
   end
 
-  assign when_IF_l158 = (io_br_br || delay_br);
-  assign when_IF_l115 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l97 = interrupt_masked[7];
-  assign when_IF_l99 = interrupt_masked[5];
-  assign when_IF_l97_1 = interrupt_delegated[7];
-  assign when_IF_l99_1 = interrupt_delegated[5];
-  assign when_IF_l117 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l183 = (io_pt_look_up_ack || delay_ack);
-  assign when_IF_l186 = (io_pt_look_up_valid || delay_ack);
-  assign when_IF_l115_1 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l97_2 = interrupt_masked[7];
-  assign when_IF_l99_2 = interrupt_masked[5];
-  assign when_IF_l97_3 = interrupt_delegated[7];
-  assign when_IF_l99_3 = interrupt_delegated[5];
-  assign when_IF_l117_1 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l195 = (io_br_br || delay_br);
-  assign when_IF_l226 = (io_cache_ack || delay_ack);
-  assign when_IF_l115_2 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l97_4 = interrupt_masked[7];
-  assign when_IF_l99_4 = interrupt_masked[5];
-  assign when_IF_l97_5 = interrupt_delegated[7];
-  assign when_IF_l99_5 = interrupt_delegated[5];
-  assign when_IF_l117_2 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l236 = (io_br_br || delay_br);
+  assign when_IF_l176 = (io_br_br || delay_br);
+  assign when_IF_l129 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l108 = interrupt_masked[7];
+  assign when_IF_l110 = interrupt_masked[5];
+  assign when_IF_l108_1 = interrupt_delegated[7];
+  assign when_IF_l110_1 = interrupt_delegated[5];
+  assign when_IF_l131 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l201 = (io_pt_look_up_ack || delay_ack);
+  assign when_IF_l204 = (io_pt_look_up_valid || delay_ack);
+  assign when_IF_l129_1 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l108_2 = interrupt_masked[7];
+  assign when_IF_l110_2 = interrupt_masked[5];
+  assign when_IF_l108_3 = interrupt_delegated[7];
+  assign when_IF_l110_3 = interrupt_delegated[5];
+  assign when_IF_l131_1 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l213 = (io_br_br || delay_br);
+  assign when_IF_l244 = (io_cache_ack || delay_ack);
+  assign _zz_io_o_instr = (delay_ack ? delay_instr : io_cache_data);
+  assign when_IF_l129_2 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l108_4 = interrupt_masked[7];
+  assign when_IF_l110_4 = interrupt_masked[5];
+  assign when_IF_l108_5 = interrupt_delegated[7];
+  assign when_IF_l110_5 = interrupt_delegated[5];
+  assign when_IF_l131_2 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l254 = (io_br_br || delay_br);
   assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_1));
   assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_1);
   always @(posedge sys_clk or posedge sys_reset) begin
@@ -5311,6 +5450,8 @@ module IF_1 (
       io_o_real <= 1'b0;
       io_o_pc <= 32'h80000000;
       io_o_instr <= 32'h00000013;
+      io_o_next_pc <= 32'h00000000;
+      io_o_next_taken <= 1'b0;
       io_o_trap_trap <= 1'b0;
       io_o_trap_epc <= 32'h00000000;
       io_o_trap_cause <= 32'h00000000;
@@ -5320,7 +5461,7 @@ module IF_1 (
       fsm_stateReg <= fsm_enumDef_3_BOOT;
     end else begin
       io_o_trap_trap <= io_trap;
-      if(io_br_br) begin
+      if(when_IF_l163) begin
         delay_br <= 1'b1;
         pc <= io_br_pc;
       end
@@ -5342,18 +5483,20 @@ module IF_1 (
               io_o_trap_epc <= 32'h00000000;
               io_o_trap_cause <= 32'h00000000;
               io_o_trap_tval <= 32'h00000000;
-              if(when_IF_l158) begin
+              if(when_IF_l176) begin
                 delay_br <= 1'b0;
               end
               if(!page_en) begin
                 cache_addr <= (page_en ? io_pt_physical_addr : (io_br_br ? io_br_pc : pc));
                 if(io_cache_ack) begin
-                  if(when_IF_l115) begin
+                  io_o_next_pc <= io_next_pc;
+                  io_o_next_taken <= io_next_taken;
+                  if(when_IF_l129) begin
                     io_o_trap_epc <= pc;
-                    if(when_IF_l97) begin
+                    if(when_IF_l108) begin
                       io_o_trap_cause <= 32'h80000007;
                     end else begin
-                      if(when_IF_l99) begin
+                      if(when_IF_l110) begin
                         io_o_trap_cause <= 32'h80000005;
                       end else begin
                         io_o_trap_cause <= 32'h80000010;
@@ -5362,12 +5505,12 @@ module IF_1 (
                     io_o_trap_tval <= 32'h00000000;
                     io_o_real <= 1'b0;
                   end else begin
-                    if(when_IF_l117) begin
+                    if(when_IF_l131) begin
                       io_o_trap_epc <= pc;
-                      if(when_IF_l97_1) begin
+                      if(when_IF_l108_1) begin
                         io_o_trap_cause <= 32'h80000007;
                       end else begin
-                        if(when_IF_l99_1) begin
+                        if(when_IF_l110_1) begin
                           io_o_trap_cause <= 32'h80000005;
                         end else begin
                           io_o_trap_cause <= 32'h80000010;
@@ -5379,7 +5522,11 @@ module IF_1 (
                       io_o_real <= 1'b1;
                       io_o_pc <= pc;
                       io_o_instr <= io_cache_data;
-                      pc <= (pc + 32'h00000004);
+                      if(io_next_taken) begin
+                        pc <= io_next_pc;
+                      end else begin
+                        pc <= (pc + 32'h00000004);
+                      end
                     end
                   end
                 end
@@ -5394,9 +5541,9 @@ module IF_1 (
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
           io_o_trap_tval <= 32'h00000000;
-          if(when_IF_l183) begin
+          if(when_IF_l201) begin
             delay_ack <= 1'b0;
-            if(when_IF_l186) begin
+            if(when_IF_l204) begin
               if(io_stall) begin
                 delay_ack <= 1'b1;
                 if(io_pt_look_up_valid) begin
@@ -5404,17 +5551,19 @@ module IF_1 (
                   delay_pa <= io_pt_physical_addr;
                 end
               end else begin
-                if(when_IF_l195) begin
+                if(when_IF_l213) begin
                   delay_br <= 1'b0;
                 end else begin
                   cache_addr <= (page_en ? (delay_ack ? delay_pa : io_pt_physical_addr) : pc);
                   if(io_cache_ack) begin
-                    if(when_IF_l115_1) begin
+                    io_o_next_pc <= io_next_pc;
+                    io_o_next_taken <= io_next_taken;
+                    if(when_IF_l129_1) begin
                       io_o_trap_epc <= pc;
-                      if(when_IF_l97_2) begin
+                      if(when_IF_l108_2) begin
                         io_o_trap_cause <= 32'h80000007;
                       end else begin
-                        if(when_IF_l99_2) begin
+                        if(when_IF_l110_2) begin
                           io_o_trap_cause <= 32'h80000005;
                         end else begin
                           io_o_trap_cause <= 32'h80000010;
@@ -5423,12 +5572,12 @@ module IF_1 (
                       io_o_trap_tval <= 32'h00000000;
                       io_o_real <= 1'b0;
                     end else begin
-                      if(when_IF_l117_1) begin
+                      if(when_IF_l131_1) begin
                         io_o_trap_epc <= pc;
-                        if(when_IF_l97_3) begin
+                        if(when_IF_l108_3) begin
                           io_o_trap_cause <= 32'h80000007;
                         end else begin
-                          if(when_IF_l99_3) begin
+                          if(when_IF_l110_3) begin
                             io_o_trap_cause <= 32'h80000005;
                           end else begin
                             io_o_trap_cause <= 32'h80000010;
@@ -5440,7 +5589,11 @@ module IF_1 (
                         io_o_real <= 1'b1;
                         io_o_pc <= pc;
                         io_o_instr <= io_cache_data;
-                        pc <= (pc + 32'h00000004);
+                        if(io_next_taken) begin
+                          pc <= io_next_pc;
+                        end else begin
+                          pc <= (pc + 32'h00000004);
+                        end
                       end
                     end
                   end
@@ -5461,7 +5614,7 @@ module IF_1 (
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
           io_o_trap_tval <= 32'h00000000;
-          if(when_IF_l226) begin
+          if(when_IF_l244) begin
             delay_ack <= 1'b0;
             if(io_stall) begin
               delay_ack <= 1'b1;
@@ -5469,15 +5622,17 @@ module IF_1 (
                 delay_instr <= io_cache_data;
               end
             end else begin
-              if(when_IF_l236) begin
+              if(when_IF_l254) begin
                 delay_br <= 1'b0;
               end else begin
-                if(when_IF_l115_2) begin
+                io_o_next_pc <= io_next_pc;
+                io_o_next_taken <= io_next_taken;
+                if(when_IF_l129_2) begin
                   io_o_trap_epc <= pc;
-                  if(when_IF_l97_4) begin
+                  if(when_IF_l108_4) begin
                     io_o_trap_cause <= 32'h80000007;
                   end else begin
-                    if(when_IF_l99_4) begin
+                    if(when_IF_l110_4) begin
                       io_o_trap_cause <= 32'h80000005;
                     end else begin
                       io_o_trap_cause <= 32'h80000010;
@@ -5486,12 +5641,12 @@ module IF_1 (
                   io_o_trap_tval <= 32'h00000000;
                   io_o_real <= 1'b0;
                 end else begin
-                  if(when_IF_l117_2) begin
+                  if(when_IF_l131_2) begin
                     io_o_trap_epc <= pc;
-                    if(when_IF_l97_5) begin
+                    if(when_IF_l108_5) begin
                       io_o_trap_cause <= 32'h80000007;
                     end else begin
-                      if(when_IF_l99_5) begin
+                      if(when_IF_l110_5) begin
                         io_o_trap_cause <= 32'h80000005;
                       end else begin
                         io_o_trap_cause <= 32'h80000010;
@@ -5502,8 +5657,12 @@ module IF_1 (
                   end else begin
                     io_o_real <= 1'b1;
                     io_o_pc <= pc;
-                    io_o_instr <= (delay_ack ? delay_instr : io_cache_data);
-                    pc <= (pc + 32'h00000004);
+                    io_o_instr <= _zz_io_o_instr;
+                    if(io_next_taken) begin
+                      pc <= io_next_pc;
+                    end else begin
+                      pc <= (pc + 32'h00000004);
+                    end
                   end
                 end
               end
@@ -15602,6 +15761,1802 @@ module CsrFile (
   end
 
   assign when_Csr_l154_21 = (io_csr_addr == 12'h344);
+
+endmodule
+
+module BranchPredict (
+  input  wire [31:0]   io_exe_pc,
+  input  wire          io_br_we,
+  input  wire [31:0]   io_br_addr,
+  input  wire [31:0]   io_exe_instr,
+  input  wire [31:0]   io_if_instr,
+  input  wire [31:0]   io_IF_pc,
+  output wire [31:0]   io_next_pc,
+  output wire          io_next_taken,
+  input  wire          sys_clk,
+  input  wire          sys_reset
+);
+
+  reg        [31:0]   _zz_io_next_pc;
+  reg        [31:0]   _zz_io_next_taken;
+  reg        [1:0]    _zz_io_next_taken_1;
+  reg        [31:0]   _zz_when_BranchPredict_l53;
+  reg        [1:0]    _zz_switch_BranchPredict_l61;
+  reg        [31:0]   _zz__zz_when_BranchPredict_l75;
+  reg        [31:0]   BTB_0;
+  reg        [31:0]   BTB_1;
+  reg        [31:0]   BTB_2;
+  reg        [31:0]   BTB_3;
+  reg        [31:0]   BTB_4;
+  reg        [31:0]   BTB_5;
+  reg        [31:0]   BTB_6;
+  reg        [31:0]   BTB_7;
+  reg        [31:0]   BTB_8;
+  reg        [31:0]   BTB_9;
+  reg        [31:0]   BTB_10;
+  reg        [31:0]   BTB_11;
+  reg        [31:0]   BTB_12;
+  reg        [31:0]   BTB_13;
+  reg        [31:0]   BTB_14;
+  reg        [31:0]   BTB_15;
+  reg        [31:0]   BTB_16;
+  reg        [31:0]   BTB_17;
+  reg        [31:0]   BTB_18;
+  reg        [31:0]   BTB_19;
+  reg        [31:0]   BTB_20;
+  reg        [31:0]   BTB_21;
+  reg        [31:0]   BTB_22;
+  reg        [31:0]   BTB_23;
+  reg        [31:0]   BTB_24;
+  reg        [31:0]   BTB_25;
+  reg        [31:0]   BTB_26;
+  reg        [31:0]   BTB_27;
+  reg        [31:0]   BTB_28;
+  reg        [31:0]   BTB_29;
+  reg        [31:0]   BTB_30;
+  reg        [31:0]   BTB_31;
+  reg        [31:0]   TAG_0;
+  reg        [31:0]   TAG_1;
+  reg        [31:0]   TAG_2;
+  reg        [31:0]   TAG_3;
+  reg        [31:0]   TAG_4;
+  reg        [31:0]   TAG_5;
+  reg        [31:0]   TAG_6;
+  reg        [31:0]   TAG_7;
+  reg        [31:0]   TAG_8;
+  reg        [31:0]   TAG_9;
+  reg        [31:0]   TAG_10;
+  reg        [31:0]   TAG_11;
+  reg        [31:0]   TAG_12;
+  reg        [31:0]   TAG_13;
+  reg        [31:0]   TAG_14;
+  reg        [31:0]   TAG_15;
+  reg        [31:0]   TAG_16;
+  reg        [31:0]   TAG_17;
+  reg        [31:0]   TAG_18;
+  reg        [31:0]   TAG_19;
+  reg        [31:0]   TAG_20;
+  reg        [31:0]   TAG_21;
+  reg        [31:0]   TAG_22;
+  reg        [31:0]   TAG_23;
+  reg        [31:0]   TAG_24;
+  reg        [31:0]   TAG_25;
+  reg        [31:0]   TAG_26;
+  reg        [31:0]   TAG_27;
+  reg        [31:0]   TAG_28;
+  reg        [31:0]   TAG_29;
+  reg        [31:0]   TAG_30;
+  reg        [31:0]   TAG_31;
+  reg        [1:0]    BHT_0;
+  reg        [1:0]    BHT_1;
+  reg        [1:0]    BHT_2;
+  reg        [1:0]    BHT_3;
+  reg        [1:0]    BHT_4;
+  reg        [1:0]    BHT_5;
+  reg        [1:0]    BHT_6;
+  reg        [1:0]    BHT_7;
+  reg        [1:0]    BHT_8;
+  reg        [1:0]    BHT_9;
+  reg        [1:0]    BHT_10;
+  reg        [1:0]    BHT_11;
+  reg        [1:0]    BHT_12;
+  reg        [1:0]    BHT_13;
+  reg        [1:0]    BHT_14;
+  reg        [1:0]    BHT_15;
+  reg        [1:0]    BHT_16;
+  reg        [1:0]    BHT_17;
+  reg        [1:0]    BHT_18;
+  reg        [1:0]    BHT_19;
+  reg        [1:0]    BHT_20;
+  reg        [1:0]    BHT_21;
+  reg        [1:0]    BHT_22;
+  reg        [1:0]    BHT_23;
+  reg        [1:0]    BHT_24;
+  reg        [1:0]    BHT_25;
+  reg        [1:0]    BHT_26;
+  reg        [1:0]    BHT_27;
+  reg        [1:0]    BHT_28;
+  reg        [1:0]    BHT_29;
+  reg        [1:0]    BHT_30;
+  reg        [1:0]    BHT_31;
+  wire                is_IF_branch_type;
+  wire                is_EXE_branch_type;
+  reg                 exe_branch_type_buffer;
+  wire       [4:0]    if_index;
+  wire       [4:0]    exe_index;
+  wire                when_BranchPredict_l52;
+  wire       [31:0]   _zz_1;
+  wire                _zz_2;
+  wire                _zz_3;
+  wire                _zz_4;
+  wire                _zz_5;
+  wire                _zz_6;
+  wire                _zz_7;
+  wire                _zz_8;
+  wire                _zz_9;
+  wire                _zz_10;
+  wire                _zz_11;
+  wire                _zz_12;
+  wire                _zz_13;
+  wire                _zz_14;
+  wire                _zz_15;
+  wire                _zz_16;
+  wire                _zz_17;
+  wire                _zz_18;
+  wire                _zz_19;
+  wire                _zz_20;
+  wire                _zz_21;
+  wire                _zz_22;
+  wire                _zz_23;
+  wire                _zz_24;
+  wire                _zz_25;
+  wire                _zz_26;
+  wire                _zz_27;
+  wire                _zz_28;
+  wire                _zz_29;
+  wire                _zz_30;
+  wire                _zz_31;
+  wire                _zz_32;
+  wire                _zz_33;
+  wire                when_BranchPredict_l53;
+  wire       [1:0]    switch_BranchPredict_l61;
+  wire       [31:0]   _zz_34;
+  wire                _zz_35;
+  wire                _zz_36;
+  wire                _zz_37;
+  wire                _zz_38;
+  wire                _zz_39;
+  wire                _zz_40;
+  wire                _zz_41;
+  wire                _zz_42;
+  wire                _zz_43;
+  wire                _zz_44;
+  wire                _zz_45;
+  wire                _zz_46;
+  wire                _zz_47;
+  wire                _zz_48;
+  wire                _zz_49;
+  wire                _zz_50;
+  wire                _zz_51;
+  wire                _zz_52;
+  wire                _zz_53;
+  wire                _zz_54;
+  wire                _zz_55;
+  wire                _zz_56;
+  wire                _zz_57;
+  wire                _zz_58;
+  wire                _zz_59;
+  wire                _zz_60;
+  wire                _zz_61;
+  wire                _zz_62;
+  wire                _zz_63;
+  wire                _zz_64;
+  wire                _zz_65;
+  wire                _zz_66;
+  wire       [31:0]   _zz_when_BranchPredict_l75;
+  wire       [31:0]   _zz_67;
+  wire                when_BranchPredict_l75;
+  wire                when_BranchPredict_l83;
+
+  always @(*) begin
+    case(if_index)
+      5'b00000 : begin
+        _zz_io_next_pc = BTB_0;
+        _zz_io_next_taken = TAG_0;
+        _zz_io_next_taken_1 = BHT_0;
+      end
+      5'b00001 : begin
+        _zz_io_next_pc = BTB_1;
+        _zz_io_next_taken = TAG_1;
+        _zz_io_next_taken_1 = BHT_1;
+      end
+      5'b00010 : begin
+        _zz_io_next_pc = BTB_2;
+        _zz_io_next_taken = TAG_2;
+        _zz_io_next_taken_1 = BHT_2;
+      end
+      5'b00011 : begin
+        _zz_io_next_pc = BTB_3;
+        _zz_io_next_taken = TAG_3;
+        _zz_io_next_taken_1 = BHT_3;
+      end
+      5'b00100 : begin
+        _zz_io_next_pc = BTB_4;
+        _zz_io_next_taken = TAG_4;
+        _zz_io_next_taken_1 = BHT_4;
+      end
+      5'b00101 : begin
+        _zz_io_next_pc = BTB_5;
+        _zz_io_next_taken = TAG_5;
+        _zz_io_next_taken_1 = BHT_5;
+      end
+      5'b00110 : begin
+        _zz_io_next_pc = BTB_6;
+        _zz_io_next_taken = TAG_6;
+        _zz_io_next_taken_1 = BHT_6;
+      end
+      5'b00111 : begin
+        _zz_io_next_pc = BTB_7;
+        _zz_io_next_taken = TAG_7;
+        _zz_io_next_taken_1 = BHT_7;
+      end
+      5'b01000 : begin
+        _zz_io_next_pc = BTB_8;
+        _zz_io_next_taken = TAG_8;
+        _zz_io_next_taken_1 = BHT_8;
+      end
+      5'b01001 : begin
+        _zz_io_next_pc = BTB_9;
+        _zz_io_next_taken = TAG_9;
+        _zz_io_next_taken_1 = BHT_9;
+      end
+      5'b01010 : begin
+        _zz_io_next_pc = BTB_10;
+        _zz_io_next_taken = TAG_10;
+        _zz_io_next_taken_1 = BHT_10;
+      end
+      5'b01011 : begin
+        _zz_io_next_pc = BTB_11;
+        _zz_io_next_taken = TAG_11;
+        _zz_io_next_taken_1 = BHT_11;
+      end
+      5'b01100 : begin
+        _zz_io_next_pc = BTB_12;
+        _zz_io_next_taken = TAG_12;
+        _zz_io_next_taken_1 = BHT_12;
+      end
+      5'b01101 : begin
+        _zz_io_next_pc = BTB_13;
+        _zz_io_next_taken = TAG_13;
+        _zz_io_next_taken_1 = BHT_13;
+      end
+      5'b01110 : begin
+        _zz_io_next_pc = BTB_14;
+        _zz_io_next_taken = TAG_14;
+        _zz_io_next_taken_1 = BHT_14;
+      end
+      5'b01111 : begin
+        _zz_io_next_pc = BTB_15;
+        _zz_io_next_taken = TAG_15;
+        _zz_io_next_taken_1 = BHT_15;
+      end
+      5'b10000 : begin
+        _zz_io_next_pc = BTB_16;
+        _zz_io_next_taken = TAG_16;
+        _zz_io_next_taken_1 = BHT_16;
+      end
+      5'b10001 : begin
+        _zz_io_next_pc = BTB_17;
+        _zz_io_next_taken = TAG_17;
+        _zz_io_next_taken_1 = BHT_17;
+      end
+      5'b10010 : begin
+        _zz_io_next_pc = BTB_18;
+        _zz_io_next_taken = TAG_18;
+        _zz_io_next_taken_1 = BHT_18;
+      end
+      5'b10011 : begin
+        _zz_io_next_pc = BTB_19;
+        _zz_io_next_taken = TAG_19;
+        _zz_io_next_taken_1 = BHT_19;
+      end
+      5'b10100 : begin
+        _zz_io_next_pc = BTB_20;
+        _zz_io_next_taken = TAG_20;
+        _zz_io_next_taken_1 = BHT_20;
+      end
+      5'b10101 : begin
+        _zz_io_next_pc = BTB_21;
+        _zz_io_next_taken = TAG_21;
+        _zz_io_next_taken_1 = BHT_21;
+      end
+      5'b10110 : begin
+        _zz_io_next_pc = BTB_22;
+        _zz_io_next_taken = TAG_22;
+        _zz_io_next_taken_1 = BHT_22;
+      end
+      5'b10111 : begin
+        _zz_io_next_pc = BTB_23;
+        _zz_io_next_taken = TAG_23;
+        _zz_io_next_taken_1 = BHT_23;
+      end
+      5'b11000 : begin
+        _zz_io_next_pc = BTB_24;
+        _zz_io_next_taken = TAG_24;
+        _zz_io_next_taken_1 = BHT_24;
+      end
+      5'b11001 : begin
+        _zz_io_next_pc = BTB_25;
+        _zz_io_next_taken = TAG_25;
+        _zz_io_next_taken_1 = BHT_25;
+      end
+      5'b11010 : begin
+        _zz_io_next_pc = BTB_26;
+        _zz_io_next_taken = TAG_26;
+        _zz_io_next_taken_1 = BHT_26;
+      end
+      5'b11011 : begin
+        _zz_io_next_pc = BTB_27;
+        _zz_io_next_taken = TAG_27;
+        _zz_io_next_taken_1 = BHT_27;
+      end
+      5'b11100 : begin
+        _zz_io_next_pc = BTB_28;
+        _zz_io_next_taken = TAG_28;
+        _zz_io_next_taken_1 = BHT_28;
+      end
+      5'b11101 : begin
+        _zz_io_next_pc = BTB_29;
+        _zz_io_next_taken = TAG_29;
+        _zz_io_next_taken_1 = BHT_29;
+      end
+      5'b11110 : begin
+        _zz_io_next_pc = BTB_30;
+        _zz_io_next_taken = TAG_30;
+        _zz_io_next_taken_1 = BHT_30;
+      end
+      default : begin
+        _zz_io_next_pc = BTB_31;
+        _zz_io_next_taken = TAG_31;
+        _zz_io_next_taken_1 = BHT_31;
+      end
+    endcase
+  end
+
+  always @(*) begin
+    case(exe_index)
+      5'b00000 : begin
+        _zz_when_BranchPredict_l53 = TAG_0;
+        _zz_switch_BranchPredict_l61 = BHT_0;
+        _zz__zz_when_BranchPredict_l75 = BTB_0;
+      end
+      5'b00001 : begin
+        _zz_when_BranchPredict_l53 = TAG_1;
+        _zz_switch_BranchPredict_l61 = BHT_1;
+        _zz__zz_when_BranchPredict_l75 = BTB_1;
+      end
+      5'b00010 : begin
+        _zz_when_BranchPredict_l53 = TAG_2;
+        _zz_switch_BranchPredict_l61 = BHT_2;
+        _zz__zz_when_BranchPredict_l75 = BTB_2;
+      end
+      5'b00011 : begin
+        _zz_when_BranchPredict_l53 = TAG_3;
+        _zz_switch_BranchPredict_l61 = BHT_3;
+        _zz__zz_when_BranchPredict_l75 = BTB_3;
+      end
+      5'b00100 : begin
+        _zz_when_BranchPredict_l53 = TAG_4;
+        _zz_switch_BranchPredict_l61 = BHT_4;
+        _zz__zz_when_BranchPredict_l75 = BTB_4;
+      end
+      5'b00101 : begin
+        _zz_when_BranchPredict_l53 = TAG_5;
+        _zz_switch_BranchPredict_l61 = BHT_5;
+        _zz__zz_when_BranchPredict_l75 = BTB_5;
+      end
+      5'b00110 : begin
+        _zz_when_BranchPredict_l53 = TAG_6;
+        _zz_switch_BranchPredict_l61 = BHT_6;
+        _zz__zz_when_BranchPredict_l75 = BTB_6;
+      end
+      5'b00111 : begin
+        _zz_when_BranchPredict_l53 = TAG_7;
+        _zz_switch_BranchPredict_l61 = BHT_7;
+        _zz__zz_when_BranchPredict_l75 = BTB_7;
+      end
+      5'b01000 : begin
+        _zz_when_BranchPredict_l53 = TAG_8;
+        _zz_switch_BranchPredict_l61 = BHT_8;
+        _zz__zz_when_BranchPredict_l75 = BTB_8;
+      end
+      5'b01001 : begin
+        _zz_when_BranchPredict_l53 = TAG_9;
+        _zz_switch_BranchPredict_l61 = BHT_9;
+        _zz__zz_when_BranchPredict_l75 = BTB_9;
+      end
+      5'b01010 : begin
+        _zz_when_BranchPredict_l53 = TAG_10;
+        _zz_switch_BranchPredict_l61 = BHT_10;
+        _zz__zz_when_BranchPredict_l75 = BTB_10;
+      end
+      5'b01011 : begin
+        _zz_when_BranchPredict_l53 = TAG_11;
+        _zz_switch_BranchPredict_l61 = BHT_11;
+        _zz__zz_when_BranchPredict_l75 = BTB_11;
+      end
+      5'b01100 : begin
+        _zz_when_BranchPredict_l53 = TAG_12;
+        _zz_switch_BranchPredict_l61 = BHT_12;
+        _zz__zz_when_BranchPredict_l75 = BTB_12;
+      end
+      5'b01101 : begin
+        _zz_when_BranchPredict_l53 = TAG_13;
+        _zz_switch_BranchPredict_l61 = BHT_13;
+        _zz__zz_when_BranchPredict_l75 = BTB_13;
+      end
+      5'b01110 : begin
+        _zz_when_BranchPredict_l53 = TAG_14;
+        _zz_switch_BranchPredict_l61 = BHT_14;
+        _zz__zz_when_BranchPredict_l75 = BTB_14;
+      end
+      5'b01111 : begin
+        _zz_when_BranchPredict_l53 = TAG_15;
+        _zz_switch_BranchPredict_l61 = BHT_15;
+        _zz__zz_when_BranchPredict_l75 = BTB_15;
+      end
+      5'b10000 : begin
+        _zz_when_BranchPredict_l53 = TAG_16;
+        _zz_switch_BranchPredict_l61 = BHT_16;
+        _zz__zz_when_BranchPredict_l75 = BTB_16;
+      end
+      5'b10001 : begin
+        _zz_when_BranchPredict_l53 = TAG_17;
+        _zz_switch_BranchPredict_l61 = BHT_17;
+        _zz__zz_when_BranchPredict_l75 = BTB_17;
+      end
+      5'b10010 : begin
+        _zz_when_BranchPredict_l53 = TAG_18;
+        _zz_switch_BranchPredict_l61 = BHT_18;
+        _zz__zz_when_BranchPredict_l75 = BTB_18;
+      end
+      5'b10011 : begin
+        _zz_when_BranchPredict_l53 = TAG_19;
+        _zz_switch_BranchPredict_l61 = BHT_19;
+        _zz__zz_when_BranchPredict_l75 = BTB_19;
+      end
+      5'b10100 : begin
+        _zz_when_BranchPredict_l53 = TAG_20;
+        _zz_switch_BranchPredict_l61 = BHT_20;
+        _zz__zz_when_BranchPredict_l75 = BTB_20;
+      end
+      5'b10101 : begin
+        _zz_when_BranchPredict_l53 = TAG_21;
+        _zz_switch_BranchPredict_l61 = BHT_21;
+        _zz__zz_when_BranchPredict_l75 = BTB_21;
+      end
+      5'b10110 : begin
+        _zz_when_BranchPredict_l53 = TAG_22;
+        _zz_switch_BranchPredict_l61 = BHT_22;
+        _zz__zz_when_BranchPredict_l75 = BTB_22;
+      end
+      5'b10111 : begin
+        _zz_when_BranchPredict_l53 = TAG_23;
+        _zz_switch_BranchPredict_l61 = BHT_23;
+        _zz__zz_when_BranchPredict_l75 = BTB_23;
+      end
+      5'b11000 : begin
+        _zz_when_BranchPredict_l53 = TAG_24;
+        _zz_switch_BranchPredict_l61 = BHT_24;
+        _zz__zz_when_BranchPredict_l75 = BTB_24;
+      end
+      5'b11001 : begin
+        _zz_when_BranchPredict_l53 = TAG_25;
+        _zz_switch_BranchPredict_l61 = BHT_25;
+        _zz__zz_when_BranchPredict_l75 = BTB_25;
+      end
+      5'b11010 : begin
+        _zz_when_BranchPredict_l53 = TAG_26;
+        _zz_switch_BranchPredict_l61 = BHT_26;
+        _zz__zz_when_BranchPredict_l75 = BTB_26;
+      end
+      5'b11011 : begin
+        _zz_when_BranchPredict_l53 = TAG_27;
+        _zz_switch_BranchPredict_l61 = BHT_27;
+        _zz__zz_when_BranchPredict_l75 = BTB_27;
+      end
+      5'b11100 : begin
+        _zz_when_BranchPredict_l53 = TAG_28;
+        _zz_switch_BranchPredict_l61 = BHT_28;
+        _zz__zz_when_BranchPredict_l75 = BTB_28;
+      end
+      5'b11101 : begin
+        _zz_when_BranchPredict_l53 = TAG_29;
+        _zz_switch_BranchPredict_l61 = BHT_29;
+        _zz__zz_when_BranchPredict_l75 = BTB_29;
+      end
+      5'b11110 : begin
+        _zz_when_BranchPredict_l53 = TAG_30;
+        _zz_switch_BranchPredict_l61 = BHT_30;
+        _zz__zz_when_BranchPredict_l75 = BTB_30;
+      end
+      default : begin
+        _zz_when_BranchPredict_l53 = TAG_31;
+        _zz_switch_BranchPredict_l61 = BHT_31;
+        _zz__zz_when_BranchPredict_l75 = BTB_31;
+      end
+    endcase
+  end
+
+  assign is_IF_branch_type = ((io_if_instr[6 : 0] == 7'h6f) || (io_if_instr[6 : 0] == 7'h63));
+  assign is_EXE_branch_type = ((io_exe_instr[6 : 0] == 7'h6f) || (io_exe_instr[6 : 0] == 7'h63));
+  assign if_index = io_IF_pc[6 : 2];
+  assign io_next_pc = _zz_io_next_pc;
+  assign io_next_taken = ((is_IF_branch_type && (io_IF_pc == _zz_io_next_taken)) && (2'b10 <= _zz_io_next_taken_1));
+  assign exe_index = io_exe_pc[6 : 2];
+  assign when_BranchPredict_l52 = (is_EXE_branch_type && (! exe_branch_type_buffer));
+  assign _zz_1 = ({31'd0,1'b1} <<< exe_index);
+  assign _zz_2 = _zz_1[0];
+  assign _zz_3 = _zz_1[1];
+  assign _zz_4 = _zz_1[2];
+  assign _zz_5 = _zz_1[3];
+  assign _zz_6 = _zz_1[4];
+  assign _zz_7 = _zz_1[5];
+  assign _zz_8 = _zz_1[6];
+  assign _zz_9 = _zz_1[7];
+  assign _zz_10 = _zz_1[8];
+  assign _zz_11 = _zz_1[9];
+  assign _zz_12 = _zz_1[10];
+  assign _zz_13 = _zz_1[11];
+  assign _zz_14 = _zz_1[12];
+  assign _zz_15 = _zz_1[13];
+  assign _zz_16 = _zz_1[14];
+  assign _zz_17 = _zz_1[15];
+  assign _zz_18 = _zz_1[16];
+  assign _zz_19 = _zz_1[17];
+  assign _zz_20 = _zz_1[18];
+  assign _zz_21 = _zz_1[19];
+  assign _zz_22 = _zz_1[20];
+  assign _zz_23 = _zz_1[21];
+  assign _zz_24 = _zz_1[22];
+  assign _zz_25 = _zz_1[23];
+  assign _zz_26 = _zz_1[24];
+  assign _zz_27 = _zz_1[25];
+  assign _zz_28 = _zz_1[26];
+  assign _zz_29 = _zz_1[27];
+  assign _zz_30 = _zz_1[28];
+  assign _zz_31 = _zz_1[29];
+  assign _zz_32 = _zz_1[30];
+  assign _zz_33 = _zz_1[31];
+  assign when_BranchPredict_l53 = (io_exe_pc != _zz_when_BranchPredict_l53);
+  assign switch_BranchPredict_l61 = _zz_switch_BranchPredict_l61;
+  assign _zz_34 = ({31'd0,1'b1} <<< exe_index);
+  assign _zz_35 = _zz_34[0];
+  assign _zz_36 = _zz_34[1];
+  assign _zz_37 = _zz_34[2];
+  assign _zz_38 = _zz_34[3];
+  assign _zz_39 = _zz_34[4];
+  assign _zz_40 = _zz_34[5];
+  assign _zz_41 = _zz_34[6];
+  assign _zz_42 = _zz_34[7];
+  assign _zz_43 = _zz_34[8];
+  assign _zz_44 = _zz_34[9];
+  assign _zz_45 = _zz_34[10];
+  assign _zz_46 = _zz_34[11];
+  assign _zz_47 = _zz_34[12];
+  assign _zz_48 = _zz_34[13];
+  assign _zz_49 = _zz_34[14];
+  assign _zz_50 = _zz_34[15];
+  assign _zz_51 = _zz_34[16];
+  assign _zz_52 = _zz_34[17];
+  assign _zz_53 = _zz_34[18];
+  assign _zz_54 = _zz_34[19];
+  assign _zz_55 = _zz_34[20];
+  assign _zz_56 = _zz_34[21];
+  assign _zz_57 = _zz_34[22];
+  assign _zz_58 = _zz_34[23];
+  assign _zz_59 = _zz_34[24];
+  assign _zz_60 = _zz_34[25];
+  assign _zz_61 = _zz_34[26];
+  assign _zz_62 = _zz_34[27];
+  assign _zz_63 = _zz_34[28];
+  assign _zz_64 = _zz_34[29];
+  assign _zz_65 = _zz_34[30];
+  assign _zz_66 = _zz_34[31];
+  assign _zz_when_BranchPredict_l75 = _zz__zz_when_BranchPredict_l75;
+  assign _zz_67 = ({31'd0,1'b1} <<< exe_index);
+  assign when_BranchPredict_l75 = (io_br_we && (_zz_when_BranchPredict_l75 == io_br_addr));
+  assign when_BranchPredict_l83 = (! (io_br_we && (_zz_when_BranchPredict_l75 == io_br_addr)));
+  always @(posedge sys_clk or posedge sys_reset) begin
+    if(sys_reset) begin
+      BTB_0 <= 32'h00000000;
+      BTB_1 <= 32'h00000000;
+      BTB_2 <= 32'h00000000;
+      BTB_3 <= 32'h00000000;
+      BTB_4 <= 32'h00000000;
+      BTB_5 <= 32'h00000000;
+      BTB_6 <= 32'h00000000;
+      BTB_7 <= 32'h00000000;
+      BTB_8 <= 32'h00000000;
+      BTB_9 <= 32'h00000000;
+      BTB_10 <= 32'h00000000;
+      BTB_11 <= 32'h00000000;
+      BTB_12 <= 32'h00000000;
+      BTB_13 <= 32'h00000000;
+      BTB_14 <= 32'h00000000;
+      BTB_15 <= 32'h00000000;
+      BTB_16 <= 32'h00000000;
+      BTB_17 <= 32'h00000000;
+      BTB_18 <= 32'h00000000;
+      BTB_19 <= 32'h00000000;
+      BTB_20 <= 32'h00000000;
+      BTB_21 <= 32'h00000000;
+      BTB_22 <= 32'h00000000;
+      BTB_23 <= 32'h00000000;
+      BTB_24 <= 32'h00000000;
+      BTB_25 <= 32'h00000000;
+      BTB_26 <= 32'h00000000;
+      BTB_27 <= 32'h00000000;
+      BTB_28 <= 32'h00000000;
+      BTB_29 <= 32'h00000000;
+      BTB_30 <= 32'h00000000;
+      BTB_31 <= 32'h00000000;
+      TAG_0 <= 32'h00000000;
+      TAG_1 <= 32'h00000000;
+      TAG_2 <= 32'h00000000;
+      TAG_3 <= 32'h00000000;
+      TAG_4 <= 32'h00000000;
+      TAG_5 <= 32'h00000000;
+      TAG_6 <= 32'h00000000;
+      TAG_7 <= 32'h00000000;
+      TAG_8 <= 32'h00000000;
+      TAG_9 <= 32'h00000000;
+      TAG_10 <= 32'h00000000;
+      TAG_11 <= 32'h00000000;
+      TAG_12 <= 32'h00000000;
+      TAG_13 <= 32'h00000000;
+      TAG_14 <= 32'h00000000;
+      TAG_15 <= 32'h00000000;
+      TAG_16 <= 32'h00000000;
+      TAG_17 <= 32'h00000000;
+      TAG_18 <= 32'h00000000;
+      TAG_19 <= 32'h00000000;
+      TAG_20 <= 32'h00000000;
+      TAG_21 <= 32'h00000000;
+      TAG_22 <= 32'h00000000;
+      TAG_23 <= 32'h00000000;
+      TAG_24 <= 32'h00000000;
+      TAG_25 <= 32'h00000000;
+      TAG_26 <= 32'h00000000;
+      TAG_27 <= 32'h00000000;
+      TAG_28 <= 32'h00000000;
+      TAG_29 <= 32'h00000000;
+      TAG_30 <= 32'h00000000;
+      TAG_31 <= 32'h00000000;
+      BHT_0 <= 2'b00;
+      BHT_1 <= 2'b00;
+      BHT_2 <= 2'b00;
+      BHT_3 <= 2'b00;
+      BHT_4 <= 2'b00;
+      BHT_5 <= 2'b00;
+      BHT_6 <= 2'b00;
+      BHT_7 <= 2'b00;
+      BHT_8 <= 2'b00;
+      BHT_9 <= 2'b00;
+      BHT_10 <= 2'b00;
+      BHT_11 <= 2'b00;
+      BHT_12 <= 2'b00;
+      BHT_13 <= 2'b00;
+      BHT_14 <= 2'b00;
+      BHT_15 <= 2'b00;
+      BHT_16 <= 2'b00;
+      BHT_17 <= 2'b00;
+      BHT_18 <= 2'b00;
+      BHT_19 <= 2'b00;
+      BHT_20 <= 2'b00;
+      BHT_21 <= 2'b00;
+      BHT_22 <= 2'b00;
+      BHT_23 <= 2'b00;
+      BHT_24 <= 2'b00;
+      BHT_25 <= 2'b00;
+      BHT_26 <= 2'b00;
+      BHT_27 <= 2'b00;
+      BHT_28 <= 2'b00;
+      BHT_29 <= 2'b00;
+      BHT_30 <= 2'b00;
+      BHT_31 <= 2'b00;
+      exe_branch_type_buffer <= 1'b0;
+    end else begin
+      if(when_BranchPredict_l52) begin
+        if(when_BranchPredict_l53) begin
+          if(io_br_we) begin
+            if(_zz_35) begin
+              BHT_0 <= 2'b01;
+            end
+            if(_zz_36) begin
+              BHT_1 <= 2'b01;
+            end
+            if(_zz_37) begin
+              BHT_2 <= 2'b01;
+            end
+            if(_zz_38) begin
+              BHT_3 <= 2'b01;
+            end
+            if(_zz_39) begin
+              BHT_4 <= 2'b01;
+            end
+            if(_zz_40) begin
+              BHT_5 <= 2'b01;
+            end
+            if(_zz_41) begin
+              BHT_6 <= 2'b01;
+            end
+            if(_zz_42) begin
+              BHT_7 <= 2'b01;
+            end
+            if(_zz_43) begin
+              BHT_8 <= 2'b01;
+            end
+            if(_zz_44) begin
+              BHT_9 <= 2'b01;
+            end
+            if(_zz_45) begin
+              BHT_10 <= 2'b01;
+            end
+            if(_zz_46) begin
+              BHT_11 <= 2'b01;
+            end
+            if(_zz_47) begin
+              BHT_12 <= 2'b01;
+            end
+            if(_zz_48) begin
+              BHT_13 <= 2'b01;
+            end
+            if(_zz_49) begin
+              BHT_14 <= 2'b01;
+            end
+            if(_zz_50) begin
+              BHT_15 <= 2'b01;
+            end
+            if(_zz_51) begin
+              BHT_16 <= 2'b01;
+            end
+            if(_zz_52) begin
+              BHT_17 <= 2'b01;
+            end
+            if(_zz_53) begin
+              BHT_18 <= 2'b01;
+            end
+            if(_zz_54) begin
+              BHT_19 <= 2'b01;
+            end
+            if(_zz_55) begin
+              BHT_20 <= 2'b01;
+            end
+            if(_zz_56) begin
+              BHT_21 <= 2'b01;
+            end
+            if(_zz_57) begin
+              BHT_22 <= 2'b01;
+            end
+            if(_zz_58) begin
+              BHT_23 <= 2'b01;
+            end
+            if(_zz_59) begin
+              BHT_24 <= 2'b01;
+            end
+            if(_zz_60) begin
+              BHT_25 <= 2'b01;
+            end
+            if(_zz_61) begin
+              BHT_26 <= 2'b01;
+            end
+            if(_zz_62) begin
+              BHT_27 <= 2'b01;
+            end
+            if(_zz_63) begin
+              BHT_28 <= 2'b01;
+            end
+            if(_zz_64) begin
+              BHT_29 <= 2'b01;
+            end
+            if(_zz_65) begin
+              BHT_30 <= 2'b01;
+            end
+            if(_zz_66) begin
+              BHT_31 <= 2'b01;
+            end
+          end else begin
+            if(_zz_35) begin
+              BHT_0 <= 2'b00;
+            end
+            if(_zz_36) begin
+              BHT_1 <= 2'b00;
+            end
+            if(_zz_37) begin
+              BHT_2 <= 2'b00;
+            end
+            if(_zz_38) begin
+              BHT_3 <= 2'b00;
+            end
+            if(_zz_39) begin
+              BHT_4 <= 2'b00;
+            end
+            if(_zz_40) begin
+              BHT_5 <= 2'b00;
+            end
+            if(_zz_41) begin
+              BHT_6 <= 2'b00;
+            end
+            if(_zz_42) begin
+              BHT_7 <= 2'b00;
+            end
+            if(_zz_43) begin
+              BHT_8 <= 2'b00;
+            end
+            if(_zz_44) begin
+              BHT_9 <= 2'b00;
+            end
+            if(_zz_45) begin
+              BHT_10 <= 2'b00;
+            end
+            if(_zz_46) begin
+              BHT_11 <= 2'b00;
+            end
+            if(_zz_47) begin
+              BHT_12 <= 2'b00;
+            end
+            if(_zz_48) begin
+              BHT_13 <= 2'b00;
+            end
+            if(_zz_49) begin
+              BHT_14 <= 2'b00;
+            end
+            if(_zz_50) begin
+              BHT_15 <= 2'b00;
+            end
+            if(_zz_51) begin
+              BHT_16 <= 2'b00;
+            end
+            if(_zz_52) begin
+              BHT_17 <= 2'b00;
+            end
+            if(_zz_53) begin
+              BHT_18 <= 2'b00;
+            end
+            if(_zz_54) begin
+              BHT_19 <= 2'b00;
+            end
+            if(_zz_55) begin
+              BHT_20 <= 2'b00;
+            end
+            if(_zz_56) begin
+              BHT_21 <= 2'b00;
+            end
+            if(_zz_57) begin
+              BHT_22 <= 2'b00;
+            end
+            if(_zz_58) begin
+              BHT_23 <= 2'b00;
+            end
+            if(_zz_59) begin
+              BHT_24 <= 2'b00;
+            end
+            if(_zz_60) begin
+              BHT_25 <= 2'b00;
+            end
+            if(_zz_61) begin
+              BHT_26 <= 2'b00;
+            end
+            if(_zz_62) begin
+              BHT_27 <= 2'b00;
+            end
+            if(_zz_63) begin
+              BHT_28 <= 2'b00;
+            end
+            if(_zz_64) begin
+              BHT_29 <= 2'b00;
+            end
+            if(_zz_65) begin
+              BHT_30 <= 2'b00;
+            end
+            if(_zz_66) begin
+              BHT_31 <= 2'b00;
+            end
+          end
+          if(_zz_2) begin
+            TAG_0 <= io_exe_pc;
+          end
+          if(_zz_3) begin
+            TAG_1 <= io_exe_pc;
+          end
+          if(_zz_4) begin
+            TAG_2 <= io_exe_pc;
+          end
+          if(_zz_5) begin
+            TAG_3 <= io_exe_pc;
+          end
+          if(_zz_6) begin
+            TAG_4 <= io_exe_pc;
+          end
+          if(_zz_7) begin
+            TAG_5 <= io_exe_pc;
+          end
+          if(_zz_8) begin
+            TAG_6 <= io_exe_pc;
+          end
+          if(_zz_9) begin
+            TAG_7 <= io_exe_pc;
+          end
+          if(_zz_10) begin
+            TAG_8 <= io_exe_pc;
+          end
+          if(_zz_11) begin
+            TAG_9 <= io_exe_pc;
+          end
+          if(_zz_12) begin
+            TAG_10 <= io_exe_pc;
+          end
+          if(_zz_13) begin
+            TAG_11 <= io_exe_pc;
+          end
+          if(_zz_14) begin
+            TAG_12 <= io_exe_pc;
+          end
+          if(_zz_15) begin
+            TAG_13 <= io_exe_pc;
+          end
+          if(_zz_16) begin
+            TAG_14 <= io_exe_pc;
+          end
+          if(_zz_17) begin
+            TAG_15 <= io_exe_pc;
+          end
+          if(_zz_18) begin
+            TAG_16 <= io_exe_pc;
+          end
+          if(_zz_19) begin
+            TAG_17 <= io_exe_pc;
+          end
+          if(_zz_20) begin
+            TAG_18 <= io_exe_pc;
+          end
+          if(_zz_21) begin
+            TAG_19 <= io_exe_pc;
+          end
+          if(_zz_22) begin
+            TAG_20 <= io_exe_pc;
+          end
+          if(_zz_23) begin
+            TAG_21 <= io_exe_pc;
+          end
+          if(_zz_24) begin
+            TAG_22 <= io_exe_pc;
+          end
+          if(_zz_25) begin
+            TAG_23 <= io_exe_pc;
+          end
+          if(_zz_26) begin
+            TAG_24 <= io_exe_pc;
+          end
+          if(_zz_27) begin
+            TAG_25 <= io_exe_pc;
+          end
+          if(_zz_28) begin
+            TAG_26 <= io_exe_pc;
+          end
+          if(_zz_29) begin
+            TAG_27 <= io_exe_pc;
+          end
+          if(_zz_30) begin
+            TAG_28 <= io_exe_pc;
+          end
+          if(_zz_31) begin
+            TAG_29 <= io_exe_pc;
+          end
+          if(_zz_32) begin
+            TAG_30 <= io_exe_pc;
+          end
+          if(_zz_33) begin
+            TAG_31 <= io_exe_pc;
+          end
+        end else begin
+          case(switch_BranchPredict_l61)
+            2'b00 : begin
+              if(io_br_we) begin
+                if(_zz_35) begin
+                  BHT_0 <= 2'b01;
+                end
+                if(_zz_36) begin
+                  BHT_1 <= 2'b01;
+                end
+                if(_zz_37) begin
+                  BHT_2 <= 2'b01;
+                end
+                if(_zz_38) begin
+                  BHT_3 <= 2'b01;
+                end
+                if(_zz_39) begin
+                  BHT_4 <= 2'b01;
+                end
+                if(_zz_40) begin
+                  BHT_5 <= 2'b01;
+                end
+                if(_zz_41) begin
+                  BHT_6 <= 2'b01;
+                end
+                if(_zz_42) begin
+                  BHT_7 <= 2'b01;
+                end
+                if(_zz_43) begin
+                  BHT_8 <= 2'b01;
+                end
+                if(_zz_44) begin
+                  BHT_9 <= 2'b01;
+                end
+                if(_zz_45) begin
+                  BHT_10 <= 2'b01;
+                end
+                if(_zz_46) begin
+                  BHT_11 <= 2'b01;
+                end
+                if(_zz_47) begin
+                  BHT_12 <= 2'b01;
+                end
+                if(_zz_48) begin
+                  BHT_13 <= 2'b01;
+                end
+                if(_zz_49) begin
+                  BHT_14 <= 2'b01;
+                end
+                if(_zz_50) begin
+                  BHT_15 <= 2'b01;
+                end
+                if(_zz_51) begin
+                  BHT_16 <= 2'b01;
+                end
+                if(_zz_52) begin
+                  BHT_17 <= 2'b01;
+                end
+                if(_zz_53) begin
+                  BHT_18 <= 2'b01;
+                end
+                if(_zz_54) begin
+                  BHT_19 <= 2'b01;
+                end
+                if(_zz_55) begin
+                  BHT_20 <= 2'b01;
+                end
+                if(_zz_56) begin
+                  BHT_21 <= 2'b01;
+                end
+                if(_zz_57) begin
+                  BHT_22 <= 2'b01;
+                end
+                if(_zz_58) begin
+                  BHT_23 <= 2'b01;
+                end
+                if(_zz_59) begin
+                  BHT_24 <= 2'b01;
+                end
+                if(_zz_60) begin
+                  BHT_25 <= 2'b01;
+                end
+                if(_zz_61) begin
+                  BHT_26 <= 2'b01;
+                end
+                if(_zz_62) begin
+                  BHT_27 <= 2'b01;
+                end
+                if(_zz_63) begin
+                  BHT_28 <= 2'b01;
+                end
+                if(_zz_64) begin
+                  BHT_29 <= 2'b01;
+                end
+                if(_zz_65) begin
+                  BHT_30 <= 2'b01;
+                end
+                if(_zz_66) begin
+                  BHT_31 <= 2'b01;
+                end
+              end
+            end
+            2'b01 : begin
+              if(io_br_we) begin
+                if(_zz_35) begin
+                  BHT_0 <= 2'b10;
+                end
+                if(_zz_36) begin
+                  BHT_1 <= 2'b10;
+                end
+                if(_zz_37) begin
+                  BHT_2 <= 2'b10;
+                end
+                if(_zz_38) begin
+                  BHT_3 <= 2'b10;
+                end
+                if(_zz_39) begin
+                  BHT_4 <= 2'b10;
+                end
+                if(_zz_40) begin
+                  BHT_5 <= 2'b10;
+                end
+                if(_zz_41) begin
+                  BHT_6 <= 2'b10;
+                end
+                if(_zz_42) begin
+                  BHT_7 <= 2'b10;
+                end
+                if(_zz_43) begin
+                  BHT_8 <= 2'b10;
+                end
+                if(_zz_44) begin
+                  BHT_9 <= 2'b10;
+                end
+                if(_zz_45) begin
+                  BHT_10 <= 2'b10;
+                end
+                if(_zz_46) begin
+                  BHT_11 <= 2'b10;
+                end
+                if(_zz_47) begin
+                  BHT_12 <= 2'b10;
+                end
+                if(_zz_48) begin
+                  BHT_13 <= 2'b10;
+                end
+                if(_zz_49) begin
+                  BHT_14 <= 2'b10;
+                end
+                if(_zz_50) begin
+                  BHT_15 <= 2'b10;
+                end
+                if(_zz_51) begin
+                  BHT_16 <= 2'b10;
+                end
+                if(_zz_52) begin
+                  BHT_17 <= 2'b10;
+                end
+                if(_zz_53) begin
+                  BHT_18 <= 2'b10;
+                end
+                if(_zz_54) begin
+                  BHT_19 <= 2'b10;
+                end
+                if(_zz_55) begin
+                  BHT_20 <= 2'b10;
+                end
+                if(_zz_56) begin
+                  BHT_21 <= 2'b10;
+                end
+                if(_zz_57) begin
+                  BHT_22 <= 2'b10;
+                end
+                if(_zz_58) begin
+                  BHT_23 <= 2'b10;
+                end
+                if(_zz_59) begin
+                  BHT_24 <= 2'b10;
+                end
+                if(_zz_60) begin
+                  BHT_25 <= 2'b10;
+                end
+                if(_zz_61) begin
+                  BHT_26 <= 2'b10;
+                end
+                if(_zz_62) begin
+                  BHT_27 <= 2'b10;
+                end
+                if(_zz_63) begin
+                  BHT_28 <= 2'b10;
+                end
+                if(_zz_64) begin
+                  BHT_29 <= 2'b10;
+                end
+                if(_zz_65) begin
+                  BHT_30 <= 2'b10;
+                end
+                if(_zz_66) begin
+                  BHT_31 <= 2'b10;
+                end
+              end else begin
+                if(_zz_35) begin
+                  BHT_0 <= 2'b00;
+                end
+                if(_zz_36) begin
+                  BHT_1 <= 2'b00;
+                end
+                if(_zz_37) begin
+                  BHT_2 <= 2'b00;
+                end
+                if(_zz_38) begin
+                  BHT_3 <= 2'b00;
+                end
+                if(_zz_39) begin
+                  BHT_4 <= 2'b00;
+                end
+                if(_zz_40) begin
+                  BHT_5 <= 2'b00;
+                end
+                if(_zz_41) begin
+                  BHT_6 <= 2'b00;
+                end
+                if(_zz_42) begin
+                  BHT_7 <= 2'b00;
+                end
+                if(_zz_43) begin
+                  BHT_8 <= 2'b00;
+                end
+                if(_zz_44) begin
+                  BHT_9 <= 2'b00;
+                end
+                if(_zz_45) begin
+                  BHT_10 <= 2'b00;
+                end
+                if(_zz_46) begin
+                  BHT_11 <= 2'b00;
+                end
+                if(_zz_47) begin
+                  BHT_12 <= 2'b00;
+                end
+                if(_zz_48) begin
+                  BHT_13 <= 2'b00;
+                end
+                if(_zz_49) begin
+                  BHT_14 <= 2'b00;
+                end
+                if(_zz_50) begin
+                  BHT_15 <= 2'b00;
+                end
+                if(_zz_51) begin
+                  BHT_16 <= 2'b00;
+                end
+                if(_zz_52) begin
+                  BHT_17 <= 2'b00;
+                end
+                if(_zz_53) begin
+                  BHT_18 <= 2'b00;
+                end
+                if(_zz_54) begin
+                  BHT_19 <= 2'b00;
+                end
+                if(_zz_55) begin
+                  BHT_20 <= 2'b00;
+                end
+                if(_zz_56) begin
+                  BHT_21 <= 2'b00;
+                end
+                if(_zz_57) begin
+                  BHT_22 <= 2'b00;
+                end
+                if(_zz_58) begin
+                  BHT_23 <= 2'b00;
+                end
+                if(_zz_59) begin
+                  BHT_24 <= 2'b00;
+                end
+                if(_zz_60) begin
+                  BHT_25 <= 2'b00;
+                end
+                if(_zz_61) begin
+                  BHT_26 <= 2'b00;
+                end
+                if(_zz_62) begin
+                  BHT_27 <= 2'b00;
+                end
+                if(_zz_63) begin
+                  BHT_28 <= 2'b00;
+                end
+                if(_zz_64) begin
+                  BHT_29 <= 2'b00;
+                end
+                if(_zz_65) begin
+                  BHT_30 <= 2'b00;
+                end
+                if(_zz_66) begin
+                  BHT_31 <= 2'b00;
+                end
+              end
+            end
+            2'b10 : begin
+              if(when_BranchPredict_l75) begin
+                if(_zz_35) begin
+                  BHT_0 <= 2'b11;
+                end
+                if(_zz_36) begin
+                  BHT_1 <= 2'b11;
+                end
+                if(_zz_37) begin
+                  BHT_2 <= 2'b11;
+                end
+                if(_zz_38) begin
+                  BHT_3 <= 2'b11;
+                end
+                if(_zz_39) begin
+                  BHT_4 <= 2'b11;
+                end
+                if(_zz_40) begin
+                  BHT_5 <= 2'b11;
+                end
+                if(_zz_41) begin
+                  BHT_6 <= 2'b11;
+                end
+                if(_zz_42) begin
+                  BHT_7 <= 2'b11;
+                end
+                if(_zz_43) begin
+                  BHT_8 <= 2'b11;
+                end
+                if(_zz_44) begin
+                  BHT_9 <= 2'b11;
+                end
+                if(_zz_45) begin
+                  BHT_10 <= 2'b11;
+                end
+                if(_zz_46) begin
+                  BHT_11 <= 2'b11;
+                end
+                if(_zz_47) begin
+                  BHT_12 <= 2'b11;
+                end
+                if(_zz_48) begin
+                  BHT_13 <= 2'b11;
+                end
+                if(_zz_49) begin
+                  BHT_14 <= 2'b11;
+                end
+                if(_zz_50) begin
+                  BHT_15 <= 2'b11;
+                end
+                if(_zz_51) begin
+                  BHT_16 <= 2'b11;
+                end
+                if(_zz_52) begin
+                  BHT_17 <= 2'b11;
+                end
+                if(_zz_53) begin
+                  BHT_18 <= 2'b11;
+                end
+                if(_zz_54) begin
+                  BHT_19 <= 2'b11;
+                end
+                if(_zz_55) begin
+                  BHT_20 <= 2'b11;
+                end
+                if(_zz_56) begin
+                  BHT_21 <= 2'b11;
+                end
+                if(_zz_57) begin
+                  BHT_22 <= 2'b11;
+                end
+                if(_zz_58) begin
+                  BHT_23 <= 2'b11;
+                end
+                if(_zz_59) begin
+                  BHT_24 <= 2'b11;
+                end
+                if(_zz_60) begin
+                  BHT_25 <= 2'b11;
+                end
+                if(_zz_61) begin
+                  BHT_26 <= 2'b11;
+                end
+                if(_zz_62) begin
+                  BHT_27 <= 2'b11;
+                end
+                if(_zz_63) begin
+                  BHT_28 <= 2'b11;
+                end
+                if(_zz_64) begin
+                  BHT_29 <= 2'b11;
+                end
+                if(_zz_65) begin
+                  BHT_30 <= 2'b11;
+                end
+                if(_zz_66) begin
+                  BHT_31 <= 2'b11;
+                end
+              end else begin
+                if(_zz_35) begin
+                  BHT_0 <= 2'b01;
+                end
+                if(_zz_36) begin
+                  BHT_1 <= 2'b01;
+                end
+                if(_zz_37) begin
+                  BHT_2 <= 2'b01;
+                end
+                if(_zz_38) begin
+                  BHT_3 <= 2'b01;
+                end
+                if(_zz_39) begin
+                  BHT_4 <= 2'b01;
+                end
+                if(_zz_40) begin
+                  BHT_5 <= 2'b01;
+                end
+                if(_zz_41) begin
+                  BHT_6 <= 2'b01;
+                end
+                if(_zz_42) begin
+                  BHT_7 <= 2'b01;
+                end
+                if(_zz_43) begin
+                  BHT_8 <= 2'b01;
+                end
+                if(_zz_44) begin
+                  BHT_9 <= 2'b01;
+                end
+                if(_zz_45) begin
+                  BHT_10 <= 2'b01;
+                end
+                if(_zz_46) begin
+                  BHT_11 <= 2'b01;
+                end
+                if(_zz_47) begin
+                  BHT_12 <= 2'b01;
+                end
+                if(_zz_48) begin
+                  BHT_13 <= 2'b01;
+                end
+                if(_zz_49) begin
+                  BHT_14 <= 2'b01;
+                end
+                if(_zz_50) begin
+                  BHT_15 <= 2'b01;
+                end
+                if(_zz_51) begin
+                  BHT_16 <= 2'b01;
+                end
+                if(_zz_52) begin
+                  BHT_17 <= 2'b01;
+                end
+                if(_zz_53) begin
+                  BHT_18 <= 2'b01;
+                end
+                if(_zz_54) begin
+                  BHT_19 <= 2'b01;
+                end
+                if(_zz_55) begin
+                  BHT_20 <= 2'b01;
+                end
+                if(_zz_56) begin
+                  BHT_21 <= 2'b01;
+                end
+                if(_zz_57) begin
+                  BHT_22 <= 2'b01;
+                end
+                if(_zz_58) begin
+                  BHT_23 <= 2'b01;
+                end
+                if(_zz_59) begin
+                  BHT_24 <= 2'b01;
+                end
+                if(_zz_60) begin
+                  BHT_25 <= 2'b01;
+                end
+                if(_zz_61) begin
+                  BHT_26 <= 2'b01;
+                end
+                if(_zz_62) begin
+                  BHT_27 <= 2'b01;
+                end
+                if(_zz_63) begin
+                  BHT_28 <= 2'b01;
+                end
+                if(_zz_64) begin
+                  BHT_29 <= 2'b01;
+                end
+                if(_zz_65) begin
+                  BHT_30 <= 2'b01;
+                end
+                if(_zz_66) begin
+                  BHT_31 <= 2'b01;
+                end
+              end
+            end
+            default : begin
+              if(when_BranchPredict_l83) begin
+                if(_zz_35) begin
+                  BHT_0 <= 2'b10;
+                end
+                if(_zz_36) begin
+                  BHT_1 <= 2'b10;
+                end
+                if(_zz_37) begin
+                  BHT_2 <= 2'b10;
+                end
+                if(_zz_38) begin
+                  BHT_3 <= 2'b10;
+                end
+                if(_zz_39) begin
+                  BHT_4 <= 2'b10;
+                end
+                if(_zz_40) begin
+                  BHT_5 <= 2'b10;
+                end
+                if(_zz_41) begin
+                  BHT_6 <= 2'b10;
+                end
+                if(_zz_42) begin
+                  BHT_7 <= 2'b10;
+                end
+                if(_zz_43) begin
+                  BHT_8 <= 2'b10;
+                end
+                if(_zz_44) begin
+                  BHT_9 <= 2'b10;
+                end
+                if(_zz_45) begin
+                  BHT_10 <= 2'b10;
+                end
+                if(_zz_46) begin
+                  BHT_11 <= 2'b10;
+                end
+                if(_zz_47) begin
+                  BHT_12 <= 2'b10;
+                end
+                if(_zz_48) begin
+                  BHT_13 <= 2'b10;
+                end
+                if(_zz_49) begin
+                  BHT_14 <= 2'b10;
+                end
+                if(_zz_50) begin
+                  BHT_15 <= 2'b10;
+                end
+                if(_zz_51) begin
+                  BHT_16 <= 2'b10;
+                end
+                if(_zz_52) begin
+                  BHT_17 <= 2'b10;
+                end
+                if(_zz_53) begin
+                  BHT_18 <= 2'b10;
+                end
+                if(_zz_54) begin
+                  BHT_19 <= 2'b10;
+                end
+                if(_zz_55) begin
+                  BHT_20 <= 2'b10;
+                end
+                if(_zz_56) begin
+                  BHT_21 <= 2'b10;
+                end
+                if(_zz_57) begin
+                  BHT_22 <= 2'b10;
+                end
+                if(_zz_58) begin
+                  BHT_23 <= 2'b10;
+                end
+                if(_zz_59) begin
+                  BHT_24 <= 2'b10;
+                end
+                if(_zz_60) begin
+                  BHT_25 <= 2'b10;
+                end
+                if(_zz_61) begin
+                  BHT_26 <= 2'b10;
+                end
+                if(_zz_62) begin
+                  BHT_27 <= 2'b10;
+                end
+                if(_zz_63) begin
+                  BHT_28 <= 2'b10;
+                end
+                if(_zz_64) begin
+                  BHT_29 <= 2'b10;
+                end
+                if(_zz_65) begin
+                  BHT_30 <= 2'b10;
+                end
+                if(_zz_66) begin
+                  BHT_31 <= 2'b10;
+                end
+              end
+            end
+          endcase
+        end
+        if(_zz_2) begin
+          TAG_0 <= io_exe_pc;
+        end
+        if(_zz_3) begin
+          TAG_1 <= io_exe_pc;
+        end
+        if(_zz_4) begin
+          TAG_2 <= io_exe_pc;
+        end
+        if(_zz_5) begin
+          TAG_3 <= io_exe_pc;
+        end
+        if(_zz_6) begin
+          TAG_4 <= io_exe_pc;
+        end
+        if(_zz_7) begin
+          TAG_5 <= io_exe_pc;
+        end
+        if(_zz_8) begin
+          TAG_6 <= io_exe_pc;
+        end
+        if(_zz_9) begin
+          TAG_7 <= io_exe_pc;
+        end
+        if(_zz_10) begin
+          TAG_8 <= io_exe_pc;
+        end
+        if(_zz_11) begin
+          TAG_9 <= io_exe_pc;
+        end
+        if(_zz_12) begin
+          TAG_10 <= io_exe_pc;
+        end
+        if(_zz_13) begin
+          TAG_11 <= io_exe_pc;
+        end
+        if(_zz_14) begin
+          TAG_12 <= io_exe_pc;
+        end
+        if(_zz_15) begin
+          TAG_13 <= io_exe_pc;
+        end
+        if(_zz_16) begin
+          TAG_14 <= io_exe_pc;
+        end
+        if(_zz_17) begin
+          TAG_15 <= io_exe_pc;
+        end
+        if(_zz_18) begin
+          TAG_16 <= io_exe_pc;
+        end
+        if(_zz_19) begin
+          TAG_17 <= io_exe_pc;
+        end
+        if(_zz_20) begin
+          TAG_18 <= io_exe_pc;
+        end
+        if(_zz_21) begin
+          TAG_19 <= io_exe_pc;
+        end
+        if(_zz_22) begin
+          TAG_20 <= io_exe_pc;
+        end
+        if(_zz_23) begin
+          TAG_21 <= io_exe_pc;
+        end
+        if(_zz_24) begin
+          TAG_22 <= io_exe_pc;
+        end
+        if(_zz_25) begin
+          TAG_23 <= io_exe_pc;
+        end
+        if(_zz_26) begin
+          TAG_24 <= io_exe_pc;
+        end
+        if(_zz_27) begin
+          TAG_25 <= io_exe_pc;
+        end
+        if(_zz_28) begin
+          TAG_26 <= io_exe_pc;
+        end
+        if(_zz_29) begin
+          TAG_27 <= io_exe_pc;
+        end
+        if(_zz_30) begin
+          TAG_28 <= io_exe_pc;
+        end
+        if(_zz_31) begin
+          TAG_29 <= io_exe_pc;
+        end
+        if(_zz_32) begin
+          TAG_30 <= io_exe_pc;
+        end
+        if(_zz_33) begin
+          TAG_31 <= io_exe_pc;
+        end
+        if(_zz_67[0]) begin
+          BTB_0 <= io_br_addr;
+        end
+        if(_zz_67[1]) begin
+          BTB_1 <= io_br_addr;
+        end
+        if(_zz_67[2]) begin
+          BTB_2 <= io_br_addr;
+        end
+        if(_zz_67[3]) begin
+          BTB_3 <= io_br_addr;
+        end
+        if(_zz_67[4]) begin
+          BTB_4 <= io_br_addr;
+        end
+        if(_zz_67[5]) begin
+          BTB_5 <= io_br_addr;
+        end
+        if(_zz_67[6]) begin
+          BTB_6 <= io_br_addr;
+        end
+        if(_zz_67[7]) begin
+          BTB_7 <= io_br_addr;
+        end
+        if(_zz_67[8]) begin
+          BTB_8 <= io_br_addr;
+        end
+        if(_zz_67[9]) begin
+          BTB_9 <= io_br_addr;
+        end
+        if(_zz_67[10]) begin
+          BTB_10 <= io_br_addr;
+        end
+        if(_zz_67[11]) begin
+          BTB_11 <= io_br_addr;
+        end
+        if(_zz_67[12]) begin
+          BTB_12 <= io_br_addr;
+        end
+        if(_zz_67[13]) begin
+          BTB_13 <= io_br_addr;
+        end
+        if(_zz_67[14]) begin
+          BTB_14 <= io_br_addr;
+        end
+        if(_zz_67[15]) begin
+          BTB_15 <= io_br_addr;
+        end
+        if(_zz_67[16]) begin
+          BTB_16 <= io_br_addr;
+        end
+        if(_zz_67[17]) begin
+          BTB_17 <= io_br_addr;
+        end
+        if(_zz_67[18]) begin
+          BTB_18 <= io_br_addr;
+        end
+        if(_zz_67[19]) begin
+          BTB_19 <= io_br_addr;
+        end
+        if(_zz_67[20]) begin
+          BTB_20 <= io_br_addr;
+        end
+        if(_zz_67[21]) begin
+          BTB_21 <= io_br_addr;
+        end
+        if(_zz_67[22]) begin
+          BTB_22 <= io_br_addr;
+        end
+        if(_zz_67[23]) begin
+          BTB_23 <= io_br_addr;
+        end
+        if(_zz_67[24]) begin
+          BTB_24 <= io_br_addr;
+        end
+        if(_zz_67[25]) begin
+          BTB_25 <= io_br_addr;
+        end
+        if(_zz_67[26]) begin
+          BTB_26 <= io_br_addr;
+        end
+        if(_zz_67[27]) begin
+          BTB_27 <= io_br_addr;
+        end
+        if(_zz_67[28]) begin
+          BTB_28 <= io_br_addr;
+        end
+        if(_zz_67[29]) begin
+          BTB_29 <= io_br_addr;
+        end
+        if(_zz_67[30]) begin
+          BTB_30 <= io_br_addr;
+        end
+        if(_zz_67[31]) begin
+          BTB_31 <= io_br_addr;
+        end
+        exe_branch_type_buffer <= 1'b1;
+      end else begin
+        exe_branch_type_buffer <= is_EXE_branch_type;
+      end
+    end
+  end
+
 
 endmodule
 

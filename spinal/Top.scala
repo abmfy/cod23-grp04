@@ -15,6 +15,7 @@ class Top (
     // Components
     val reg_file = new RegFile
     val alu = new Alu
+    val branchPredict = new BranchPredict
     val csr = new CsrFile
     val trap = new Trap
     val timer = new Timer
@@ -68,6 +69,11 @@ class Top (
     IF_page_table.io.mstatus_SUM := csr.io.mstatus.r(StatusField.SUM)
     IF_page_table.io.mstatus_MXR := csr.io.mstatus.r(StatusField.MXR)
 
+    branchPredict.io.if_instr := If.io.instr
+    branchPredict.io.IF_pc := If.io.pc
+
+    If.io.next_pc := branchPredict.io.next_pc
+    If.io.next_taken := branchPredict.io.next_taken
     // ID
     Id.io.reg <> reg_file.io.r
 
@@ -80,14 +86,19 @@ class Top (
 
     ICache.io.fence := Id.io.fence
 
+    branchPredict.io.exe_instr := Id.io.instr
+    branchPredict.io.exe_pc := Id.io.o.pc
     // EXE
     Exe.io.alu <> alu.io
 
     Exe.io.forward(0) <> Mem.io.forward
     Exe.io.forward(1) <> Wb.io.forward
-
+    
     Exe.io.stall := !trap.io.flush_req(2) && !Mem.io.flush_req && Mem.io.stall_req
     Exe.io.bubble := trap.io.flush_req(2) || Mem.io.flush_req
+
+    branchPredict.io.br_we := Exe.io.br.br
+    branchPredict.io.br_addr := Exe.io.br.pc
 
     trap.io.trap(1) := Exe.io.trap
 
