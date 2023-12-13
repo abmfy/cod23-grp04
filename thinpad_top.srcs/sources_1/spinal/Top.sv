@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : 542e94aca6699e0c2919f36d9023a11d95046f43
+// Git hash  : b3c99bad07865820bc7c2a15e32e6997ede16dfb
 
 `timescale 1ns/1ps
 
@@ -5059,17 +5059,18 @@ module IF_1 (
   wire                when_IF_l132;
   wire                when_IF_l204;
   wire                when_IF_l206;
-  wire                when_IF_l209;
-  wire                when_IF_l220;
+  wire                when_IF_l208;
+  wire                when_IF_l219;
   wire                when_IF_l130_1;
   wire                when_IF_l110_2;
   wire                when_IF_l112_2;
   wire                when_IF_l110_3;
   wire                when_IF_l112_3;
   wire                when_IF_l132_1;
-  wire                when_IF_l215;
-  wire                when_IF_l247;
+  wire                when_IF_l214;
+  wire                when_IF_l249;
   wire                when_IF_l251;
+  wire                when_IF_l254;
   wire       [31:0]   _zz_io_o_instr;
   wire                when_IF_l130_2;
   wire                when_IF_l110_4;
@@ -5080,6 +5081,7 @@ module IF_1 (
   wire                when_IF_l257;
   wire                when_StateMachine_l237;
   wire                when_StateMachine_l253;
+  wire                when_StateMachine_l253_1;
   `ifndef SYNTHESIS
   reg [7:0] io_prv_string;
   reg [39:0] io_pt_access_type_string;
@@ -5147,8 +5149,8 @@ module IF_1 (
       fsm_enumDef_3_translate : begin
         if(when_IF_l204) begin
           if(!when_IF_l206) begin
-            if(!when_IF_l215) begin
-              if(when_IF_l220) begin
+            if(!when_IF_l214) begin
+              if(when_IF_l219) begin
                 if(io_cache_ack) begin
                   io_instr = io_cache_data;
                 end
@@ -5158,7 +5160,7 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_fetch : begin
-        if(when_IF_l247) begin
+        if(when_IF_l249) begin
           if(!when_IF_l251) begin
             if(!when_IF_l257) begin
               io_instr = _zz_io_o_instr;
@@ -5200,8 +5202,8 @@ module IF_1 (
         io_trap = 1'b0;
         if(when_IF_l204) begin
           if(!when_IF_l206) begin
-            if(!when_IF_l215) begin
-              if(when_IF_l220) begin
+            if(!when_IF_l214) begin
+              if(when_IF_l219) begin
                 if(io_cache_ack) begin
                   if(when_IF_l130_1) begin
                     io_trap = 1'b1;
@@ -5222,7 +5224,7 @@ module IF_1 (
       end
       fsm_enumDef_3_fetch : begin
         io_trap = 1'b0;
-        if(when_IF_l247) begin
+        if(when_IF_l249) begin
           if(!when_IF_l251) begin
             if(!when_IF_l257) begin
               if(when_IF_l130_2) begin
@@ -5276,8 +5278,8 @@ module IF_1 (
       fsm_enumDef_3_translate : begin
         if(when_IF_l204) begin
           if(!when_IF_l206) begin
-            if(!when_IF_l215) begin
-              if(when_IF_l220) begin
+            if(!when_IF_l214) begin
+              if(when_IF_l219) begin
                 io_cache_icache_en = 1'b1;
               end
             end
@@ -5307,8 +5309,8 @@ module IF_1 (
       fsm_enumDef_3_translate : begin
         if(when_IF_l204) begin
           if(!when_IF_l206) begin
-            if(!when_IF_l215) begin
-              if(when_IF_l220) begin
+            if(!when_IF_l214) begin
+              if(when_IF_l219) begin
                 io_cache_addr = (page_en ? (delay_ack ? delay_pa : io_pt_physical_addr) : pc);
               end
             end
@@ -5344,10 +5346,10 @@ module IF_1 (
       fsm_enumDef_3_translate : begin
         if(when_IF_l204) begin
           if(!when_IF_l206) begin
-            if(when_IF_l215) begin
+            if(when_IF_l214) begin
               fsm_stateNext = fsm_enumDef_3_start;
             end else begin
-              if(when_IF_l220) begin
+              if(when_IF_l219) begin
                 if(io_cache_ack) begin
                   fsm_stateNext = fsm_enumDef_3_start;
                 end else begin
@@ -5361,7 +5363,7 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_fetch : begin
-        if(when_IF_l247) begin
+        if(when_IF_l249) begin
           if(!when_IF_l251) begin
             if(when_IF_l257) begin
               fsm_stateNext = fsm_enumDef_3_start;
@@ -5391,17 +5393,18 @@ module IF_1 (
   assign when_IF_l132 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
   assign when_IF_l204 = (io_pt_look_up_ack || delay_ack);
   assign when_IF_l206 = (io_stall || io_bubble);
-  assign when_IF_l209 = (! delay_ack);
-  assign when_IF_l220 = (((! delay_ack) && io_pt_look_up_valid) || delay_valid);
+  assign when_IF_l208 = (! delay_ack);
+  assign when_IF_l219 = (((! delay_ack) && io_pt_look_up_valid) || delay_valid);
   assign when_IF_l130_1 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
   assign when_IF_l110_2 = interrupt_masked[7];
   assign when_IF_l112_2 = interrupt_masked[5];
   assign when_IF_l110_3 = interrupt_delegated[7];
   assign when_IF_l112_3 = interrupt_delegated[5];
   assign when_IF_l132_1 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l215 = (io_br_br || delay_br);
-  assign when_IF_l247 = (io_cache_ack || delay_ack);
+  assign when_IF_l214 = (io_br_br || delay_br);
+  assign when_IF_l249 = (io_cache_ack || delay_ack);
   assign when_IF_l251 = (io_stall || io_bubble);
+  assign when_IF_l254 = (! delay_ack);
   assign _zz_io_o_instr = (delay_ack ? delay_instr : io_cache_data);
   assign when_IF_l130_2 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
   assign when_IF_l110_4 = interrupt_masked[7];
@@ -5412,6 +5415,7 @@ module IF_1 (
   assign when_IF_l257 = (io_br_br || delay_br);
   assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_1));
   assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_1);
+  assign when_StateMachine_l253_1 = ((! (fsm_stateReg == fsm_enumDef_3_fetch)) && (fsm_stateNext == fsm_enumDef_3_fetch));
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       pc <= 32'h80000000;
@@ -5518,18 +5522,17 @@ module IF_1 (
           io_o_trap_tval <= 32'h00000000;
           if(when_IF_l204) begin
             if(when_IF_l206) begin
-              delay_ack <= 1'b1;
-              if(when_IF_l209) begin
+              if(when_IF_l208) begin
                 io_pt_look_up_req <= 1'b0;
                 delay_ack <= 1'b1;
                 delay_valid <= io_pt_look_up_valid;
                 delay_pa <= io_pt_physical_addr;
               end
             end else begin
-              if(when_IF_l215) begin
+              if(when_IF_l214) begin
                 delay_br <= 1'b0;
               end else begin
-                if(when_IF_l220) begin
+                if(when_IF_l219) begin
                   cache_addr <= (page_en ? (delay_ack ? delay_pa : io_pt_physical_addr) : pc);
                   if(io_cache_ack) begin
                     io_o_next_taken <= io_next_taken;
@@ -5590,11 +5593,10 @@ module IF_1 (
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
           io_o_trap_tval <= 32'h00000000;
-          if(when_IF_l247) begin
-            delay_ack <= 1'b0;
+          if(when_IF_l249) begin
             if(when_IF_l251) begin
               delay_ack <= 1'b1;
-              if(io_cache_ack) begin
+              if(when_IF_l254) begin
                 delay_instr <= io_cache_data;
               end
             end else begin
@@ -5655,6 +5657,9 @@ module IF_1 (
         io_pt_look_up_req <= 1'b1;
         delay_ack <= 1'b0;
         delay_valid <= 1'b0;
+      end
+      if(when_StateMachine_l253_1) begin
+        delay_ack <= 1'b0;
       end
     end
   end

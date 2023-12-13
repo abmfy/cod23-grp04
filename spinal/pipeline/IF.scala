@@ -204,7 +204,6 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                 when (io.pt.look_up_ack || delay_ack) {
                     // If stalled, store ack for next cycle
                     when (io.stall || io.bubble) {
-                        delay_ack := True
                         // Store physical address and stop request when first acked
                         when (!delay_ack) {
                             io.pt.look_up_req := False
@@ -239,19 +238,20 @@ class IF(config: IFConfig = IFConfig()) extends Component {
             }
         }
         val fetch: State = new State {
+            onEntry {
+                delay_ack := False
+            }
             whenIsActive {
                 bubble()
                 io.cache.icache_en := True
                 io.cache.addr := cache_addr
                 // Fetch complete
                 when (io.cache.ack || delay_ack) {
-                    delay_ack := False
-
                     // If stalled, store ack for next cycle
                     when (io.stall || io.bubble) {
                         delay_ack := True
                         // Store instruction and stop requesting when first acked
-                        when (io.cache.ack) {
+                        when (!delay_ack) {
                             delay_instr := io.cache.data
                         }
                     } elsewhen (io.br.br || delay_br) {
