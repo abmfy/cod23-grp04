@@ -42,7 +42,6 @@ class IF(config: IFConfig = IFConfig()) extends Component {
 
     val va = pc
     val pa = io.pt.physical_addr
-    val pa_reg = Reg(Types.addr) init(0)
 
     // In case that branch signal is asserted as ICache is refilling
     val cache_addr = Reg(Types.addr) init(0)
@@ -189,7 +188,6 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                             delay_ack := True
                             // Store physical address and store requesting when first acked
                             when (io.pt.look_up_valid) {
-                                pa_reg := pa
                                 io.pt.look_up_req := False
                             }
                         } elsewhen (io.br.br || delay_br) {
@@ -204,10 +202,6 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                                 output(io.cache.data)
                                 goto(start)
                             } otherwise {
-                                // Store physical address for fetch
-                                when (io.pt.look_up_valid) {
-                                    pa_reg := pa
-                                }
                                 goto(fetch)
                             }
                         }

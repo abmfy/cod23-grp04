@@ -13,7 +13,7 @@ object UCore extends App {
     Config.sim.compile(InOutWrapper(new Top(
         simulation = true,
         base_sram_init = Some("ucore/rbl.img"),
-        ext_sram_init = Some("ucore/ucore.img"),
+        ext_sram_init = Some("ucore/ucore_small.img"),
     ))).doSim { dut =>
         val period = (1 sec) / dut.simulation_freq
         val baud_period = (1 sec) / dut.uart.config.baud
