@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : c469d241e35ce8da0d466c28f86e4e566f28e7fc
+// Git hash  : b68bb2459d0fa20986e3762b45d35546ef5dc6ff
 
 `timescale 1ns/1ps
 
@@ -261,6 +261,7 @@ module Top (
   wire                Exe_1_io_o_reg_we;
   wire       [1:0]    Exe_1_io_o_reg_sel;
   wire       [31:0]   Exe_1_io_o_alu_y;
+  wire                Exe_1_io_o_sfence_req;
   wire                Exe_1_io_o_trap_trap;
   wire       [31:0]   Exe_1_io_o_trap_epc;
   wire       [31:0]   Exe_1_io_o_trap_cause;
@@ -272,7 +273,6 @@ module Top (
   wire       [31:0]   Exe_1_io_alu_a;
   wire       [31:0]   Exe_1_io_alu_b;
   wire       [4:0]    Exe_1_io_alu_op;
-  wire                Exe_1_io_sfence_req;
   wire                Mem_1_io_o_real;
   wire       [31:0]   Mem_1_io_o_pc;
   wire                Mem_1_io_o_reg_we;
@@ -821,7 +821,7 @@ module Top (
     .io_privilege_mode       (trap_1_io_prv[1:0]                          ), //i
     .io_mstatus_SUM          (MEM_page_table_io_mstatus_SUM               ), //i
     .io_mstatus_MXR          (MEM_page_table_io_mstatus_MXR               ), //i
-    .io_clear_tlb            (Id_1_io_o_sfence_req                        ), //i
+    .io_clear_tlb            (Exe_1_io_o_sfence_req                       ), //i
     .trans_io_look_up_addr   (Mem_1_io_pt_look_up_addr[31:0]              ), //i
     .trans_io_look_up_req    (Mem_1_io_pt_look_up_req                     ), //i
     .trans_io_access_type    (Mem_1_io_pt_access_type[1:0]                ), //i
@@ -975,6 +975,7 @@ module Top (
     .io_o_reg_we       (Exe_1_io_o_reg_we          ), //o
     .io_o_reg_sel      (Exe_1_io_o_reg_sel[1:0]    ), //o
     .io_o_alu_y        (Exe_1_io_o_alu_y[31:0]     ), //o
+    .io_o_sfence_req   (Exe_1_io_o_sfence_req      ), //o
     .io_o_trap_trap    (Exe_1_io_o_trap_trap       ), //o
     .io_o_trap_epc     (Exe_1_io_o_trap_epc[31:0]  ), //o
     .io_o_trap_cause   (Exe_1_io_o_trap_cause[31:0]), //o
@@ -995,7 +996,6 @@ module Top (
     .io_alu_b          (Exe_1_io_alu_b[31:0]       ), //o
     .io_alu_op         (Exe_1_io_alu_op[4:0]       ), //o
     .io_alu_y          (alu_1_io_y[31:0]           ), //i
-    .io_sfence_req     (Exe_1_io_sfence_req        ), //o
     .sys_clk           (sys_clk                    ), //i
     .sys_reset         (sys_reset                  )  //i
   );
@@ -1013,6 +1013,7 @@ module Top (
     .io_i_reg_we           (Exe_1_io_o_reg_we                           ), //i
     .io_i_reg_sel          (Exe_1_io_o_reg_sel[1:0]                     ), //i
     .io_i_alu_y            (Exe_1_io_o_alu_y[31:0]                      ), //i
+    .io_i_sfence_req       (Exe_1_io_o_sfence_req                       ), //i
     .io_i_trap_trap        (Exe_1_io_o_trap_trap                        ), //i
     .io_i_trap_epc         (Exe_1_io_o_trap_epc[31:0]                   ), //i
     .io_i_trap_cause       (Exe_1_io_o_trap_cause[31:0]                 ), //i
@@ -2620,6 +2621,7 @@ module MEM (
   input  wire          io_i_reg_we,
   input  wire [1:0]    io_i_reg_sel,
   input  wire [31:0]   io_i_alu_y,
+  input  wire          io_i_sfence_req,
   input  wire          io_i_trap_trap,
   input  wire [31:0]   io_i_trap_epc,
   input  wire [31:0]   io_i_trap_cause,
@@ -3290,6 +3292,7 @@ module EXE (
   output reg           io_o_reg_we,
   output reg  [1:0]    io_o_reg_sel,
   output reg  [31:0]   io_o_alu_y,
+  output reg           io_o_sfence_req,
   output reg           io_o_trap_trap,
   output reg  [31:0]   io_o_trap_epc,
   output reg  [31:0]   io_o_trap_cause,
@@ -3310,7 +3313,6 @@ module EXE (
   output wire [31:0]   io_alu_b,
   output wire [4:0]    io_alu_op,
   input  wire [31:0]   io_alu_y,
-  output wire          io_sfence_req,
   input  wire          sys_clk,
   input  wire          sys_reset
 );
@@ -3362,12 +3364,12 @@ module EXE (
   wire       [31:0]   _zz_fail_3;
   reg        [31:0]   reg_a;
   reg        [31:0]   reg_b;
+  wire                when_EXE_l72;
   wire                when_EXE_l73;
-  wire                when_EXE_l74;
-  wire                when_EXE_l77;
+  wire                when_EXE_l76;
+  wire                when_EXE_l72_1;
   wire                when_EXE_l73_1;
-  wire                when_EXE_l74_1;
-  wire                when_EXE_l77_1;
+  wire                when_EXE_l76_1;
   reg                 fail;
   `ifndef SYNTHESIS
   reg [39:0] io_i_alu_op_string;
@@ -3487,7 +3489,6 @@ module EXE (
   end
   `endif
 
-  assign io_sfence_req = io_i_sfence_req;
   always @(*) begin
     io_trap = io_o_trap_trap;
     if(!io_stall) begin
@@ -3503,13 +3504,13 @@ module EXE (
 
   always @(*) begin
     reg_a = io_i_reg_data_a;
-    if(when_EXE_l73) begin
-      if(when_EXE_l74) begin
+    if(when_EXE_l72) begin
+      if(when_EXE_l73) begin
         reg_a = io_forward_1_data;
       end
     end
-    if(when_EXE_l73_1) begin
-      if(when_EXE_l74_1) begin
+    if(when_EXE_l72_1) begin
+      if(when_EXE_l73_1) begin
         reg_a = io_forward_0_data;
       end
     end
@@ -3517,24 +3518,24 @@ module EXE (
 
   always @(*) begin
     reg_b = io_i_reg_data_b;
-    if(when_EXE_l73) begin
-      if(when_EXE_l77) begin
+    if(when_EXE_l72) begin
+      if(when_EXE_l76) begin
         reg_b = io_forward_1_data;
       end
     end
-    if(when_EXE_l73_1) begin
-      if(when_EXE_l77_1) begin
+    if(when_EXE_l72_1) begin
+      if(when_EXE_l76_1) begin
         reg_b = io_forward_0_data;
       end
     end
   end
 
-  assign when_EXE_l73 = (io_forward_1_we && (io_forward_1_addr != 5'h00));
-  assign when_EXE_l74 = (io_forward_1_addr == io_i_reg_addr_a);
-  assign when_EXE_l77 = (io_forward_1_addr == io_i_reg_addr_b);
-  assign when_EXE_l73_1 = (io_forward_0_we && (io_forward_0_addr != 5'h00));
-  assign when_EXE_l74_1 = (io_forward_0_addr == io_i_reg_addr_a);
-  assign when_EXE_l77_1 = (io_forward_0_addr == io_i_reg_addr_b);
+  assign when_EXE_l72 = (io_forward_1_we && (io_forward_1_addr != 5'h00));
+  assign when_EXE_l73 = (io_forward_1_addr == io_i_reg_addr_a);
+  assign when_EXE_l76 = (io_forward_1_addr == io_i_reg_addr_b);
+  assign when_EXE_l72_1 = (io_forward_0_we && (io_forward_0_addr != 5'h00));
+  assign when_EXE_l73_1 = (io_forward_0_addr == io_i_reg_addr_a);
+  assign when_EXE_l76_1 = (io_forward_0_addr == io_i_reg_addr_b);
   assign io_alu_a = (io_i_use_pc ? io_i_pc : (io_i_use_uimm ? _zz_io_alu_a : reg_a));
   assign io_alu_b = (io_i_use_rs2 ? reg_b : io_i_imm);
   assign io_alu_op = io_i_alu_op;
@@ -3620,6 +3621,7 @@ module EXE (
       io_o_trap_epc <= 32'h00000000;
       io_o_trap_cause <= 32'h00000000;
       io_o_trap_tval <= 32'h00000000;
+      io_o_sfence_req <= 1'b0;
     end else begin
       io_o_trap_trap <= io_trap;
       if(!io_stall) begin
@@ -3632,6 +3634,7 @@ module EXE (
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
           io_o_trap_tval <= 32'h00000000;
+          io_o_sfence_req <= 1'b0;
         end else begin
           if(io_i_trap_trap) begin
             io_o_trap_trap <= io_i_trap_trap;
@@ -3652,6 +3655,7 @@ module EXE (
             io_o_mem_unsigned <= io_i_mem_unsigned;
             io_o_reg_we <= io_i_reg_we;
             io_o_reg_sel <= io_i_reg_sel;
+            io_o_sfence_req <= io_i_sfence_req;
           end
         end
       end
