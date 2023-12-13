@@ -22,9 +22,6 @@ class EXE extends Component {
         val branch = out Bool()
         val branch_addr = out port Types.addr
 
-        // SFENCE.VMA request
-        val sfence_req = out Bool()
-
         // Trap
         val trap = out Bool()
 
@@ -44,7 +41,7 @@ class EXE extends Component {
         io.o.trap.epc := 0
         io.o.trap.cause := 0
         io.o.trap.tval := 0
-        io.sfence_req := False
+        io.o.sfence_req := False
     }
 
     io.o.real.setAsReg() init(False)
@@ -66,7 +63,7 @@ class EXE extends Component {
     io.o.trap.cause.setAsReg() init(0)
     io.o.trap.tval.setAsReg() init(0)
     
-    io.sfence_req.setAsReg() init(False)
+    io.o.sfence_req.setAsReg() init(False)
 
     io.o.trap.trap := io.trap
     io.trap := io.o.trap.trap
@@ -115,7 +112,7 @@ class EXE extends Component {
         io.o.mem_unsigned := io.i.mem_unsigned
         io.o.reg_we := io.i.reg_we
         io.o.reg_sel := io.i.reg_sel
-        io.sfence_req := io.i.sfence_req
+        io.o.sfence_req := io.i.sfence_req
     }
 
     val branch = Bool()
@@ -154,7 +151,7 @@ class EXE extends Component {
     io.br.br := branch ^ io.i.next_taken
     io.br.pc := io.i.next_taken ? (io.i.pc + 4) | (io.alu.y ^ io.alu.y(0).asBits.resized).asUInt
 
-    io.flush_req := !io.stall && (io.br.br || io.i.csr_op =/= CsrOp.N)
+    io.flush_req := !io.stall && (io.br.br || io.i.csr_op =/= CsrOp.N || io.i.sfence_req)
 
     // Trapped
     when (io.i.trap.trap) {

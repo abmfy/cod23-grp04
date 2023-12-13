@@ -23,6 +23,9 @@ class ID extends Component {
         // Trap
         val trap = out Bool()
 
+        // SFENCE.VMA request
+        val sfence_req = out Bool()
+
         // Privilege mode
         val prv = in port PrivilegeMode()
 
@@ -891,6 +894,7 @@ class ID extends Component {
     io.trap := io.o.trap.trap
 
     io.fence := instr_kind === FENCE_I
+    io.sfence_req := instr_kind === SFENCE_VMA
 
     io.reg.addr_a := rs1
     io.reg.addr_b := rs2

@@ -22,6 +22,9 @@ class MEM extends Component {
         // Privilege mode
         val prv = in port PrivilegeMode()
 
+        // SFENCE.VMA request
+        val sfence_req = out Bool()
+
         // Address translation mode
         val satp_mode = in Bool()
 
@@ -205,7 +208,8 @@ class MEM extends Component {
     }
 
     io.stall_req := io.i.mem_en && !timer.req && !io.dcache.ack
-    io.flush_req := io.i.csr_op =/= CsrOp.N
+    io.flush_req := io.i.csr_op =/= CsrOp.N || io.i.sfence_req
+    io.sfence_req := io.i.sfence_req
 
     io.pt.look_up_addr.setAsReg() init(0)
     io.pt.look_up_req.setAsReg() init(False)
