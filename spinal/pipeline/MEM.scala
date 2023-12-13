@@ -264,6 +264,7 @@ class MEM extends Component {
                         req()
                         when (io.dcache.ack) {
                             proceed()
+                            goto(start)
                         } otherwise {
                             goto(fetch) 
                         }

@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : f29bb5280ad1f949a5e91c25ab02881747483cdd
+// Git hash  : 0d8aaa5204fc3b472e578ef8f8120a83e214567c
 
 `timescale 1ns/1ps
 
@@ -3241,7 +3241,9 @@ module MEM (
       fsm_enumDef_3_translate : begin
         if(io_pt_look_up_ack) begin
           if(io_pt_look_up_valid) begin
-            if(!io_dcache_ack) begin
+            if(io_dcache_ack) begin
+              fsm_stateNext = fsm_enumDef_3_start;
+            end else begin
               fsm_stateNext = fsm_enumDef_3_fetch;
             end
           end else begin
