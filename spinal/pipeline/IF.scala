@@ -60,6 +60,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     val delay_ack = Reg(Bool()) init(False)
     val delay_instr = Reg(Types.data) init(Instr.NOP)
     val delay_pa = Reg(Types.addr) init(0)
+    val delay_valid = Reg(Bool()) init(False)
 
     // Interrupt
     val interrupt = io.ie & io.ip
@@ -195,26 +196,28 @@ class IF(config: IFConfig = IFConfig()) extends Component {
             onEntry {
                 io.pt.look_up_addr := va
                 io.pt.look_up_req := True
+                delay_ack := False
+                delay_valid := False
             }
             whenIsActive {
                 bubble()
                 when (io.pt.look_up_ack || delay_ack) {
-                    delay_ack := False
-
-                    when (io.pt.look_up_valid || delay_ack) {
-                        // If stalled, store ack for next cycle
-                        when (io.stall) {
+                    // If stalled, store ack for next cycle
+                    when (io.stall || io.bubble) {
+                        delay_ack := True
+                        // Store physical address and stop request when first acked
+                        when (!delay_ack) {
+                            io.pt.look_up_req := False
                             delay_ack := True
-                            // Store physical address and store requesting when first acked
-                            when (io.pt.look_up_valid) {
-                                io.pt.look_up_req := False
-                                delay_pa := pa
-                            }
-                        } elsewhen (io.br.br || delay_br) {
-                            // Don't proceed when branching
-                            delay_br := False
-                            goto(start)
-                        } otherwise {
+                            delay_valid := io.pt.look_up_valid
+                            delay_pa := pa
+                        }
+                    } elsewhen (io.br.br || delay_br) {
+                        // Don't proceed when branching
+                        delay_br := False
+                        goto(start)
+                    } otherwise {
+                        when (!delay_ack && io.pt.look_up_valid || delay_valid) {
                             io.cache.icache_en := True
                             cache_addr := page_en ? (delay_ack ? delay_pa | pa) | pc
                             io.cache.addr := page_en ? (delay_ack ? delay_pa | pa) | pc
@@ -224,10 +227,10 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                             } otherwise {
                                 goto(fetch)
                             }
+                        } otherwise {
+                            raise_page_fault()
+                            goto(start)
                         }
-                    } otherwise {
-                        raise_page_fault()
-                        goto(start)
                     }
                 }
             }
@@ -245,7 +248,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                     delay_ack := False
 
                     // If stalled, store ack for next cycle
-                    when (io.stall) {
+                    when (io.stall || io.bubble) {
                         delay_ack := True
                         // Store instruction and stop requesting when first acked
                         when (io.cache.ack) {
