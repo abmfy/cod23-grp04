@@ -33,7 +33,7 @@ case class ID_EXE() extends Bundle with IMasterSlave {
     val reg_we = Bool()
     val reg_sel = RegSel()
     val next_taken = Bool()
-    
+    val sfence_req = Bool()
     val trap = TrapPorts()
 
     override def asMaster(): Unit = {
@@ -53,6 +53,7 @@ case class ID_EXE() extends Bundle with IMasterSlave {
             reg_we,
             reg_sel,
             next_taken,
+            sfence_req,
         )
         master(trap)
     }
@@ -71,7 +72,6 @@ case class EXE_MEM() extends Bundle with IMasterSlave {
     val reg_we = Bool()
     val reg_sel = RegSel()
     val alu_y = Types.data
-
     val trap = TrapPorts()
 
     override def asMaster(): Unit = {

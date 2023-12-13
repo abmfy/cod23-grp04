@@ -22,11 +22,15 @@ class EXE extends Component {
         val branch = out Bool()
         val branch_addr = out port Types.addr
 
+        // SFENCE.VMA request
+        val sfence_req = out Bool()
+
         // Trap
         val trap = out Bool()
 
         // Alu
         val alu = master port AluPorts()
+
     }
 
     def bubble() = {
@@ -40,6 +44,7 @@ class EXE extends Component {
         io.o.trap.epc := 0
         io.o.trap.cause := 0
         io.o.trap.tval := 0
+        io.sfence_req := False
     }
 
     io.o.real.setAsReg() init(False)
@@ -60,6 +65,8 @@ class EXE extends Component {
     io.o.trap.epc.setAsReg() init(0)
     io.o.trap.cause.setAsReg() init(0)
     io.o.trap.tval.setAsReg() init(0)
+    
+    io.sfence_req.setAsReg() init(False)
 
     io.o.trap.trap := io.trap
     io.trap := io.o.trap.trap
@@ -108,6 +115,7 @@ class EXE extends Component {
         io.o.mem_unsigned := io.i.mem_unsigned
         io.o.reg_we := io.i.reg_we
         io.o.reg_sel := io.i.reg_sel
+        io.sfence_req := io.i.sfence_req
     }
 
     val branch = Bool()
