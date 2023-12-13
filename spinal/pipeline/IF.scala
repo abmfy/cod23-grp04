@@ -44,6 +44,9 @@ class IF(config: IFConfig = IFConfig()) extends Component {
     val pa = io.pt.physical_addr
     val pa_reg = Reg(Types.addr) init(0)
 
+    // In case that branch signal is asserted as ICache is refilling
+    val cache_addr = Reg(Types.addr) init(0)
+
     // Delayed branch signal
     val delay_br = Reg(Bool()) init(False)
 
@@ -159,6 +162,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                         goto(translate)
                     } otherwise {
                         io.cache.icache_en := True
+                        cache_addr := page_en ? pa | (io.br.br ? io.br.pc | pc)
                         io.cache.addr := page_en ? pa | (io.br.br ? io.br.pc | pc)
                         when (io.cache.ack) {
                             output(io.cache.data)
@@ -194,6 +198,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                             goto(start)
                         } otherwise {
                             io.cache.icache_en := True
+                            cache_addr := page_en ? pa | (io.br.br ? io.br.pc | pc)
                             io.cache.addr := page_en ? pa | (io.br.br ? io.br.pc | pc)
                             when (io.cache.ack) {
                                 output(io.cache.data)
@@ -220,7 +225,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
             whenIsActive {
                 bubble()
                 io.cache.icache_en := True
-                io.cache.addr := page_en ? pa_reg | pc
+                io.cache.addr := cache_addr
                 // Fetch complete
                 when (io.cache.ack || delay_ack) {
                     delay_ack := False
