@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : 9b793200d648e145135258e11f3e103b3c441f25
+// Git hash  : 02dfae51d9c46460450cb74a27d3d894f267751d
 
 `timescale 1ns/1ps
 
@@ -278,6 +278,8 @@ module Top (
   wire                Exe_1_io_br_br;
   wire       [31:0]   Exe_1_io_br_pc;
   wire                Exe_1_io_flush_req;
+  wire                Exe_1_io_branch;
+  wire       [31:0]   Exe_1_io_branch_addr;
   wire                Exe_1_io_trap;
   wire       [31:0]   Exe_1_io_alu_a;
   wire       [31:0]   Exe_1_io_alu_b;
@@ -646,8 +648,8 @@ module Top (
   );
   BranchPredict branchPredict_1 (
     .io_exe_pc     (Id_1_io_o_pc[31:0]              ), //i
-    .io_br_we      (Exe_1_io_br_br                  ), //i
-    .io_br_addr    (Exe_1_io_br_pc[31:0]            ), //i
+    .io_br_we      (Exe_1_io_branch                 ), //i
+    .io_br_addr    (Exe_1_io_branch_addr[31:0]      ), //i
     .io_exe_instr  (Id_1_io_instr[31:0]             ), //i
     .io_if_instr   (If_2_io_instr[31:0]             ), //i
     .io_IF_pc      (If_2_io_pc[31:0]                ), //i
@@ -1023,6 +1025,8 @@ module Top (
     .io_stall          (Exe_1_io_stall             ), //i
     .io_bubble         (Exe_1_io_bubble            ), //i
     .io_flush_req      (Exe_1_io_flush_req         ), //o
+    .io_branch         (Exe_1_io_branch            ), //o
+    .io_branch_addr    (Exe_1_io_branch_addr[31:0] ), //o
     .io_trap           (Exe_1_io_trap              ), //o
     .io_alu_a          (Exe_1_io_alu_a[31:0]       ), //o
     .io_alu_b          (Exe_1_io_alu_b[31:0]       ), //o
@@ -3471,6 +3475,8 @@ module EXE (
   input  wire          io_stall,
   input  wire          io_bubble,
   output wire          io_flush_req,
+  output wire          io_branch,
+  output wire [31:0]   io_branch_addr,
   output reg           io_trap,
   output wire [31:0]   io_alu_a,
   output wire [31:0]   io_alu_b,
@@ -3514,6 +3520,8 @@ module EXE (
 
   wire       [31:0]   _zz_io_alu_a;
   wire       [4:0]    _zz_io_alu_a_1;
+  wire       [31:0]   _zz_io_branch_addr;
+  wire       [0:0]    _zz_io_branch_addr_1;
   wire       [31:0]   _zz_branch;
   wire       [31:0]   _zz_branch_1;
   wire       [31:0]   _zz_branch_2;
@@ -3523,12 +3531,12 @@ module EXE (
   wire       [0:0]    _zz_io_br_pc_2;
   reg        [31:0]   reg_a;
   reg        [31:0]   reg_b;
-  wire                when_EXE_l68;
-  wire                when_EXE_l69;
   wire                when_EXE_l72;
-  wire                when_EXE_l68_1;
-  wire                when_EXE_l69_1;
+  wire                when_EXE_l73;
+  wire                when_EXE_l76;
   wire                when_EXE_l72_1;
+  wire                when_EXE_l73_1;
+  wire                when_EXE_l76_1;
   reg                 branch;
   `ifndef SYNTHESIS
   reg [39:0] io_i_alu_op_string;
@@ -3543,6 +3551,8 @@ module EXE (
 
   assign _zz_io_alu_a_1 = io_i_reg_addr_a;
   assign _zz_io_alu_a = {27'd0, _zz_io_alu_a_1};
+  assign _zz_io_branch_addr_1 = io_alu_y[0];
+  assign _zz_io_branch_addr = {31'd0, _zz_io_branch_addr_1};
   assign _zz_branch = reg_a;
   assign _zz_branch_1 = reg_b;
   assign _zz_branch_2 = reg_b;
@@ -3659,13 +3669,13 @@ module EXE (
 
   always @(*) begin
     reg_a = io_i_reg_data_a;
-    if(when_EXE_l68) begin
-      if(when_EXE_l69) begin
+    if(when_EXE_l72) begin
+      if(when_EXE_l73) begin
         reg_a = io_forward_1_data;
       end
     end
-    if(when_EXE_l68_1) begin
-      if(when_EXE_l69_1) begin
+    if(when_EXE_l72_1) begin
+      if(when_EXE_l73_1) begin
         reg_a = io_forward_0_data;
       end
     end
@@ -3673,27 +3683,29 @@ module EXE (
 
   always @(*) begin
     reg_b = io_i_reg_data_b;
-    if(when_EXE_l68) begin
-      if(when_EXE_l72) begin
+    if(when_EXE_l72) begin
+      if(when_EXE_l76) begin
         reg_b = io_forward_1_data;
       end
     end
-    if(when_EXE_l68_1) begin
-      if(when_EXE_l72_1) begin
+    if(when_EXE_l72_1) begin
+      if(when_EXE_l76_1) begin
         reg_b = io_forward_0_data;
       end
     end
   end
 
-  assign when_EXE_l68 = (io_forward_1_we && (io_forward_1_addr != 5'h00));
-  assign when_EXE_l69 = (io_forward_1_addr == io_i_reg_addr_a);
-  assign when_EXE_l72 = (io_forward_1_addr == io_i_reg_addr_b);
-  assign when_EXE_l68_1 = (io_forward_0_we && (io_forward_0_addr != 5'h00));
-  assign when_EXE_l69_1 = (io_forward_0_addr == io_i_reg_addr_a);
-  assign when_EXE_l72_1 = (io_forward_0_addr == io_i_reg_addr_b);
+  assign when_EXE_l72 = (io_forward_1_we && (io_forward_1_addr != 5'h00));
+  assign when_EXE_l73 = (io_forward_1_addr == io_i_reg_addr_a);
+  assign when_EXE_l76 = (io_forward_1_addr == io_i_reg_addr_b);
+  assign when_EXE_l72_1 = (io_forward_0_we && (io_forward_0_addr != 5'h00));
+  assign when_EXE_l73_1 = (io_forward_0_addr == io_i_reg_addr_a);
+  assign when_EXE_l76_1 = (io_forward_0_addr == io_i_reg_addr_b);
   assign io_alu_a = (io_i_use_pc ? io_i_pc : (io_i_use_uimm ? _zz_io_alu_a : reg_a));
   assign io_alu_b = (io_i_use_rs2 ? reg_b : io_i_imm);
   assign io_alu_op = io_i_alu_op;
+  assign io_branch = branch;
+  assign io_branch_addr = (io_alu_y ^ _zz_io_branch_addr);
   always @(*) begin
     case(io_i_br_type)
       BrType_F : begin

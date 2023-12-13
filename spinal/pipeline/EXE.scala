@@ -18,6 +18,10 @@ class EXE extends Component {
         val bubble = in Bool()
         val flush_req = out Bool()
 
+        // Branch prediction
+        val branch = out Bool()
+        val branch_addr = out port Types.addr
+
         // Trap
         val trap = out Bool()
 
@@ -107,6 +111,8 @@ class EXE extends Component {
     }
 
     val branch = Bool()
+    io.branch := branch
+    io.branch_addr := (io.alu.y ^ io.alu.y(0).asBits.resized).asUInt
 
     import BrType._
     switch (io.i.br_type) {

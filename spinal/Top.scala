@@ -97,8 +97,8 @@ class Top (
     Exe.io.stall := !trap.io.flush_req(2) && !Mem.io.flush_req && Mem.io.stall_req
     Exe.io.bubble := trap.io.flush_req(2) || Mem.io.flush_req
 
-    branchPredict.io.br_we := Exe.io.br.br
-    branchPredict.io.br_addr := Exe.io.br.pc
+    branchPredict.io.br_we := Exe.io.branch
+    branchPredict.io.br_addr := Exe.io.branch_addr
 
     trap.io.trap(1) := Exe.io.trap
 
