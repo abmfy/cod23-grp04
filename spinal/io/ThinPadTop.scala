@@ -24,7 +24,7 @@ case class ThinPadTop(
         // Clock domains
         val sysClkDomain = ClockDomain.internal(
             name = "sys",
-            frequency = FixedFrequency(15 MHz),
+            frequency = FixedFrequency(17.5 MHz),
         )
         sysClkDomain.clock := pll.io.clk_out1
         sysClkDomain.reset := ResetCtrl.asyncAssertSyncDeassert(
