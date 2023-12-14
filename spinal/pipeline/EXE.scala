@@ -18,11 +18,16 @@ class EXE extends Component {
         val bubble = in Bool()
         val flush_req = out Bool()
 
+        // Branch prediction
+        val branch = out Bool()
+        val branch_addr = out port Types.addr
+
         // Trap
         val trap = out Bool()
 
         // Alu
         val alu = master port AluPorts()
+
     }
 
     def bubble() = {
@@ -36,6 +41,7 @@ class EXE extends Component {
         io.o.trap.epc := 0
         io.o.trap.cause := 0
         io.o.trap.tval := 0
+        io.o.sfence_req := False
     }
 
     io.o.real.setAsReg() init(False)
@@ -56,6 +62,8 @@ class EXE extends Component {
     io.o.trap.epc.setAsReg() init(0)
     io.o.trap.cause.setAsReg() init(0)
     io.o.trap.tval.setAsReg() init(0)
+    
+    io.o.sfence_req.setAsReg() init(False)
 
     io.o.trap.trap := io.trap
     io.trap := io.o.trap.trap
@@ -88,6 +96,7 @@ class EXE extends Component {
     } elsewhen (io.i.trap.trap) {
         io.trap := True
         io.o.trap <> io.i.trap
+        io.o.real := False
     } otherwise {
         io.o.alu_y := io.alu.y
 
@@ -103,42 +112,54 @@ class EXE extends Component {
         io.o.mem_unsigned := io.i.mem_unsigned
         io.o.reg_we := io.i.reg_we
         io.o.reg_sel := io.i.reg_sel
+        io.o.sfence_req := io.i.sfence_req
     }
 
-    io.br.pc := (io.alu.y ^ io.alu.y(0).asBits.resized).asUInt
+    val branch = Bool()
+    io.branch := branch
+    io.branch_addr := (io.alu.y ^ io.alu.y(0).asBits.resized).asUInt
 
     import BrType._
     switch (io.i.br_type) {
         is (F) {
-            io.br.br := False
+            branch := False
         }
         is (T) {
-            io.br.br := True
+            branch := True
         }
         is (EQ) {
-            io.br.br := reg_a === reg_b
+            branch := reg_a === reg_b
         }
         is (NE) {
-            io.br.br := reg_a =/= reg_b
+            branch := reg_a =/= reg_b
         }
         is (LT) {
-            io.br.br := reg_a.asSInt < reg_b.asSInt
+            branch := reg_a.asSInt < reg_b.asSInt
         }
         is (GE) {
-            io.br.br := reg_a.asSInt >= reg_b.asSInt
+            branch := reg_a.asSInt >= reg_b.asSInt
         }
         is (LTU) {
-            io.br.br := reg_a.asUInt < reg_b.asUInt
+            branch := reg_a.asUInt < reg_b.asUInt
         }
         is (GEU) {
-            io.br.br := reg_a.asUInt >= reg_b.asUInt
+            branch := reg_a.asUInt >= reg_b.asUInt
         }
     }
+
+    // Prediction failure
+    io.br.br := branch ^ io.i.next_taken
+    io.br.pc := io.i.next_taken ? (io.i.pc + 4) | (io.alu.y ^ io.alu.y(0).asBits.resized).asUInt
+
+    io.flush_req := !io.stall && (io.br.br || io.i.csr_op =/= CsrOp.N || io.i.sfence_req)
 
     // Trapped
     when (io.i.trap.trap) {
         io.br.br := False
     }
 
-    io.flush_req := io.br.br || io.i.csr_op =/= CsrOp.N
+    // Do not branch when stalled
+    when (io.stall) {
+        io.br.br := False
+    }
 }

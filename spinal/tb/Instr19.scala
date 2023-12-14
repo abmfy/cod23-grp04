@@ -41,6 +41,8 @@ object Instr19 extends App {
             }
         }
 
+        Tracer.init(dut.Wb, period)
+
         var counter = 0
 
         fork {

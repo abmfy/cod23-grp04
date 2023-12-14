@@ -7,11 +7,12 @@ case class IF_ID() extends Bundle with IMasterSlave {
     val real = Bool() allowPruning()
     val pc = Types.addr
     val instr = Types.data
+    val next_taken = Bool()
 
     val trap = TrapPorts()
 
     override def asMaster(): Unit = {
-        out (real, pc, instr)
+        out (real, pc, instr, next_taken)
         master (trap)
     }
 }
@@ -31,7 +32,8 @@ case class ID_EXE() extends Bundle with IMasterSlave {
     val mem_unsigned = Bool()
     val reg_we = Bool()
     val reg_sel = RegSel()
-    
+    val next_taken = Bool()
+    val sfence_req = Bool()
     val trap = TrapPorts()
 
     override def asMaster(): Unit = {
@@ -50,6 +52,8 @@ case class ID_EXE() extends Bundle with IMasterSlave {
             mem_unsigned,
             reg_we,
             reg_sel,
+            next_taken,
+            sfence_req,
         )
         master(trap)
     }
@@ -68,7 +72,7 @@ case class EXE_MEM() extends Bundle with IMasterSlave {
     val reg_we = Bool()
     val reg_sel = RegSel()
     val alu_y = Types.data
-
+    val sfence_req = Bool()
     val trap = TrapPorts()
 
     override def asMaster(): Unit = {
@@ -85,6 +89,7 @@ case class EXE_MEM() extends Bundle with IMasterSlave {
             reg_we,
             reg_sel,
             alu_y,
+            sfence_req,
         )
         master(trap)
     }
@@ -119,6 +124,7 @@ case class BranchPorts() extends Bundle with IMasterSlave {
         out (br, pc)
     }
 }
+
 
 case class ForwardPorts() extends Bundle with IMasterSlave {
     val we = Bool()

@@ -39,6 +39,19 @@ object SupervisorPaging extends App {
         UartModel.encode(dut.io.uart0.rxd, baud_period, 'T'.toInt)
         sleep(baud_period * 100)
 
+        println("Test jump")
+
+        UartModel.encode(dut.io.uart0.rxd, baud_period, 'G'.toInt)
+        sleep(baud_period * 10)
+        UartModel.encode(dut.io.uart0.rxd, baud_period, 0x00)
+        sleep(baud_period * 10)
+        UartModel.encode(dut.io.uart0.rxd, baud_period, 0x10)
+        sleep(baud_period * 10)
+        UartModel.encode(dut.io.uart0.rxd, baud_period, 0x00)
+        sleep(baud_period * 10)
+        UartModel.encode(dut.io.uart0.rxd, baud_period, 0x80)
+        sleep(baud_period * 1000)
+
         println("Test ecall")
 
         UartModel.encode(dut.io.uart0.rxd, baud_period, 'G'.toInt)

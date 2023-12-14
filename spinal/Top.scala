@@ -15,11 +15,14 @@ class Top (
     // Components
     val reg_file = new RegFile
     val alu = new Alu
+    val branchPredict = new BranchPredict
     val csr = new CsrFile
     val trap = new Trap
     val timer = new Timer
     val IF_page_table = new PageTable
-    val MEM_page_table = new PageTable    
+    val MEM_page_table = new PageTable
+    val ICache = new ICache
+    val DCache = new DCache
 
     // Pipelines
     val If = new IF
@@ -42,6 +45,7 @@ class Top (
 
     io.gpio.leds := If.io.o.instr.resized
 
+    If.io.cache <> ICache.io.toIF
     If.io.br.br := trap.io.br.br || Exe.io.br.br
     If.io.br.pc := trap.io.br.br ? trap.io.br.pc | Exe.io.br.pc
 
@@ -60,10 +64,22 @@ class Top (
     
     If.io.pt <> IF_page_table.trans_io
 
+    // Only instruction page fault will occur
+    If.io.pt.exception_code allowPruning()
+    IF_page_table.trans_io.exception_code allowPruning()
+
     IF_page_table.io.satp := csr.io.satp.r
     IF_page_table.io.privilege_mode := trap.io.prv
     IF_page_table.io.mstatus_SUM := csr.io.mstatus.r(StatusField.SUM)
     IF_page_table.io.mstatus_MXR := csr.io.mstatus.r(StatusField.MXR)
+
+    IF_page_table.io.clear_tlb := Id.io.sfence_req
+
+    branchPredict.io.if_instr := If.io.instr
+    branchPredict.io.IF_pc := If.io.pc
+
+    If.io.next_pc := branchPredict.io.next_pc
+    If.io.next_taken := branchPredict.io.next_taken
 
     // ID
     Id.io.reg <> reg_file.io.r
@@ -75,14 +91,22 @@ class Top (
 
     Id.io.prv := trap.io.prv
 
+    ICache.io.fence := Id.io.fence
+
+    branchPredict.io.exe_instr := Id.io.instr
+    branchPredict.io.exe_pc := Id.io.o.pc
+
     // EXE
     Exe.io.alu <> alu.io
 
     Exe.io.forward(0) <> Mem.io.forward
     Exe.io.forward(1) <> Wb.io.forward
-
+    
     Exe.io.stall := !trap.io.flush_req(2) && !Mem.io.flush_req && Mem.io.stall_req
     Exe.io.bubble := trap.io.flush_req(2) || Mem.io.flush_req
+
+    branchPredict.io.br_we := Exe.io.branch
+    branchPredict.io.br_addr := Exe.io.branch_addr
 
     trap.io.trap(1) := Exe.io.trap
 
@@ -102,6 +126,11 @@ class Top (
     MEM_page_table.io.privilege_mode := trap.io.prv
     MEM_page_table.io.mstatus_SUM := csr.io.mstatus.r(StatusField.SUM)
     MEM_page_table.io.mstatus_MXR := csr.io.mstatus.r(StatusField.MXR)
+
+    // MEM
+    Mem.io.dcache <> DCache.io.toMEM
+
+    MEM_page_table.io.clear_tlb := Mem.io.sfence_req
 
     // WB
     Wb.io.reg <> reg_file.io.w
@@ -182,9 +211,9 @@ class Top (
 
     // Masters
     muxes(0).io.wb <> MEM_page_table.wb
-    muxes(1).io.wb <> Mem.io.wb
+    muxes(1).io.wb <> DCache.io.wb
     muxes(2).io.wb <> IF_page_table.wb
-    muxes(3).io.wb <> If.io.wb
+    muxes(3).io.wb <> ICache.io.wb
 
     // Slaves
     val (base_ram, ext_ram) = if (simulation) {

@@ -17,12 +17,21 @@ class ID extends Component {
         val bubble = in Bool()
         val flush_req = out Bool()
 
+        // Instruction
+        val instr = out port Types.data
+
         // Trap
         val trap = out Bool()
+
+        // SFENCE.VMA request
+        val sfence_req = out Bool()
 
         // Privilege mode
         val prv = in port PrivilegeMode()
 
+        // FENCE.I
+        val fence = out Bool()
+        
         // RegFile
         val reg = master port RegFileReadPorts()
     }
@@ -819,8 +828,10 @@ class ID extends Component {
         io.o.pc := 0
         io.o.csr_op := CsrOp.N
         io.o.br_type := BrType.F
+        io.o.next_taken := False
         io.o.mem_en := False
         io.o.reg_we := False
+        io.o.sfence_req := False
 
         io.trap := False
         io.o.trap.epc := 0
@@ -846,10 +857,13 @@ class ID extends Component {
                 io.o.trap.tval := 0
             }
         }
+
+        io.o.real := False
     }
 
     io.o.real.setAsReg() init(False)
     io.o.pc.setAsReg() init(0)
+    io.o.next_taken setAsReg() init(False)
     io.o.reg_data_a.setAsReg() init(0)
     io.o.reg_data_b.setAsReg() init(0)
     io.o.reg_addr_a.setAsReg() init(0)
@@ -868,6 +882,8 @@ class ID extends Component {
     io.o.mem_unsigned.setAsReg() init(False)
     io.o.reg_we.setAsReg() init(False)
     io.o.reg_sel.setAsReg() init(RegSel.ALU)
+    io.o.sfence_req.setAsReg() init(False)
+    io.instr.setAsReg() init(0)
 
     io.o.trap.trap.setAsReg() init(False)
     io.o.trap.epc.setAsReg() init(0)
@@ -877,11 +893,14 @@ class ID extends Component {
     io.o.trap.trap := io.trap
     io.trap := io.o.trap.trap
 
+    io.fence := instr_kind === FENCE_I
+    io.sfence_req := instr_kind === SFENCE_VMA
+
     io.reg.addr_a := rs1
     io.reg.addr_b := rs2
 
     // Wait for control state to update
-    io.flush_req := csr_op =/= CsrOp.N
+    io.flush_req := !io.stall && (csr_op =/= CsrOp.N || instr_kind === SFENCE_VMA)
 
     when (io.stall) {
         // Pass
@@ -890,6 +909,7 @@ class ID extends Component {
     } elsewhen (io.i.trap.trap) {
         io.trap := True
         io.o.trap <> io.i.trap
+        io.o.real := False
     } elsewhen (instr_kind === EBREAK) {
         raise(TrapCause.BREAKPOINT)
     } elsewhen (instr_kind === ECALL) {
@@ -911,9 +931,11 @@ class ID extends Component {
     } elsewhen (instr_kind === UNK) {
         raise(TrapCause.ILLEGAL_INSTRUCTION)
     } otherwise {
+        io.instr := io.i.instr
+
         io.o.real := io.i.real
         io.o.pc := io.i.pc
-        
+        io.o.next_taken := io.i.next_taken
         io.o.reg_data_a := io.reg.data_a
         io.o.reg_data_b := io.reg.data_b
         io.o.reg_addr_a := rs1
@@ -932,5 +954,6 @@ class ID extends Component {
         io.o.mem_unsigned := mem_unsigned
         io.o.reg_we := reg_we
         io.o.reg_sel := reg_sel
+        io.o.sfence_req := instr_kind === SFENCE_VMA
     }
 }

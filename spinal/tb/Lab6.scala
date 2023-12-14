@@ -14,7 +14,7 @@ object Lab6 extends App {
         simulation = true,
         base_sram_init = Some("asm/lab6.bin"),
     ))).doSim { dut =>
-        SimTimeout(1 ms)
+        SimTimeout(1 us)
 
         val period = (1 sec) / dut.simulation_freq
         val baud_period = (1 sec) / dut.uart.config.baud

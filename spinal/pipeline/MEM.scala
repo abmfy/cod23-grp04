@@ -22,6 +22,9 @@ class MEM extends Component {
         // Privilege mode
         val prv = in port PrivilegeMode()
 
+        // SFENCE.VMA request
+        val sfence_req = out Bool()
+
         // Address translation mode
         val satp_mode = in Bool()
 
@@ -31,8 +34,8 @@ class MEM extends Component {
         // Timer
         val timer = master port TimerPorts()
 
-        // Wishbone master
-        val wb = master port WishbonePorts()
+        // val wb = master port WishbonePorts()
+        val dcache = master port DCachePorts()
 
         // PageTable master
         val pt = master port PageTableTranslatePorts()
@@ -41,12 +44,19 @@ class MEM extends Component {
     val mem_adr = io.i.alu_y.asUInt
     val offset = mem_adr(0, 2 bits)
 
+    val va = mem_adr
+    val pa = io.pt.physical_addr
+
+    // Register physical address from page table
+    val cache_addr = Reg(Types.addr) init(0)
+
     val mem_sel: Bits = io.i.mem_sel |<< offset
-    val mem_data_read: Bits = io.wb.dat_r |>> (offset * 8)
+    val mem_data_read: Bits = io.dcache.data |>> (offset * 8)
     val mem_data_write: Bits = io.i.reg_data_b |<< (offset * 8)
 
     // Paging enable
     val page_en = io.prv =/= PrivilegeMode.M && io.satp_mode
+    val pt_addr = Reg(Types.addr) init(0)
 
     val reg_data: Bits = {
         val res = Types.data
@@ -74,29 +84,20 @@ class MEM extends Component {
     def bubble(): Unit = {
         io.o.real := False
         io.o.pc := 0
-        io.o.reg_we := False
 
         io.trap := False
         io.o.trap.epc := 0
         io.o.trap.cause := 0
     }
 
-    def req(): Unit = {
-        io.wb.stb := True
-        io.wb.we := io.i.mem_we
-        io.wb.adr := page_en ? pa | mem_adr
-        io.wb.sel := mem_sel
-        io.wb.dat_w := mem_data_write
+    def req(addr: UInt): Unit = {
+        io.dcache.dcache_en := True
+        io.dcache.dcache_we := io.i.mem_we
+        io.dcache.addr := addr
+        io.dcache.dcache_sel := mem_sel
+        io.dcache.data_w := mem_data_write
     }
-
-    def done(): Unit = {
-        io.wb.stb := False
-        io.wb.we := False
-        io.wb.adr := 0
-        io.wb.sel := 0
-        io.wb.dat_w := 0
-    }
-
+    
     def proceed(): Unit = {
         io.o.real := io.i.real
         io.o.pc := io.i.pc
@@ -120,12 +121,6 @@ class MEM extends Component {
     io.o.trap.cause.setAsReg() init(0)
     io.o.trap.tval.setAsReg() init(0)
 
-    io.wb.stb.setAsReg() init(False)
-    io.wb.we.setAsReg() init(False)
-    io.wb.adr.setAsReg() init(0)
-    io.wb.dat_w.setAsReg() init(0)
-    io.wb.sel.setAsReg() init(0)
-
     io.o.trap.trap := io.trap
     io.trap := io.o.trap.trap
 
@@ -136,12 +131,14 @@ class MEM extends Component {
 
     // Timer
     val timer = new Area {
-        val mtime_req = mem_adr === Timer.CLINT_MTIME
-        val mtimeh_req = mem_adr === Timer.CLINT_MTIMEH
-        val mtimecmp_req = mem_adr === Timer.CLINT_MTIMECMP
-        val mtimecmph_req = mem_adr === Timer.CLINT_MTIMECMPH
+        val adr = mem_adr
+        val mtime_req = adr === Timer.CLINT_MTIME
+        val mtimeh_req = adr === Timer.CLINT_MTIMEH
+        val mtimecmp_req = adr === Timer.CLINT_MTIMECMP
+        val mtimecmph_req = adr === Timer.CLINT_MTIMECMPH
 
-        val req = mtime_req || mtimeh_req || mtimecmp_req || mtimecmph_req
+        // Only accessible in machine mode
+        val req = io.prv === PrivilegeMode.M && (mtime_req || mtimeh_req || mtimecmp_req || mtimecmph_req)
 
         when (mtime_req) {
             mem_data_read := io.timer.mtime.r |>> (offset * 8)
@@ -212,25 +209,29 @@ class MEM extends Component {
         }
     }
 
-    io.stall_req := io.i.mem_en && !timer.req && !io.wb.ack
-    io.flush_req := io.i.csr_op =/= CsrOp.N
-
-    io.wb.cyc := io.wb.stb
-
-    val va = mem_adr
-    val pa = io.pt.physical_addr
-
-    io.pt.look_up_addr.setAsReg() init(0)
-    io.pt.look_up_req.setAsReg() init(False)
+    io.stall_req := io.i.mem_en && !timer.req && !io.dcache.ack
+    io.flush_req := io.i.csr_op =/= CsrOp.N || io.i.sfence_req
+    io.sfence_req := io.i.sfence_req
 
     def raise_page_fault(): Unit = {
         io.trap := True
         io.o.trap.epc := io.i.pc
         io.o.trap.cause := io.pt.exception_code
         io.o.trap.tval := va.asBits
+
+        io.o.real := False
     }
 
     val fsm = new StateMachine {
+        io.dcache.dcache_en := False
+        io.dcache.dcache_we := False
+        io.dcache.addr := 0
+        io.dcache.dcache_sel := 0
+        io.dcache.data_w := 0
+
+        io.pt.look_up_req := False
+        io.pt.look_up_addr := 0
+    
         io.pt.access_type := io.i.mem_we ? MemAccessType.Store | MemAccessType.Load
         val start: State = new State with EntryPoint {
             whenIsActive {
@@ -238,6 +239,7 @@ class MEM extends Component {
                 when (io.i.trap.trap) {
                     io.trap := True
                     io.o.trap <> io.i.trap
+                    io.o.real := False
                 } elsewhen (io.i.mem_en) {
                     bubble()
 
@@ -245,10 +247,31 @@ class MEM extends Component {
                         proceed()
                     } otherwise {
                         when (page_en) {
-                            goto(translate)
+                            io.pt.look_up_req := True
+                            io.pt.look_up_addr := va
+                            when (io.pt.tlb_hit) {
+                                when (io.pt.look_up_valid) {
+                                    req(pa)
+                                    when (io.dcache.ack) {
+                                        proceed()
+                                    } otherwise {
+                                        goto(fetch) 
+                                        cache_addr := pa
+                                    }
+                                } otherwise {
+                                    raise_page_fault()
+                                }
+                            } otherwise {
+                                goto(translate)
+                            }
                         } otherwise {
-                            req()
-                            goto(fetch)
+                            req(mem_adr)
+                            when (io.dcache.ack) {
+                                proceed()
+                            } otherwise {
+                                cache_addr := mem_adr
+                                goto(fetch) 
+                            }
                         }
                     }
                 } otherwise {
@@ -258,30 +281,35 @@ class MEM extends Component {
         }
         val translate : State = new State {
             onEntry {
-                io.pt.look_up_addr := va
-                io.pt.look_up_req := True
+                pt_addr := va
             }
             whenIsActive {
+                io.pt.look_up_req := True
+                io.pt.look_up_addr := pt_addr
+
                 when (io.pt.look_up_ack) {
                     when (io.pt.look_up_valid) {
-                        req()
-                        goto(fetch)
+                        req(pa)
+                        when (io.dcache.ack) {
+                            proceed()
+                            goto(start)
+                        } otherwise {
+                            goto(fetch) 
+                            cache_addr := pa
+                        }
                     } otherwise {
                         raise_page_fault()
-                        exit()
+                        goto(start)
                     }
                 }
-            }
-            onExit {
-                io.pt.look_up_req := False
             }
         }
         val fetch: State = new State {
             whenIsActive {
                 bubble()
-                when (io.wb.ack) {
+                req(cache_addr)
+                when (io.dcache.ack) {
                     proceed()
-                    done()
                     goto(start)
                 }
             }

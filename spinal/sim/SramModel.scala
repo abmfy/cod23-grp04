@@ -31,6 +31,7 @@ import cod._
 import spinal.core._
 import spinal.core.sim._
 import spinal.lib._
+import spinal.lib.fsm._
 
 import scala.collection.mutable.ArrayBuffer
 import java.nio.file.Files
@@ -123,5 +124,41 @@ class SramModel(
         mask = io.wb.sel,
     )
 
-    ack_o_reg := enable
+    val fsm = new StateMachine {
+        val idle: State = new State with EntryPoint {
+            onEntry {
+                ack_o_reg := False
+            }
+            whenIsActive {
+                when (io.wb.cyc && io.wb.stb) {
+                    when (io.wb.we) {
+                        goto(write)
+                    } otherwise {
+                        goto(read)
+                    }
+                }
+            }
+        }
+        val read: State = new State {
+            onEntry {
+                ack_o_reg := True
+            }
+            whenIsActive {
+                goto(idle)
+            }
+        }
+        val write: State = new State {
+            whenIsActive {
+                goto(write_2)
+            }
+        }
+        val write_2: State = new State {
+            onEntry {
+                ack_o_reg := True
+            }
+            whenIsActive {
+                goto(idle)
+            }
+        }
+    }
 }
