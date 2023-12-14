@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : adfa44bef20ebe384a578dff70d514e81d7b282a
+// Git hash  : c82ee504222cec686bde0b346f95aa6bac7db136
 
 `timescale 1ns/1ps
 
@@ -178,6 +178,7 @@ module Top (
   wire       [31:0]   IF_page_table_trans_io_physical_addr;
   wire                IF_page_table_trans_io_look_up_ack;
   wire                IF_page_table_trans_io_look_up_valid;
+  wire                IF_page_table_trans_io_tlb_hit;
   wire       [31:0]   IF_page_table_trans_io_exception_code;
   wire                IF_page_table_wb_cyc;
   wire                IF_page_table_wb_stb;
@@ -188,6 +189,7 @@ module Top (
   wire       [31:0]   MEM_page_table_trans_io_physical_addr;
   wire                MEM_page_table_trans_io_look_up_ack;
   wire                MEM_page_table_trans_io_look_up_valid;
+  wire                MEM_page_table_trans_io_tlb_hit;
   wire       [31:0]   MEM_page_table_trans_io_exception_code;
   wire                MEM_page_table_wb_cyc;
   wire                MEM_page_table_wb_stb;
@@ -818,6 +820,7 @@ module Top (
     .trans_io_physical_addr  (IF_page_table_trans_io_physical_addr[31:0] ), //o
     .trans_io_look_up_ack    (IF_page_table_trans_io_look_up_ack         ), //o
     .trans_io_look_up_valid  (IF_page_table_trans_io_look_up_valid       ), //o
+    .trans_io_tlb_hit        (IF_page_table_trans_io_tlb_hit             ), //o
     .trans_io_exception_code (IF_page_table_trans_io_exception_code[31:0]), //o
     .wb_cyc                  (IF_page_table_wb_cyc                       ), //o
     .wb_stb                  (IF_page_table_wb_stb                       ), //o
@@ -842,6 +845,7 @@ module Top (
     .trans_io_physical_addr  (MEM_page_table_trans_io_physical_addr[31:0] ), //o
     .trans_io_look_up_ack    (MEM_page_table_trans_io_look_up_ack         ), //o
     .trans_io_look_up_valid  (MEM_page_table_trans_io_look_up_valid       ), //o
+    .trans_io_tlb_hit        (MEM_page_table_trans_io_tlb_hit             ), //o
     .trans_io_exception_code (MEM_page_table_trans_io_exception_code[31:0]), //o
     .wb_cyc                  (MEM_page_table_wb_cyc                       ), //o
     .wb_stb                  (MEM_page_table_wb_stb                       ), //o
@@ -925,6 +929,7 @@ module Top (
     .io_pt_physical_addr  (IF_page_table_trans_io_physical_addr[31:0] ), //i
     .io_pt_look_up_ack    (IF_page_table_trans_io_look_up_ack         ), //i
     .io_pt_look_up_valid  (IF_page_table_trans_io_look_up_valid       ), //i
+    .io_pt_tlb_hit        (IF_page_table_trans_io_tlb_hit             ), //i
     .io_pt_exception_code (IF_page_table_trans_io_exception_code[31:0]), //i
     .sys_clk              (sys_clk                                    ), //i
     .sys_reset            (sys_reset                                  )  //i
@@ -1111,6 +1116,7 @@ module Top (
     .io_pt_physical_addr   (MEM_page_table_trans_io_physical_addr[31:0] ), //i
     .io_pt_look_up_ack     (MEM_page_table_trans_io_look_up_ack         ), //i
     .io_pt_look_up_valid   (MEM_page_table_trans_io_look_up_valid       ), //i
+    .io_pt_tlb_hit         (MEM_page_table_trans_io_tlb_hit             ), //i
     .io_pt_exception_code  (MEM_page_table_trans_io_exception_code[31:0]), //i
     .sys_clk               (sys_clk                                     ), //i
     .sys_reset             (sys_reset                                   )  //i
@@ -2709,6 +2715,7 @@ module MEM (
   input  wire [31:0]   io_pt_physical_addr,
   input  wire          io_pt_look_up_ack,
   input  wire          io_pt_look_up_valid,
+  input  wire          io_pt_tlb_hit,
   input  wire [31:0]   io_pt_exception_code,
   input  wire          sys_clk,
   input  wire          sys_reset
@@ -5043,6 +5050,7 @@ module IF_1 (
   input  wire [31:0]   io_pt_physical_addr,
   input  wire          io_pt_look_up_ack,
   input  wire          io_pt_look_up_valid,
+  input  wire          io_pt_tlb_hit,
   input  wire [31:0]   io_pt_exception_code,
   input  wire          sys_clk,
   input  wire          sys_reset
@@ -13273,6 +13281,7 @@ module PageTable (
   output reg  [31:0]   trans_io_physical_addr,
   output reg           trans_io_look_up_ack,
   output reg           trans_io_look_up_valid,
+  output wire          trans_io_tlb_hit,
   output reg  [31:0]   trans_io_exception_code,
   output wire          wb_cyc,
   output reg           wb_stb,
@@ -13294,25 +13303,30 @@ module PageTable (
   localparam fsm_enumDef_BOOT = 2'd0;
   localparam fsm_enumDef_idle = 2'd1;
   localparam fsm_enumDef_read = 2'd2;
-  localparam fsm_enumDef_translate = 2'd3;
 
+  reg                 _zz__zz_trans_io_tlb_hit;
+  reg        [19:0]   _zz__zz_trans_io_tlb_hit_1;
   wire       [11:0]   _zz_pte_ppn_0;
   wire       [9:0]    _zz_pte_ppn_0_1;
-  reg                 _zz_when_PageTable_l149;
-  reg        [19:0]   _zz_when_PageTable_l149_1;
   reg        [31:0]   _zz_pte;
+  reg        [11:0]   _zz__zz_when_PageTable_l169;
   wire       [34:0]   _zz_wb_adr;
   wire       [34:0]   _zz_wb_adr_1;
   wire       [34:0]   _zz_wb_adr_2;
   wire       [12:0]   _zz_wb_adr_3;
   reg        [9:0]    _zz_wb_adr_4;
-  reg        [11:0]   _zz_when_PageTable_l217;
-  wire       [34:0]   _zz_wb_adr_5;
+  wire       [0:0]    _zz_wb_adr_5;
   wire       [34:0]   _zz_wb_adr_6;
   wire       [34:0]   _zz_wb_adr_7;
-  wire       [12:0]   _zz_wb_adr_8;
-  reg        [9:0]    _zz_wb_adr_9;
-  wire       [0:0]    _zz_wb_adr_10;
+  wire       [34:0]   _zz_wb_adr_8;
+  wire       [12:0]   _zz_wb_adr_9;
+  reg        [9:0]    _zz_wb_adr_10;
+  wire       [34:0]   _zz_wb_adr_11;
+  wire       [34:0]   _zz_wb_adr_12;
+  wire       [34:0]   _zz_wb_adr_13;
+  wire       [12:0]   _zz_wb_adr_14;
+  reg        [9:0]    _zz_wb_adr_15;
+  wire       [0:0]    _zz_wb_adr_16;
   wire       [21:0]   satp_ppn;
   wire       [9:0]    va_vpn_0;
   wire       [9:0]    va_vpn_1;
@@ -13509,23 +13523,8 @@ module PageTable (
   reg        [19:0]   TLBTable_63_vpn;
   reg        [31:0]   TLBTable_63_pte;
   wire       [5:0]    TLBIndex;
-  reg        [0:0]    i;
-  reg        [31:0]   pte;
-  wire                pte_v;
-  wire                pte_r;
-  wire                pte_w;
-  wire                pte_x;
-  wire                pte_u;
-  wire                pte_a;
-  wire                pte_d;
-  wire       [21:0]   pte_ppn_raw;
-  wire       [11:0]   pte_ppn_0;
-  wire       [11:0]   pte_ppn_1;
-  wire                fsm_wantExit;
-  reg                 fsm_wantStart;
-  wire                fsm_wantKill;
-  reg        [1:0]    fsm_stateReg;
-  reg        [1:0]    fsm_stateNext;
+  wire                _zz_trans_io_tlb_hit;
+  wire       [19:0]   _zz_trans_io_tlb_hit_1;
   wire       [63:0]   _zz_1;
   wire                _zz_2;
   wire                _zz_3;
@@ -13591,359 +13590,395 @@ module PageTable (
   wire                _zz_63;
   wire                _zz_64;
   wire                _zz_65;
-  wire                when_PageTable_l149;
-  wire                when_PageTable_l168;
-  wire       [19:0]   _zz_TLBTable_0_vpn;
-  wire                when_PageTable_l179;
-  wire                when_PageTable_l185;
-  wire                when_PageTable_l189;
+  reg        [0:0]    i;
+  reg        [31:0]   pte;
+  wire                pte_v;
+  wire                pte_r;
+  wire                pte_w;
+  wire                pte_x;
+  wire                pte_u;
+  wire                pte_a;
+  wire                pte_d;
+  wire       [21:0]   pte_ppn_raw;
+  wire       [11:0]   pte_ppn_0;
+  wire       [11:0]   pte_ppn_1;
+  wire                fsm_wantExit;
+  reg                 fsm_wantStart;
+  wire                fsm_wantKill;
+  reg        [1:0]    fsm_stateReg;
+  reg        [1:0]    fsm_stateNext;
+  wire                when_PageTable_l225;
+  wire                when_PageTable_l138;
+  wire                when_PageTable_l143;
+  wire                when_PageTable_l147;
+  wire       [0:0]    switch_PageTable_l181;
+  wire                when_PageTable_l150;
+  wire                when_PageTable_l157;
+  wire                when_PageTable_l160;
+  wire                when_PageTable_l163;
+  wire                when_PageTable_l166;
+  wire       [11:0]   _zz_when_PageTable_l169;
+  wire                when_PageTable_l169;
   wire                when_PageTable_l193;
-  wire                when_PageTable_l201;
-  wire                when_PageTable_l205;
-  wire                when_PageTable_l209;
-  wire                when_PageTable_l213;
-  wire                when_PageTable_l217;
-  wire                when_PageTable_l244;
+  wire                when_PageTable_l243;
+  wire       [19:0]   _zz_TLBTable_0_vpn;
+  reg                 when_PageTable_l248;
+  wire                when_PageTable_l138_1;
+  wire                when_PageTable_l143_1;
+  wire                when_PageTable_l147_1;
+  wire       [0:0]    switch_PageTable_l181_1;
+  wire                when_PageTable_l150_1;
+  wire                when_PageTable_l157_1;
+  wire                when_PageTable_l160_1;
+  wire                when_PageTable_l163_1;
+  wire                when_PageTable_l166_1;
+  wire                when_PageTable_l169_1;
+  wire                when_PageTable_l193_1;
   wire                when_StateMachine_l253;
   `ifndef SYNTHESIS
   reg [7:0] io_privilege_mode_string;
   reg [39:0] trans_io_access_type_string;
-  reg [71:0] fsm_stateReg_string;
-  reg [71:0] fsm_stateNext_string;
+  reg [31:0] fsm_stateReg_string;
+  reg [31:0] fsm_stateNext_string;
   `endif
 
 
   assign _zz_pte_ppn_0_1 = pte[19 : 10];
   assign _zz_pte_ppn_0 = {2'd0, _zz_pte_ppn_0_1};
   assign _zz_wb_adr = (_zz_wb_adr_1 + _zz_wb_adr_2);
-  assign _zz_wb_adr_1 = (satp_ppn * 13'h1000);
+  assign _zz_wb_adr_1 = (pte_ppn_raw * 13'h1000);
   assign _zz_wb_adr_3 = (_zz_wb_adr_4 * 3'b100);
   assign _zz_wb_adr_2 = {22'd0, _zz_wb_adr_3};
-  assign _zz_wb_adr_5 = (_zz_wb_adr_6 + _zz_wb_adr_7);
-  assign _zz_wb_adr_6 = (pte_ppn_raw * 13'h1000);
-  assign _zz_wb_adr_8 = (_zz_wb_adr_9 * 3'b100);
-  assign _zz_wb_adr_7 = {22'd0, _zz_wb_adr_8};
-  assign _zz_wb_adr_10 = (i - 1'b1);
+  assign _zz_wb_adr_5 = (i - 1'b1);
+  assign _zz_wb_adr_6 = (_zz_wb_adr_7 + _zz_wb_adr_8);
+  assign _zz_wb_adr_7 = (satp_ppn * 13'h1000);
+  assign _zz_wb_adr_9 = (_zz_wb_adr_10 * 3'b100);
+  assign _zz_wb_adr_8 = {22'd0, _zz_wb_adr_9};
+  assign _zz_wb_adr_11 = (_zz_wb_adr_12 + _zz_wb_adr_13);
+  assign _zz_wb_adr_12 = (pte_ppn_raw * 13'h1000);
+  assign _zz_wb_adr_14 = (_zz_wb_adr_15 * 3'b100);
+  assign _zz_wb_adr_13 = {22'd0, _zz_wb_adr_14};
+  assign _zz_wb_adr_16 = (i - 1'b1);
   always @(*) begin
     case(TLBIndex)
       6'b000000 : begin
-        _zz_when_PageTable_l149 = TLBTable_0_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_0_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_0_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_0_vpn;
         _zz_pte = TLBTable_0_pte;
       end
       6'b000001 : begin
-        _zz_when_PageTable_l149 = TLBTable_1_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_1_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_1_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_1_vpn;
         _zz_pte = TLBTable_1_pte;
       end
       6'b000010 : begin
-        _zz_when_PageTable_l149 = TLBTable_2_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_2_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_2_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_2_vpn;
         _zz_pte = TLBTable_2_pte;
       end
       6'b000011 : begin
-        _zz_when_PageTable_l149 = TLBTable_3_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_3_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_3_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_3_vpn;
         _zz_pte = TLBTable_3_pte;
       end
       6'b000100 : begin
-        _zz_when_PageTable_l149 = TLBTable_4_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_4_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_4_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_4_vpn;
         _zz_pte = TLBTable_4_pte;
       end
       6'b000101 : begin
-        _zz_when_PageTable_l149 = TLBTable_5_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_5_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_5_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_5_vpn;
         _zz_pte = TLBTable_5_pte;
       end
       6'b000110 : begin
-        _zz_when_PageTable_l149 = TLBTable_6_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_6_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_6_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_6_vpn;
         _zz_pte = TLBTable_6_pte;
       end
       6'b000111 : begin
-        _zz_when_PageTable_l149 = TLBTable_7_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_7_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_7_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_7_vpn;
         _zz_pte = TLBTable_7_pte;
       end
       6'b001000 : begin
-        _zz_when_PageTable_l149 = TLBTable_8_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_8_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_8_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_8_vpn;
         _zz_pte = TLBTable_8_pte;
       end
       6'b001001 : begin
-        _zz_when_PageTable_l149 = TLBTable_9_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_9_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_9_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_9_vpn;
         _zz_pte = TLBTable_9_pte;
       end
       6'b001010 : begin
-        _zz_when_PageTable_l149 = TLBTable_10_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_10_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_10_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_10_vpn;
         _zz_pte = TLBTable_10_pte;
       end
       6'b001011 : begin
-        _zz_when_PageTable_l149 = TLBTable_11_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_11_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_11_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_11_vpn;
         _zz_pte = TLBTable_11_pte;
       end
       6'b001100 : begin
-        _zz_when_PageTable_l149 = TLBTable_12_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_12_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_12_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_12_vpn;
         _zz_pte = TLBTable_12_pte;
       end
       6'b001101 : begin
-        _zz_when_PageTable_l149 = TLBTable_13_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_13_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_13_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_13_vpn;
         _zz_pte = TLBTable_13_pte;
       end
       6'b001110 : begin
-        _zz_when_PageTable_l149 = TLBTable_14_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_14_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_14_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_14_vpn;
         _zz_pte = TLBTable_14_pte;
       end
       6'b001111 : begin
-        _zz_when_PageTable_l149 = TLBTable_15_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_15_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_15_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_15_vpn;
         _zz_pte = TLBTable_15_pte;
       end
       6'b010000 : begin
-        _zz_when_PageTable_l149 = TLBTable_16_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_16_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_16_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_16_vpn;
         _zz_pte = TLBTable_16_pte;
       end
       6'b010001 : begin
-        _zz_when_PageTable_l149 = TLBTable_17_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_17_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_17_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_17_vpn;
         _zz_pte = TLBTable_17_pte;
       end
       6'b010010 : begin
-        _zz_when_PageTable_l149 = TLBTable_18_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_18_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_18_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_18_vpn;
         _zz_pte = TLBTable_18_pte;
       end
       6'b010011 : begin
-        _zz_when_PageTable_l149 = TLBTable_19_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_19_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_19_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_19_vpn;
         _zz_pte = TLBTable_19_pte;
       end
       6'b010100 : begin
-        _zz_when_PageTable_l149 = TLBTable_20_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_20_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_20_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_20_vpn;
         _zz_pte = TLBTable_20_pte;
       end
       6'b010101 : begin
-        _zz_when_PageTable_l149 = TLBTable_21_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_21_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_21_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_21_vpn;
         _zz_pte = TLBTable_21_pte;
       end
       6'b010110 : begin
-        _zz_when_PageTable_l149 = TLBTable_22_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_22_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_22_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_22_vpn;
         _zz_pte = TLBTable_22_pte;
       end
       6'b010111 : begin
-        _zz_when_PageTable_l149 = TLBTable_23_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_23_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_23_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_23_vpn;
         _zz_pte = TLBTable_23_pte;
       end
       6'b011000 : begin
-        _zz_when_PageTable_l149 = TLBTable_24_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_24_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_24_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_24_vpn;
         _zz_pte = TLBTable_24_pte;
       end
       6'b011001 : begin
-        _zz_when_PageTable_l149 = TLBTable_25_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_25_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_25_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_25_vpn;
         _zz_pte = TLBTable_25_pte;
       end
       6'b011010 : begin
-        _zz_when_PageTable_l149 = TLBTable_26_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_26_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_26_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_26_vpn;
         _zz_pte = TLBTable_26_pte;
       end
       6'b011011 : begin
-        _zz_when_PageTable_l149 = TLBTable_27_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_27_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_27_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_27_vpn;
         _zz_pte = TLBTable_27_pte;
       end
       6'b011100 : begin
-        _zz_when_PageTable_l149 = TLBTable_28_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_28_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_28_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_28_vpn;
         _zz_pte = TLBTable_28_pte;
       end
       6'b011101 : begin
-        _zz_when_PageTable_l149 = TLBTable_29_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_29_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_29_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_29_vpn;
         _zz_pte = TLBTable_29_pte;
       end
       6'b011110 : begin
-        _zz_when_PageTable_l149 = TLBTable_30_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_30_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_30_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_30_vpn;
         _zz_pte = TLBTable_30_pte;
       end
       6'b011111 : begin
-        _zz_when_PageTable_l149 = TLBTable_31_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_31_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_31_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_31_vpn;
         _zz_pte = TLBTable_31_pte;
       end
       6'b100000 : begin
-        _zz_when_PageTable_l149 = TLBTable_32_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_32_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_32_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_32_vpn;
         _zz_pte = TLBTable_32_pte;
       end
       6'b100001 : begin
-        _zz_when_PageTable_l149 = TLBTable_33_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_33_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_33_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_33_vpn;
         _zz_pte = TLBTable_33_pte;
       end
       6'b100010 : begin
-        _zz_when_PageTable_l149 = TLBTable_34_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_34_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_34_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_34_vpn;
         _zz_pte = TLBTable_34_pte;
       end
       6'b100011 : begin
-        _zz_when_PageTable_l149 = TLBTable_35_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_35_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_35_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_35_vpn;
         _zz_pte = TLBTable_35_pte;
       end
       6'b100100 : begin
-        _zz_when_PageTable_l149 = TLBTable_36_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_36_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_36_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_36_vpn;
         _zz_pte = TLBTable_36_pte;
       end
       6'b100101 : begin
-        _zz_when_PageTable_l149 = TLBTable_37_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_37_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_37_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_37_vpn;
         _zz_pte = TLBTable_37_pte;
       end
       6'b100110 : begin
-        _zz_when_PageTable_l149 = TLBTable_38_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_38_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_38_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_38_vpn;
         _zz_pte = TLBTable_38_pte;
       end
       6'b100111 : begin
-        _zz_when_PageTable_l149 = TLBTable_39_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_39_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_39_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_39_vpn;
         _zz_pte = TLBTable_39_pte;
       end
       6'b101000 : begin
-        _zz_when_PageTable_l149 = TLBTable_40_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_40_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_40_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_40_vpn;
         _zz_pte = TLBTable_40_pte;
       end
       6'b101001 : begin
-        _zz_when_PageTable_l149 = TLBTable_41_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_41_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_41_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_41_vpn;
         _zz_pte = TLBTable_41_pte;
       end
       6'b101010 : begin
-        _zz_when_PageTable_l149 = TLBTable_42_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_42_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_42_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_42_vpn;
         _zz_pte = TLBTable_42_pte;
       end
       6'b101011 : begin
-        _zz_when_PageTable_l149 = TLBTable_43_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_43_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_43_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_43_vpn;
         _zz_pte = TLBTable_43_pte;
       end
       6'b101100 : begin
-        _zz_when_PageTable_l149 = TLBTable_44_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_44_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_44_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_44_vpn;
         _zz_pte = TLBTable_44_pte;
       end
       6'b101101 : begin
-        _zz_when_PageTable_l149 = TLBTable_45_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_45_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_45_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_45_vpn;
         _zz_pte = TLBTable_45_pte;
       end
       6'b101110 : begin
-        _zz_when_PageTable_l149 = TLBTable_46_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_46_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_46_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_46_vpn;
         _zz_pte = TLBTable_46_pte;
       end
       6'b101111 : begin
-        _zz_when_PageTable_l149 = TLBTable_47_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_47_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_47_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_47_vpn;
         _zz_pte = TLBTable_47_pte;
       end
       6'b110000 : begin
-        _zz_when_PageTable_l149 = TLBTable_48_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_48_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_48_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_48_vpn;
         _zz_pte = TLBTable_48_pte;
       end
       6'b110001 : begin
-        _zz_when_PageTable_l149 = TLBTable_49_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_49_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_49_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_49_vpn;
         _zz_pte = TLBTable_49_pte;
       end
       6'b110010 : begin
-        _zz_when_PageTable_l149 = TLBTable_50_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_50_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_50_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_50_vpn;
         _zz_pte = TLBTable_50_pte;
       end
       6'b110011 : begin
-        _zz_when_PageTable_l149 = TLBTable_51_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_51_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_51_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_51_vpn;
         _zz_pte = TLBTable_51_pte;
       end
       6'b110100 : begin
-        _zz_when_PageTable_l149 = TLBTable_52_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_52_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_52_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_52_vpn;
         _zz_pte = TLBTable_52_pte;
       end
       6'b110101 : begin
-        _zz_when_PageTable_l149 = TLBTable_53_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_53_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_53_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_53_vpn;
         _zz_pte = TLBTable_53_pte;
       end
       6'b110110 : begin
-        _zz_when_PageTable_l149 = TLBTable_54_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_54_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_54_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_54_vpn;
         _zz_pte = TLBTable_54_pte;
       end
       6'b110111 : begin
-        _zz_when_PageTable_l149 = TLBTable_55_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_55_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_55_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_55_vpn;
         _zz_pte = TLBTable_55_pte;
       end
       6'b111000 : begin
-        _zz_when_PageTable_l149 = TLBTable_56_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_56_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_56_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_56_vpn;
         _zz_pte = TLBTable_56_pte;
       end
       6'b111001 : begin
-        _zz_when_PageTable_l149 = TLBTable_57_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_57_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_57_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_57_vpn;
         _zz_pte = TLBTable_57_pte;
       end
       6'b111010 : begin
-        _zz_when_PageTable_l149 = TLBTable_58_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_58_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_58_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_58_vpn;
         _zz_pte = TLBTable_58_pte;
       end
       6'b111011 : begin
-        _zz_when_PageTable_l149 = TLBTable_59_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_59_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_59_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_59_vpn;
         _zz_pte = TLBTable_59_pte;
       end
       6'b111100 : begin
-        _zz_when_PageTable_l149 = TLBTable_60_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_60_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_60_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_60_vpn;
         _zz_pte = TLBTable_60_pte;
       end
       6'b111101 : begin
-        _zz_when_PageTable_l149 = TLBTable_61_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_61_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_61_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_61_vpn;
         _zz_pte = TLBTable_61_pte;
       end
       6'b111110 : begin
-        _zz_when_PageTable_l149 = TLBTable_62_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_62_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_62_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_62_vpn;
         _zz_pte = TLBTable_62_pte;
       end
       default : begin
-        _zz_when_PageTable_l149 = TLBTable_63_valid;
-        _zz_when_PageTable_l149_1 = TLBTable_63_vpn;
+        _zz__zz_trans_io_tlb_hit = TLBTable_63_valid;
+        _zz__zz_trans_io_tlb_hit_1 = TLBTable_63_vpn;
         _zz_pte = TLBTable_63_pte;
       end
     endcase
@@ -13952,20 +13987,27 @@ module PageTable (
   always @(*) begin
     case(i)
       1'b0 : begin
-        _zz_wb_adr_4 = va_vpn_0;
-        _zz_when_PageTable_l217 = pte_ppn_0;
+        _zz__zz_when_PageTable_l169 = pte_ppn_0;
+        _zz_wb_adr_10 = va_vpn_0;
       end
       default : begin
-        _zz_wb_adr_4 = va_vpn_1;
-        _zz_when_PageTable_l217 = pte_ppn_1;
+        _zz__zz_when_PageTable_l169 = pte_ppn_1;
+        _zz_wb_adr_10 = va_vpn_1;
       end
     endcase
   end
 
   always @(*) begin
-    case(_zz_wb_adr_10)
-      1'b0 : _zz_wb_adr_9 = va_vpn_0;
-      default : _zz_wb_adr_9 = va_vpn_1;
+    case(_zz_wb_adr_5)
+      1'b0 : _zz_wb_adr_4 = va_vpn_0;
+      default : _zz_wb_adr_4 = va_vpn_1;
+    endcase
+  end
+
+  always @(*) begin
+    case(_zz_wb_adr_16)
+      1'b0 : _zz_wb_adr_15 = va_vpn_0;
+      default : _zz_wb_adr_15 = va_vpn_1;
     endcase
   end
 
@@ -13988,20 +14030,18 @@ module PageTable (
   end
   always @(*) begin
     case(fsm_stateReg)
-      fsm_enumDef_BOOT : fsm_stateReg_string = "BOOT     ";
-      fsm_enumDef_idle : fsm_stateReg_string = "idle     ";
-      fsm_enumDef_read : fsm_stateReg_string = "read     ";
-      fsm_enumDef_translate : fsm_stateReg_string = "translate";
-      default : fsm_stateReg_string = "?????????";
+      fsm_enumDef_BOOT : fsm_stateReg_string = "BOOT";
+      fsm_enumDef_idle : fsm_stateReg_string = "idle";
+      fsm_enumDef_read : fsm_stateReg_string = "read";
+      default : fsm_stateReg_string = "????";
     endcase
   end
   always @(*) begin
     case(fsm_stateNext)
-      fsm_enumDef_BOOT : fsm_stateNext_string = "BOOT     ";
-      fsm_enumDef_idle : fsm_stateNext_string = "idle     ";
-      fsm_enumDef_read : fsm_stateNext_string = "read     ";
-      fsm_enumDef_translate : fsm_stateNext_string = "translate";
-      default : fsm_stateNext_string = "?????????";
+      fsm_enumDef_BOOT : fsm_stateNext_string = "BOOT";
+      fsm_enumDef_idle : fsm_stateNext_string = "idle";
+      fsm_enumDef_read : fsm_stateNext_string = "read";
+      default : fsm_stateNext_string = "????";
     endcase
   end
   `endif
@@ -14010,399 +14050,8 @@ module PageTable (
   assign va_vpn_1 = trans_io_look_up_addr[31 : 22];
   assign va_vpn_0 = trans_io_look_up_addr[21 : 12];
   assign TLBIndex = trans_io_look_up_addr[17 : 12];
-  assign wb_cyc = wb_stb;
-  assign wb_we = 1'b0;
-  assign wb_dat_w = 32'h00000000;
-  assign pte_v = pte[0];
-  assign pte_r = pte[1];
-  assign pte_w = pte[2];
-  assign pte_x = pte[3];
-  assign pte_u = pte[4];
-  assign pte_a = pte[6];
-  assign pte_d = pte[7];
-  assign pte_ppn_raw = pte[31 : 10];
-  assign pte_ppn_0 = _zz_pte_ppn_0;
-  assign pte_ppn_1 = pte[31 : 20];
-  assign fsm_wantExit = 1'b0;
-  always @(*) begin
-    fsm_wantStart = 1'b0;
-    case(fsm_stateReg)
-      fsm_enumDef_idle : begin
-      end
-      fsm_enumDef_read : begin
-      end
-      fsm_enumDef_translate : begin
-      end
-      default : begin
-        fsm_wantStart = 1'b1;
-      end
-    endcase
-  end
-
-  assign fsm_wantKill = 1'b0;
-  always @(*) begin
-    trans_io_exception_code = 32'h00000000;
-    case(fsm_stateReg)
-      fsm_enumDef_idle : begin
-      end
-      fsm_enumDef_read : begin
-      end
-      fsm_enumDef_translate : begin
-        if(when_PageTable_l179) begin
-          case(trans_io_access_type)
-            MemAccessType_Load : begin
-              trans_io_exception_code = 32'h0000000d;
-            end
-            MemAccessType_Store : begin
-              trans_io_exception_code = 32'h0000000f;
-            end
-            default : begin
-              trans_io_exception_code = 32'h0000000c;
-            end
-          endcase
-        end else begin
-          if(when_PageTable_l185) begin
-            if(when_PageTable_l189) begin
-              case(trans_io_access_type)
-                MemAccessType_Load : begin
-                  trans_io_exception_code = 32'h0000000d;
-                end
-                MemAccessType_Store : begin
-                  trans_io_exception_code = 32'h0000000f;
-                end
-                default : begin
-                  trans_io_exception_code = 32'h0000000c;
-                end
-              endcase
-            end else begin
-              if(when_PageTable_l193) begin
-                case(trans_io_access_type)
-                  MemAccessType_Load : begin
-                    trans_io_exception_code = 32'h0000000d;
-                  end
-                  MemAccessType_Store : begin
-                    trans_io_exception_code = 32'h0000000f;
-                  end
-                  default : begin
-                    trans_io_exception_code = 32'h0000000c;
-                  end
-                endcase
-              end else begin
-                if(when_PageTable_l201) begin
-                  case(trans_io_access_type)
-                    MemAccessType_Load : begin
-                      trans_io_exception_code = 32'h0000000d;
-                    end
-                    MemAccessType_Store : begin
-                      trans_io_exception_code = 32'h0000000f;
-                    end
-                    default : begin
-                      trans_io_exception_code = 32'h0000000c;
-                    end
-                  endcase
-                end else begin
-                  if(when_PageTable_l205) begin
-                    case(trans_io_access_type)
-                      MemAccessType_Load : begin
-                        trans_io_exception_code = 32'h0000000d;
-                      end
-                      MemAccessType_Store : begin
-                        trans_io_exception_code = 32'h0000000f;
-                      end
-                      default : begin
-                        trans_io_exception_code = 32'h0000000c;
-                      end
-                    endcase
-                  end else begin
-                    if(when_PageTable_l209) begin
-                      case(trans_io_access_type)
-                        MemAccessType_Load : begin
-                          trans_io_exception_code = 32'h0000000d;
-                        end
-                        MemAccessType_Store : begin
-                          trans_io_exception_code = 32'h0000000f;
-                        end
-                        default : begin
-                          trans_io_exception_code = 32'h0000000c;
-                        end
-                      endcase
-                    end else begin
-                      if(when_PageTable_l213) begin
-                        case(trans_io_access_type)
-                          MemAccessType_Load : begin
-                            trans_io_exception_code = 32'h0000000d;
-                          end
-                          MemAccessType_Store : begin
-                            trans_io_exception_code = 32'h0000000f;
-                          end
-                          default : begin
-                            trans_io_exception_code = 32'h0000000c;
-                          end
-                        endcase
-                      end else begin
-                        if(when_PageTable_l217) begin
-                          case(trans_io_access_type)
-                            MemAccessType_Load : begin
-                              trans_io_exception_code = 32'h0000000d;
-                            end
-                            MemAccessType_Store : begin
-                              trans_io_exception_code = 32'h0000000f;
-                            end
-                            default : begin
-                              trans_io_exception_code = 32'h0000000c;
-                            end
-                          endcase
-                        end
-                      end
-                    end
-                  end
-                end
-              end
-            end
-          end else begin
-            if(!when_PageTable_l244) begin
-              case(trans_io_access_type)
-                MemAccessType_Load : begin
-                  trans_io_exception_code = 32'h0000000d;
-                end
-                MemAccessType_Store : begin
-                  trans_io_exception_code = 32'h0000000f;
-                end
-                default : begin
-                  trans_io_exception_code = 32'h0000000c;
-                end
-              endcase
-            end
-          end
-        end
-      end
-      default : begin
-      end
-    endcase
-  end
-
-  always @(*) begin
-    trans_io_look_up_valid = 1'b0;
-    case(fsm_stateReg)
-      fsm_enumDef_idle : begin
-        trans_io_look_up_valid = 1'b0;
-      end
-      fsm_enumDef_read : begin
-      end
-      fsm_enumDef_translate : begin
-        if(when_PageTable_l179) begin
-          trans_io_look_up_valid = 1'b0;
-        end else begin
-          if(when_PageTable_l185) begin
-            if(when_PageTable_l189) begin
-              trans_io_look_up_valid = 1'b0;
-            end else begin
-              if(when_PageTable_l193) begin
-                trans_io_look_up_valid = 1'b0;
-              end else begin
-                if(when_PageTable_l201) begin
-                  trans_io_look_up_valid = 1'b0;
-                end else begin
-                  if(when_PageTable_l205) begin
-                    trans_io_look_up_valid = 1'b0;
-                  end else begin
-                    if(when_PageTable_l209) begin
-                      trans_io_look_up_valid = 1'b0;
-                    end else begin
-                      if(when_PageTable_l213) begin
-                        trans_io_look_up_valid = 1'b0;
-                      end else begin
-                        if(when_PageTable_l217) begin
-                          trans_io_look_up_valid = 1'b0;
-                        end else begin
-                          trans_io_look_up_valid = 1'b1;
-                        end
-                      end
-                    end
-                  end
-                end
-              end
-            end
-          end else begin
-            if(!when_PageTable_l244) begin
-              trans_io_look_up_valid = 1'b0;
-            end
-          end
-        end
-      end
-      default : begin
-      end
-    endcase
-  end
-
-  always @(*) begin
-    trans_io_look_up_ack = 1'b0;
-    case(fsm_stateReg)
-      fsm_enumDef_idle : begin
-        trans_io_look_up_ack = 1'b0;
-      end
-      fsm_enumDef_read : begin
-      end
-      fsm_enumDef_translate : begin
-        if(when_PageTable_l179) begin
-          trans_io_look_up_ack = 1'b1;
-        end else begin
-          if(when_PageTable_l185) begin
-            if(when_PageTable_l189) begin
-              trans_io_look_up_ack = 1'b1;
-            end else begin
-              if(when_PageTable_l193) begin
-                trans_io_look_up_ack = 1'b1;
-              end else begin
-                if(when_PageTable_l201) begin
-                  trans_io_look_up_ack = 1'b1;
-                end else begin
-                  if(when_PageTable_l205) begin
-                    trans_io_look_up_ack = 1'b1;
-                  end else begin
-                    if(when_PageTable_l209) begin
-                      trans_io_look_up_ack = 1'b1;
-                    end else begin
-                      if(when_PageTable_l213) begin
-                        trans_io_look_up_ack = 1'b1;
-                      end else begin
-                        if(when_PageTable_l217) begin
-                          trans_io_look_up_ack = 1'b1;
-                        end else begin
-                          trans_io_look_up_ack = 1'b1;
-                        end
-                      end
-                    end
-                  end
-                end
-              end
-            end
-          end else begin
-            if(!when_PageTable_l244) begin
-              trans_io_look_up_ack = 1'b1;
-            end
-          end
-        end
-      end
-      default : begin
-      end
-    endcase
-  end
-
-  always @(*) begin
-    trans_io_physical_addr = 32'h00000000;
-    case(fsm_stateReg)
-      fsm_enumDef_idle : begin
-      end
-      fsm_enumDef_read : begin
-      end
-      fsm_enumDef_translate : begin
-        if(!when_PageTable_l179) begin
-          if(when_PageTable_l185) begin
-            if(!when_PageTable_l189) begin
-              if(!when_PageTable_l193) begin
-                if(!when_PageTable_l201) begin
-                  if(!when_PageTable_l205) begin
-                    if(!when_PageTable_l209) begin
-                      if(!when_PageTable_l213) begin
-                        if(!when_PageTable_l217) begin
-                          trans_io_physical_addr[11 : 0] = trans_io_look_up_addr[11 : 0];
-                          case(i)
-                            1'b1 : begin
-                              trans_io_physical_addr[21 : 12] = trans_io_look_up_addr[21 : 12];
-                              trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
-                            end
-                            default : begin
-                              trans_io_physical_addr[21 : 12] = pte_ppn_0[9 : 0];
-                              trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
-                            end
-                          endcase
-                        end
-                      end
-                    end
-                  end
-                end
-              end
-            end
-          end
-        end
-      end
-      default : begin
-      end
-    endcase
-  end
-
-  always @(*) begin
-    fsm_stateNext = fsm_stateReg;
-    case(fsm_stateReg)
-      fsm_enumDef_idle : begin
-        if(trans_io_look_up_req) begin
-          if(when_PageTable_l149) begin
-            fsm_stateNext = fsm_enumDef_translate;
-          end else begin
-            fsm_stateNext = fsm_enumDef_read;
-          end
-        end
-      end
-      fsm_enumDef_read : begin
-        if(wb_ack) begin
-          fsm_stateNext = fsm_enumDef_translate;
-        end
-      end
-      fsm_enumDef_translate : begin
-        if(when_PageTable_l179) begin
-          fsm_stateNext = fsm_enumDef_idle;
-        end else begin
-          if(when_PageTable_l185) begin
-            if(when_PageTable_l189) begin
-              fsm_stateNext = fsm_enumDef_idle;
-            end else begin
-              if(when_PageTable_l193) begin
-                fsm_stateNext = fsm_enumDef_idle;
-              end else begin
-                if(when_PageTable_l201) begin
-                  fsm_stateNext = fsm_enumDef_idle;
-                end else begin
-                  if(when_PageTable_l205) begin
-                    fsm_stateNext = fsm_enumDef_idle;
-                  end else begin
-                    if(when_PageTable_l209) begin
-                      fsm_stateNext = fsm_enumDef_idle;
-                    end else begin
-                      if(when_PageTable_l213) begin
-                        fsm_stateNext = fsm_enumDef_idle;
-                      end else begin
-                        if(when_PageTable_l217) begin
-                          fsm_stateNext = fsm_enumDef_idle;
-                        end else begin
-                          fsm_stateNext = fsm_enumDef_idle;
-                        end
-                      end
-                    end
-                  end
-                end
-              end
-            end
-          end else begin
-            if(when_PageTable_l244) begin
-              fsm_stateNext = fsm_enumDef_read;
-            end else begin
-              fsm_stateNext = fsm_enumDef_idle;
-            end
-          end
-        end
-      end
-      default : begin
-      end
-    endcase
-    if(fsm_wantStart) begin
-      fsm_stateNext = fsm_enumDef_idle;
-    end
-    if(fsm_wantKill) begin
-      fsm_stateNext = fsm_enumDef_BOOT;
-    end
-  end
-
+  assign _zz_trans_io_tlb_hit = _zz__zz_trans_io_tlb_hit;
+  assign _zz_trans_io_tlb_hit_1 = _zz__zz_trans_io_tlb_hit_1;
   assign _zz_1 = ({63'd0,1'b1} <<< TLBIndex);
   assign _zz_2 = _zz_1[0];
   assign _zz_3 = _zz_1[1];
@@ -14468,19 +14117,662 @@ module PageTable (
   assign _zz_63 = _zz_1[61];
   assign _zz_64 = _zz_1[62];
   assign _zz_65 = _zz_1[63];
-  assign when_PageTable_l149 = (_zz_when_PageTable_l149 && (_zz_when_PageTable_l149_1 == trans_io_look_up_addr[31 : 12]));
-  assign when_PageTable_l168 = (i == 1'b0);
+  assign trans_io_tlb_hit = (_zz_trans_io_tlb_hit && (_zz_trans_io_tlb_hit_1 == trans_io_look_up_addr[31 : 12]));
+  assign wb_cyc = wb_stb;
+  assign wb_we = 1'b0;
+  assign wb_dat_w = 32'h00000000;
+  assign pte_v = pte[0];
+  assign pte_r = pte[1];
+  assign pte_w = pte[2];
+  assign pte_x = pte[3];
+  assign pte_u = pte[4];
+  assign pte_a = pte[6];
+  assign pte_d = pte[7];
+  assign pte_ppn_raw = pte[31 : 10];
+  assign pte_ppn_0 = _zz_pte_ppn_0;
+  assign pte_ppn_1 = pte[31 : 20];
+  assign fsm_wantExit = 1'b0;
+  always @(*) begin
+    fsm_wantStart = 1'b0;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+      end
+      fsm_enumDef_read : begin
+      end
+      default : begin
+        fsm_wantStart = 1'b1;
+      end
+    endcase
+  end
+
+  assign fsm_wantKill = 1'b0;
+  always @(*) begin
+    pte = 32'h00000000;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+        if(trans_io_look_up_req) begin
+          if(when_PageTable_l225) begin
+            pte = _zz_pte;
+          end
+        end
+      end
+      fsm_enumDef_read : begin
+        if(wb_ack) begin
+          pte = wb_dat_r;
+        end
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  always @(*) begin
+    trans_io_exception_code = 32'h00000000;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+        if(trans_io_look_up_req) begin
+          if(when_PageTable_l225) begin
+            if(when_PageTable_l138) begin
+              case(trans_io_access_type)
+                MemAccessType_Load : begin
+                  trans_io_exception_code = 32'h0000000d;
+                end
+                MemAccessType_Store : begin
+                  trans_io_exception_code = 32'h0000000f;
+                end
+                default : begin
+                  trans_io_exception_code = 32'h0000000c;
+                end
+              endcase
+            end else begin
+              if(when_PageTable_l143) begin
+                if(when_PageTable_l147) begin
+                  case(trans_io_access_type)
+                    MemAccessType_Load : begin
+                      trans_io_exception_code = 32'h0000000d;
+                    end
+                    MemAccessType_Store : begin
+                      trans_io_exception_code = 32'h0000000f;
+                    end
+                    default : begin
+                      trans_io_exception_code = 32'h0000000c;
+                    end
+                  endcase
+                end else begin
+                  if(when_PageTable_l150) begin
+                    case(trans_io_access_type)
+                      MemAccessType_Load : begin
+                        trans_io_exception_code = 32'h0000000d;
+                      end
+                      MemAccessType_Store : begin
+                        trans_io_exception_code = 32'h0000000f;
+                      end
+                      default : begin
+                        trans_io_exception_code = 32'h0000000c;
+                      end
+                    endcase
+                  end else begin
+                    if(when_PageTable_l157) begin
+                      case(trans_io_access_type)
+                        MemAccessType_Load : begin
+                          trans_io_exception_code = 32'h0000000d;
+                        end
+                        MemAccessType_Store : begin
+                          trans_io_exception_code = 32'h0000000f;
+                        end
+                        default : begin
+                          trans_io_exception_code = 32'h0000000c;
+                        end
+                      endcase
+                    end else begin
+                      if(when_PageTable_l160) begin
+                        case(trans_io_access_type)
+                          MemAccessType_Load : begin
+                            trans_io_exception_code = 32'h0000000d;
+                          end
+                          MemAccessType_Store : begin
+                            trans_io_exception_code = 32'h0000000f;
+                          end
+                          default : begin
+                            trans_io_exception_code = 32'h0000000c;
+                          end
+                        endcase
+                      end else begin
+                        if(when_PageTable_l163) begin
+                          case(trans_io_access_type)
+                            MemAccessType_Load : begin
+                              trans_io_exception_code = 32'h0000000d;
+                            end
+                            MemAccessType_Store : begin
+                              trans_io_exception_code = 32'h0000000f;
+                            end
+                            default : begin
+                              trans_io_exception_code = 32'h0000000c;
+                            end
+                          endcase
+                        end else begin
+                          if(when_PageTable_l166) begin
+                            case(trans_io_access_type)
+                              MemAccessType_Load : begin
+                                trans_io_exception_code = 32'h0000000d;
+                              end
+                              MemAccessType_Store : begin
+                                trans_io_exception_code = 32'h0000000f;
+                              end
+                              default : begin
+                                trans_io_exception_code = 32'h0000000c;
+                              end
+                            endcase
+                          end else begin
+                            if(when_PageTable_l169) begin
+                              case(trans_io_access_type)
+                                MemAccessType_Load : begin
+                                  trans_io_exception_code = 32'h0000000d;
+                                end
+                                MemAccessType_Store : begin
+                                  trans_io_exception_code = 32'h0000000f;
+                                end
+                                default : begin
+                                  trans_io_exception_code = 32'h0000000c;
+                                end
+                              endcase
+                            end
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+              end else begin
+                if(!when_PageTable_l193) begin
+                  case(trans_io_access_type)
+                    MemAccessType_Load : begin
+                      trans_io_exception_code = 32'h0000000d;
+                    end
+                    MemAccessType_Store : begin
+                      trans_io_exception_code = 32'h0000000f;
+                    end
+                    default : begin
+                      trans_io_exception_code = 32'h0000000c;
+                    end
+                  endcase
+                end
+              end
+            end
+          end
+        end
+      end
+      fsm_enumDef_read : begin
+        if(wb_ack) begin
+          if(when_PageTable_l138_1) begin
+            case(trans_io_access_type)
+              MemAccessType_Load : begin
+                trans_io_exception_code = 32'h0000000d;
+              end
+              MemAccessType_Store : begin
+                trans_io_exception_code = 32'h0000000f;
+              end
+              default : begin
+                trans_io_exception_code = 32'h0000000c;
+              end
+            endcase
+          end else begin
+            if(when_PageTable_l143_1) begin
+              if(when_PageTable_l147_1) begin
+                case(trans_io_access_type)
+                  MemAccessType_Load : begin
+                    trans_io_exception_code = 32'h0000000d;
+                  end
+                  MemAccessType_Store : begin
+                    trans_io_exception_code = 32'h0000000f;
+                  end
+                  default : begin
+                    trans_io_exception_code = 32'h0000000c;
+                  end
+                endcase
+              end else begin
+                if(when_PageTable_l150_1) begin
+                  case(trans_io_access_type)
+                    MemAccessType_Load : begin
+                      trans_io_exception_code = 32'h0000000d;
+                    end
+                    MemAccessType_Store : begin
+                      trans_io_exception_code = 32'h0000000f;
+                    end
+                    default : begin
+                      trans_io_exception_code = 32'h0000000c;
+                    end
+                  endcase
+                end else begin
+                  if(when_PageTable_l157_1) begin
+                    case(trans_io_access_type)
+                      MemAccessType_Load : begin
+                        trans_io_exception_code = 32'h0000000d;
+                      end
+                      MemAccessType_Store : begin
+                        trans_io_exception_code = 32'h0000000f;
+                      end
+                      default : begin
+                        trans_io_exception_code = 32'h0000000c;
+                      end
+                    endcase
+                  end else begin
+                    if(when_PageTable_l160_1) begin
+                      case(trans_io_access_type)
+                        MemAccessType_Load : begin
+                          trans_io_exception_code = 32'h0000000d;
+                        end
+                        MemAccessType_Store : begin
+                          trans_io_exception_code = 32'h0000000f;
+                        end
+                        default : begin
+                          trans_io_exception_code = 32'h0000000c;
+                        end
+                      endcase
+                    end else begin
+                      if(when_PageTable_l163_1) begin
+                        case(trans_io_access_type)
+                          MemAccessType_Load : begin
+                            trans_io_exception_code = 32'h0000000d;
+                          end
+                          MemAccessType_Store : begin
+                            trans_io_exception_code = 32'h0000000f;
+                          end
+                          default : begin
+                            trans_io_exception_code = 32'h0000000c;
+                          end
+                        endcase
+                      end else begin
+                        if(when_PageTable_l166_1) begin
+                          case(trans_io_access_type)
+                            MemAccessType_Load : begin
+                              trans_io_exception_code = 32'h0000000d;
+                            end
+                            MemAccessType_Store : begin
+                              trans_io_exception_code = 32'h0000000f;
+                            end
+                            default : begin
+                              trans_io_exception_code = 32'h0000000c;
+                            end
+                          endcase
+                        end else begin
+                          if(when_PageTable_l169_1) begin
+                            case(trans_io_access_type)
+                              MemAccessType_Load : begin
+                                trans_io_exception_code = 32'h0000000d;
+                              end
+                              MemAccessType_Store : begin
+                                trans_io_exception_code = 32'h0000000f;
+                              end
+                              default : begin
+                                trans_io_exception_code = 32'h0000000c;
+                              end
+                            endcase
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+              end
+            end else begin
+              if(!when_PageTable_l193_1) begin
+                case(trans_io_access_type)
+                  MemAccessType_Load : begin
+                    trans_io_exception_code = 32'h0000000d;
+                  end
+                  MemAccessType_Store : begin
+                    trans_io_exception_code = 32'h0000000f;
+                  end
+                  default : begin
+                    trans_io_exception_code = 32'h0000000c;
+                  end
+                endcase
+              end
+            end
+          end
+        end
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  always @(*) begin
+    trans_io_look_up_valid = 1'b0;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+        trans_io_look_up_valid = 1'b0;
+        if(trans_io_look_up_req) begin
+          if(when_PageTable_l225) begin
+            if(when_PageTable_l138) begin
+              trans_io_look_up_valid = 1'b0;
+            end else begin
+              if(when_PageTable_l143) begin
+                if(when_PageTable_l147) begin
+                  trans_io_look_up_valid = 1'b0;
+                end else begin
+                  if(when_PageTable_l150) begin
+                    trans_io_look_up_valid = 1'b0;
+                  end else begin
+                    if(when_PageTable_l157) begin
+                      trans_io_look_up_valid = 1'b0;
+                    end else begin
+                      if(when_PageTable_l160) begin
+                        trans_io_look_up_valid = 1'b0;
+                      end else begin
+                        if(when_PageTable_l163) begin
+                          trans_io_look_up_valid = 1'b0;
+                        end else begin
+                          if(when_PageTable_l166) begin
+                            trans_io_look_up_valid = 1'b0;
+                          end else begin
+                            if(when_PageTable_l169) begin
+                              trans_io_look_up_valid = 1'b0;
+                            end else begin
+                              trans_io_look_up_valid = 1'b1;
+                            end
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+              end else begin
+                if(!when_PageTable_l193) begin
+                  trans_io_look_up_valid = 1'b0;
+                end
+              end
+            end
+          end
+        end
+      end
+      fsm_enumDef_read : begin
+        if(wb_ack) begin
+          if(when_PageTable_l138_1) begin
+            trans_io_look_up_valid = 1'b0;
+          end else begin
+            if(when_PageTable_l143_1) begin
+              if(when_PageTable_l147_1) begin
+                trans_io_look_up_valid = 1'b0;
+              end else begin
+                if(when_PageTable_l150_1) begin
+                  trans_io_look_up_valid = 1'b0;
+                end else begin
+                  if(when_PageTable_l157_1) begin
+                    trans_io_look_up_valid = 1'b0;
+                  end else begin
+                    if(when_PageTable_l160_1) begin
+                      trans_io_look_up_valid = 1'b0;
+                    end else begin
+                      if(when_PageTable_l163_1) begin
+                        trans_io_look_up_valid = 1'b0;
+                      end else begin
+                        if(when_PageTable_l166_1) begin
+                          trans_io_look_up_valid = 1'b0;
+                        end else begin
+                          if(when_PageTable_l169_1) begin
+                            trans_io_look_up_valid = 1'b0;
+                          end else begin
+                            trans_io_look_up_valid = 1'b1;
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+              end
+            end else begin
+              if(!when_PageTable_l193_1) begin
+                trans_io_look_up_valid = 1'b0;
+              end
+            end
+          end
+        end
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  always @(*) begin
+    trans_io_look_up_ack = 1'b0;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+        trans_io_look_up_ack = 1'b0;
+        if(trans_io_look_up_req) begin
+          if(when_PageTable_l225) begin
+            if(when_PageTable_l138) begin
+              trans_io_look_up_ack = 1'b1;
+            end else begin
+              if(when_PageTable_l143) begin
+                if(when_PageTable_l147) begin
+                  trans_io_look_up_ack = 1'b1;
+                end else begin
+                  if(when_PageTable_l150) begin
+                    trans_io_look_up_ack = 1'b1;
+                  end else begin
+                    if(when_PageTable_l157) begin
+                      trans_io_look_up_ack = 1'b1;
+                    end else begin
+                      if(when_PageTable_l160) begin
+                        trans_io_look_up_ack = 1'b1;
+                      end else begin
+                        if(when_PageTable_l163) begin
+                          trans_io_look_up_ack = 1'b1;
+                        end else begin
+                          if(when_PageTable_l166) begin
+                            trans_io_look_up_ack = 1'b1;
+                          end else begin
+                            if(when_PageTable_l169) begin
+                              trans_io_look_up_ack = 1'b1;
+                            end else begin
+                              trans_io_look_up_ack = 1'b1;
+                            end
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+              end else begin
+                if(!when_PageTable_l193) begin
+                  trans_io_look_up_ack = 1'b1;
+                end
+              end
+            end
+          end
+        end
+      end
+      fsm_enumDef_read : begin
+        if(wb_ack) begin
+          if(when_PageTable_l138_1) begin
+            trans_io_look_up_ack = 1'b1;
+          end else begin
+            if(when_PageTable_l143_1) begin
+              if(when_PageTable_l147_1) begin
+                trans_io_look_up_ack = 1'b1;
+              end else begin
+                if(when_PageTable_l150_1) begin
+                  trans_io_look_up_ack = 1'b1;
+                end else begin
+                  if(when_PageTable_l157_1) begin
+                    trans_io_look_up_ack = 1'b1;
+                  end else begin
+                    if(when_PageTable_l160_1) begin
+                      trans_io_look_up_ack = 1'b1;
+                    end else begin
+                      if(when_PageTable_l163_1) begin
+                        trans_io_look_up_ack = 1'b1;
+                      end else begin
+                        if(when_PageTable_l166_1) begin
+                          trans_io_look_up_ack = 1'b1;
+                        end else begin
+                          if(when_PageTable_l169_1) begin
+                            trans_io_look_up_ack = 1'b1;
+                          end else begin
+                            trans_io_look_up_ack = 1'b1;
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+              end
+            end else begin
+              if(!when_PageTable_l193_1) begin
+                trans_io_look_up_ack = 1'b1;
+              end
+            end
+          end
+        end
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  always @(*) begin
+    trans_io_physical_addr = 32'h00000000;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+        if(trans_io_look_up_req) begin
+          if(when_PageTable_l225) begin
+            if(!when_PageTable_l138) begin
+              if(when_PageTable_l143) begin
+                if(!when_PageTable_l147) begin
+                  if(!when_PageTable_l150) begin
+                    if(!when_PageTable_l157) begin
+                      if(!when_PageTable_l160) begin
+                        if(!when_PageTable_l163) begin
+                          if(!when_PageTable_l166) begin
+                            if(!when_PageTable_l169) begin
+                              trans_io_physical_addr[11 : 0] = trans_io_look_up_addr[11 : 0];
+                              case(switch_PageTable_l181)
+                                1'b1 : begin
+                                  trans_io_physical_addr[21 : 12] = trans_io_look_up_addr[21 : 12];
+                                  trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
+                                end
+                                default : begin
+                                  trans_io_physical_addr[21 : 12] = pte_ppn_0[9 : 0];
+                                  trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
+                                end
+                              endcase
+                            end
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+      fsm_enumDef_read : begin
+        if(wb_ack) begin
+          if(!when_PageTable_l138_1) begin
+            if(when_PageTable_l143_1) begin
+              if(!when_PageTable_l147_1) begin
+                if(!when_PageTable_l150_1) begin
+                  if(!when_PageTable_l157_1) begin
+                    if(!when_PageTable_l160_1) begin
+                      if(!when_PageTable_l163_1) begin
+                        if(!when_PageTable_l166_1) begin
+                          if(!when_PageTable_l169_1) begin
+                            trans_io_physical_addr[11 : 0] = trans_io_look_up_addr[11 : 0];
+                            case(switch_PageTable_l181_1)
+                              1'b1 : begin
+                                trans_io_physical_addr[21 : 12] = trans_io_look_up_addr[21 : 12];
+                                trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
+                              end
+                              default : begin
+                                trans_io_physical_addr[21 : 12] = pte_ppn_0[9 : 0];
+                                trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
+                              end
+                            endcase
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  always @(*) begin
+    fsm_stateNext = fsm_stateReg;
+    case(fsm_stateReg)
+      fsm_enumDef_idle : begin
+        if(trans_io_look_up_req) begin
+          if(!when_PageTable_l225) begin
+            fsm_stateNext = fsm_enumDef_read;
+          end
+        end
+      end
+      fsm_enumDef_read : begin
+        if(wb_ack) begin
+          if(when_PageTable_l248) begin
+            fsm_stateNext = fsm_enumDef_idle;
+          end
+        end
+      end
+      default : begin
+      end
+    endcase
+    if(fsm_wantStart) begin
+      fsm_stateNext = fsm_enumDef_idle;
+    end
+    if(fsm_wantKill) begin
+      fsm_stateNext = fsm_enumDef_BOOT;
+    end
+  end
+
+  assign when_PageTable_l225 = (_zz_trans_io_tlb_hit && (_zz_trans_io_tlb_hit_1 == trans_io_look_up_addr[31 : 12]));
+  assign when_PageTable_l138 = ((! pte_v) || ((! pte_r) && pte_w));
+  assign when_PageTable_l143 = (pte_r || pte_x);
+  assign when_PageTable_l147 = (((! io_mstatus_MXR) && (! pte_r)) || ((io_mstatus_MXR && (! pte_r)) && (! pte_x)));
+  assign switch_PageTable_l181 = (trans_io_tlb_hit ? 1'b0 : i);
+  assign when_PageTable_l150 = (((io_privilege_mode == PrivilegeMode_S) && (trans_io_access_type == MemAccessType_Fetch)) && pte_u);
+  assign when_PageTable_l157 = ((io_privilege_mode == PrivilegeMode_U) && (! pte_u));
+  assign when_PageTable_l160 = (((io_privilege_mode == PrivilegeMode_S) && pte_u) && (! io_mstatus_SUM));
+  assign when_PageTable_l163 = ((trans_io_access_type == MemAccessType_Store) && (! pte_w));
+  assign when_PageTable_l166 = ((trans_io_access_type == MemAccessType_Fetch) && (! pte_x));
+  assign _zz_when_PageTable_l169 = _zz__zz_when_PageTable_l169;
+  assign when_PageTable_l169 = (((! trans_io_tlb_hit) && (1'b0 < i)) && (_zz_when_PageTable_l169 != 12'h000));
+  assign when_PageTable_l193 = ((! trans_io_tlb_hit) && (1'b0 < i));
+  assign when_PageTable_l243 = (i == 1'b0);
   assign _zz_TLBTable_0_vpn = trans_io_look_up_addr[31 : 12];
-  assign when_PageTable_l179 = ((! pte_v) || ((! pte_r) && pte_w));
-  assign when_PageTable_l185 = (pte_r || pte_x);
-  assign when_PageTable_l189 = (((! io_mstatus_MXR) && (! pte_r)) || ((io_mstatus_MXR && (! pte_r)) && (! pte_x)));
-  assign when_PageTable_l193 = (((io_privilege_mode == PrivilegeMode_S) && (trans_io_access_type == MemAccessType_Fetch)) && pte_u);
-  assign when_PageTable_l201 = ((io_privilege_mode == PrivilegeMode_U) && (! pte_u));
-  assign when_PageTable_l205 = (((io_privilege_mode == PrivilegeMode_S) && pte_u) && (! io_mstatus_SUM));
-  assign when_PageTable_l209 = ((trans_io_access_type == MemAccessType_Store) && (! pte_w));
-  assign when_PageTable_l213 = ((trans_io_access_type == MemAccessType_Fetch) && (! pte_x));
-  assign when_PageTable_l217 = ((1'b0 < i) && (_zz_when_PageTable_l217 != 12'h000));
-  assign when_PageTable_l244 = (1'b0 < i);
+  always @(*) begin
+    when_PageTable_l248 = 1'b1;
+    if(!when_PageTable_l138_1) begin
+      if(!when_PageTable_l143_1) begin
+        if(when_PageTable_l193_1) begin
+          when_PageTable_l248 = 1'b0;
+        end
+      end
+    end
+  end
+
+  assign when_PageTable_l138_1 = ((! pte_v) || ((! pte_r) && pte_w));
+  assign when_PageTable_l143_1 = (pte_r || pte_x);
+  assign when_PageTable_l147_1 = (((! io_mstatus_MXR) && (! pte_r)) || ((io_mstatus_MXR && (! pte_r)) && (! pte_x)));
+  assign switch_PageTable_l181_1 = (trans_io_tlb_hit ? 1'b0 : i);
+  assign when_PageTable_l150_1 = (((io_privilege_mode == PrivilegeMode_S) && (trans_io_access_type == MemAccessType_Fetch)) && pte_u);
+  assign when_PageTable_l157_1 = ((io_privilege_mode == PrivilegeMode_U) && (! pte_u));
+  assign when_PageTable_l160_1 = (((io_privilege_mode == PrivilegeMode_S) && pte_u) && (! io_mstatus_SUM));
+  assign when_PageTable_l163_1 = ((trans_io_access_type == MemAccessType_Store) && (! pte_w));
+  assign when_PageTable_l166_1 = ((trans_io_access_type == MemAccessType_Fetch) && (! pte_x));
+  assign when_PageTable_l169_1 = (((! trans_io_tlb_hit) && (1'b0 < i)) && (_zz_when_PageTable_l169 != 12'h000));
+  assign when_PageTable_l193_1 = ((! trans_io_tlb_hit) && (1'b0 < i));
   assign when_StateMachine_l253 = ((! (fsm_stateReg == fsm_enumDef_idle)) && (fsm_stateNext == fsm_enumDef_idle));
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
@@ -14680,7 +14972,6 @@ module PageTable (
       wb_stb <= 1'b0;
       wb_adr <= 32'h00000000;
       wb_sel <= 4'b0000;
-      pte <= 32'h00000000;
       fsm_stateReg <= fsm_enumDef_BOOT;
     end else begin
       if(io_clear_tlb) begin
@@ -14753,11 +15044,19 @@ module PageTable (
       case(fsm_stateReg)
         fsm_enumDef_idle : begin
           if(trans_io_look_up_req) begin
-            if(when_PageTable_l149) begin
-              pte <= _zz_pte;
-              i <= 1'b0;
+            if(when_PageTable_l225) begin
+              if(!when_PageTable_l138) begin
+                if(!when_PageTable_l143) begin
+                  if(when_PageTable_l193) begin
+                    i <= (i - 1'b1);
+                    wb_adr <= _zz_wb_adr[31:0];
+                    wb_stb <= 1'b1;
+                    wb_sel <= 4'b1111;
+                  end
+                end
+              end
             end else begin
-              wb_adr <= _zz_wb_adr[31:0];
+              wb_adr <= _zz_wb_adr_6[31:0];
               wb_stb <= 1'b1;
               wb_sel <= 4'b1111;
             end
@@ -14766,8 +15065,7 @@ module PageTable (
         fsm_enumDef_read : begin
           if(wb_ack) begin
             wb_stb <= 1'b0;
-            pte <= wb_dat_r;
-            if(when_PageTable_l168) begin
+            if(when_PageTable_l243) begin
               if(_zz_2) begin
                 TLBTable_0_pte <= wb_dat_r;
               end
@@ -15345,16 +15643,14 @@ module PageTable (
                 TLBTable_63_valid <= 1'b1;
               end
             end
-          end
-        end
-        fsm_enumDef_translate : begin
-          if(!when_PageTable_l179) begin
-            if(!when_PageTable_l185) begin
-              if(when_PageTable_l244) begin
-                i <= (i - 1'b1);
-                wb_adr <= _zz_wb_adr_5[31:0];
-                wb_stb <= 1'b1;
-                wb_sel <= 4'b1111;
+            if(!when_PageTable_l138_1) begin
+              if(!when_PageTable_l143_1) begin
+                if(when_PageTable_l193_1) begin
+                  i <= (i - 1'b1);
+                  wb_adr <= _zz_wb_adr_11[31:0];
+                  wb_stb <= 1'b1;
+                  wb_sel <= 4'b1111;
+                end
               end
             end
           end

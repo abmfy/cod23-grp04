@@ -25,11 +25,12 @@ case class PageTableTranslatePorts() extends Bundle with IMasterSlave {
     val physical_addr = Types.addr
     val look_up_ack = Bool()
     val look_up_valid = Bool() // 是否发生异常
+    val tlb_hit = Bool()
     // exception signal
     val exception_code = Types.data
     override def asMaster(): Unit = {
         in (
-            physical_addr, look_up_ack, look_up_valid,
+            physical_addr, look_up_ack, look_up_valid, tlb_hit,
             exception_code,
         )
         out (
@@ -100,6 +101,8 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
     def TLBEntryValid(i: UInt) :Bool = {
         TLBTable(i).valid && TLBTable(i).vpn === trans_io.look_up_addr(12, 20 bits)
     }
+
+    trans_io.tlb_hit := TLBEntryValid(TLBIndex)
     
     val i = Reg(UInt(1 bits)) init(0)
     wb.cyc := wb.stb
@@ -110,7 +113,7 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
     wb.adr.setAsReg() init(0)
     wb.sel.setAsReg() init(0)
 
-    val pte = Reg(Types.data) init(0)
+    val pte = Types.data
     val pte_v = pte(0)
     val pte_r = pte(1)
     val pte_w = pte(2)
@@ -129,7 +132,80 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
         }
     }
 
+    // Return True if translation completes
+    def translate(): Bool = {
+        val res = True
+        when (!pte_v || !pte_r && pte_w) {
+            // raise page fault
+            raise_page_fault()
+        } otherwise {
+            // pte valid step 5
+            when (pte_r || pte_x) { // leaf ppn
+                when (
+                    !io.mstatus_MXR && !pte_r
+                ||  io.mstatus_MXR && !pte_r && !pte_x
+                ) {
+                    // Prevent unaccessible page
+                    raise_page_fault()
+                } elsewhen (
+                    io.privilege_mode === PrivilegeMode.S
+                &&  trans_io.access_type === MemAccessType.Fetch
+                &&  pte_u
+                ) {
+                    // Prevent user code execution in S mode
+                    raise_page_fault()
+                } elsewhen (io.privilege_mode === PrivilegeMode.U && !pte_u) {
+                    // Prevent user access supervisor page
+                    raise_page_fault()
+                } elsewhen (io.privilege_mode === PrivilegeMode.S && pte_u && !io.mstatus_SUM) {
+                    // Prevent supervisor access user page, when SUM = 0
+                    raise_page_fault()
+                } elsewhen (trans_io.access_type === MemAccessType.Store && !pte_w) {
+                    // Write denied
+                    raise_page_fault()
+                } elsewhen (trans_io.access_type === MemAccessType.Fetch && !pte_x) {
+                    // Execution denied
+                    raise_page_fault()
+                } elsewhen (!trans_io.tlb_hit && i > 0 && pte_ppn(i) =/= 0) {
+                    // Misaligned superpage
+                    raise_page_fault()
+                // uCore does not use a and d bits
+                // } elsewhen (!pte_a || trans_io.access_type === MemAccessType.Store && !pte_d) {
+                //     // step 7
+                //     raise_page_fault()
+                } otherwise { // success translation
+                    // pa.pgoff = va.pgoff
+                    trans_io.physical_addr(0, 12 bits) := trans_io.look_up_addr(0, 12 bits)
+                    trans_io.look_up_ack := True
+                    trans_io.look_up_valid := True
+                    switch (trans_io.tlb_hit ? U"0" | i) {
+                        is (1) {
+                            trans_io.physical_addr(12, 10 bits) := trans_io.look_up_addr(12, 10 bits)
+                            trans_io.physical_addr(22, 10 bits) := pte_ppn(1)(0, 10 bits)
+                        }
+                        is (0) {
+                            trans_io.physical_addr(12, 10 bits) := pte_ppn(0)(0, 10 bits)
+                            trans_io.physical_addr(22, 10 bits) := pte_ppn(1)(0, 10 bits)
+                        }
+                    }
+                }
+            } otherwise { // read next page
+                when (!trans_io.tlb_hit && i > 0) {
+                    i := i - 1
+                    wb.adr := a(pte_ppn_raw, i - 1)
+                    wb.stb := True
+                    wb.sel := Sel.WORD
+                    res := False
+                } otherwise { // page-fault
+                    raise_page_fault()
+                }
+            }
+        }
+        res
+    }
+
     val fsm = new StateMachine {
+        pte := 0
         trans_io.exception_code := 0
         trans_io.look_up_valid := False
         trans_io.look_up_ack := False
@@ -148,8 +224,7 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
                     //     goto(read)
                     when (TLBEntryValid(TLBIndex)) { // TLB hit
                         pte := TLBTable(TLBIndex).pte
-                        i := 0
-                        goto(translate)
+                        translate()
                     } otherwise {
                         wb.adr := a(satp_ppn, i)
                         wb.stb := True
@@ -166,91 +241,12 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
                     pte := wb.dat_r
                     // update TLB
                     when (i === 0) {
-                    TLBTable(TLBIndex).pte := wb.dat_r
-                    TLBTable(TLBIndex).vpn := trans_io.look_up_addr(12, 20 bits)
-                    TLBTable(TLBIndex).valid := True
-                }
-                    goto(translate)
-                }
-            }
-        }
-        val translate: State = new State {
-            whenIsActive {
-                when (!pte_v || !pte_r && pte_w) {
-                    // raise page fault
-                    raise_page_fault()
-                    goto(idle)
-                } otherwise {
-                    // pte valid step 5
-                    when (pte_r || pte_x) { // leaf ppn
-                        when (
-                            !io.mstatus_MXR && !pte_r
-                        ||  io.mstatus_MXR && !pte_r && !pte_x
-                        ) {
-                            // Prevent unaccessible page
-                            raise_page_fault()
-                            goto(idle)
-                        } elsewhen (
-                            io.privilege_mode === PrivilegeMode.S
-                        &&  trans_io.access_type === MemAccessType.Fetch
-                        &&  pte_u
-                        ) {
-                            // Prevent user code execution in S mode
-                            raise_page_fault()
-                            goto(idle)
-                        } elsewhen (io.privilege_mode === PrivilegeMode.U && !pte_u) {
-                            // Prevent user access supervisor page
-                            raise_page_fault()
-                            goto(idle)
-                        } elsewhen (io.privilege_mode === PrivilegeMode.S && pte_u && !io.mstatus_SUM) {
-                            // Prevent supervisor access user page, when SUM = 0
-                            raise_page_fault()
-                            goto(idle)
-                        } elsewhen (trans_io.access_type === MemAccessType.Store && !pte_w) {
-                            // Write denied
-                            raise_page_fault()
-                            goto(idle)
-                        } elsewhen (trans_io.access_type === MemAccessType.Fetch && !pte_x) {
-                            // Execution denied
-                            raise_page_fault()
-                            goto(idle)
-                        } elsewhen (i > 0 && pte_ppn(i) =/= 0) {
-                            // Misaligned superpage
-                            raise_page_fault()
-                            goto(idle)
-                        // uCore does not use a and d bits
-                        // } elsewhen (!pte_a || trans_io.access_type === MemAccessType.Store && !pte_d) {
-                        //     // step 7
-                        //     raise_page_fault()
-                        //     goto(idle)
-                        } otherwise { // success translation
-                            // pa.pgoff = va.pgoff
-                            trans_io.physical_addr(0, 12 bits) := trans_io.look_up_addr(0, 12 bits)
-                            trans_io.look_up_ack := True
-                            trans_io.look_up_valid := True
-                            switch (i) {
-                                is (1) {
-                                    trans_io.physical_addr(12, 10 bits) := trans_io.look_up_addr(12, 10 bits)
-                                    trans_io.physical_addr(22, 10 bits) := pte_ppn(1)(0, 10 bits)
-                                }
-                                is (0) {
-                                    trans_io.physical_addr(12, 10 bits) := pte_ppn(0)(0, 10 bits)
-                                    trans_io.physical_addr(22, 10 bits) := pte_ppn(1)(0, 10 bits)
-                                }
-                            }
-                            goto(idle)
-                        }
-                    } otherwise { // read next page
-                        when (i > 0) {
-                            i := i - 1
-                            wb.adr := a(pte_ppn_raw, i - 1)
-                            wb.stb := True
-                            wb.sel := Sel.WORD
-                            goto(read)
-                        } otherwise { // page-fault
-                            raise_page_fault()
-                            goto(idle)
-                        }
+                        TLBTable(TLBIndex).pte := wb.dat_r
+                        TLBTable(TLBIndex).vpn := trans_io.look_up_addr(12, 20 bits)
+                        TLBTable(TLBIndex).valid := True
+                    }
+                    when (translate()) {
+                        goto(idle)
                     }
                 }
             }
