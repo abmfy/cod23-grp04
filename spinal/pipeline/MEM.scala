@@ -56,6 +56,7 @@ class MEM extends Component {
 
     // Paging enable
     val page_en = io.prv =/= PrivilegeMode.M && io.satp_mode
+    val pt_addr = Reg(Types.addr) init(0)
 
     val reg_data: Bits = {
         val res = Types.data
@@ -130,13 +131,14 @@ class MEM extends Component {
 
     // Timer
     val timer = new Area {
-        val adr = page_en ? pa | mem_adr
+        val adr = mem_adr
         val mtime_req = adr === Timer.CLINT_MTIME
         val mtimeh_req = adr === Timer.CLINT_MTIMEH
         val mtimecmp_req = adr === Timer.CLINT_MTIMECMP
         val mtimecmph_req = adr === Timer.CLINT_MTIMECMPH
 
-        val req = mtime_req || mtimeh_req || mtimecmp_req || mtimecmph_req
+        // Only accessible in machine mode
+        val req = io.prv === PrivilegeMode.M && (mtime_req || mtimeh_req || mtimecmp_req || mtimecmph_req)
 
         when (mtime_req) {
             mem_data_read := io.timer.mtime.r |>> (offset * 8)
@@ -211,9 +213,6 @@ class MEM extends Component {
     io.flush_req := io.i.csr_op =/= CsrOp.N || io.i.sfence_req
     io.sfence_req := io.i.sfence_req
 
-    io.pt.look_up_addr.setAsReg() init(0)
-    io.pt.look_up_req.setAsReg() init(False)
-
     def raise_page_fault(): Unit = {
         io.trap := True
         io.o.trap.epc := io.i.pc
@@ -229,6 +228,9 @@ class MEM extends Component {
         io.dcache.addr := 0
         io.dcache.dcache_sel := 0
         io.dcache.data_w := 0
+
+        io.pt.look_up_req := False
+        io.pt.look_up_addr := 0
     
         io.pt.access_type := io.i.mem_we ? MemAccessType.Store | MemAccessType.Load
         val start: State = new State with EntryPoint {
@@ -245,7 +247,23 @@ class MEM extends Component {
                         proceed()
                     } otherwise {
                         when (page_en) {
-                            goto(translate)
+                            io.pt.look_up_req := True
+                            io.pt.look_up_addr := va
+                            when (io.pt.tlb_hit) {
+                                when (io.pt.look_up_valid) {
+                                    req(pa)
+                                    when (io.dcache.ack) {
+                                        proceed()
+                                    } otherwise {
+                                        goto(fetch) 
+                                        cache_addr := pa
+                                    }
+                                } otherwise {
+                                    raise_page_fault()
+                                }
+                            } otherwise {
+                                goto(translate)
+                            }
                         } otherwise {
                             req(mem_adr)
                             when (io.dcache.ack) {
@@ -263,10 +281,12 @@ class MEM extends Component {
         }
         val translate : State = new State {
             onEntry {
-                io.pt.look_up_addr := va
-                io.pt.look_up_req := True
+                pt_addr := va
             }
             whenIsActive {
+                io.pt.look_up_req := True
+                io.pt.look_up_addr := pt_addr
+
                 when (io.pt.look_up_ack) {
                     when (io.pt.look_up_valid) {
                         req(pa)
@@ -282,9 +302,6 @@ class MEM extends Component {
                         goto(start)
                     }
                 }
-            }
-            onExit {
-                io.pt.look_up_req := False
             }
         }
         val fetch: State = new State {

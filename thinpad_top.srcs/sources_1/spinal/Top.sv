@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : Top
-// Git hash  : c82ee504222cec686bde0b346f95aa6bac7db136
+// Git hash  : 0d03f483d1d8a9694ea530a16982559761633c35
 
 `timescale 1ns/1ps
 
@@ -2760,27 +2760,24 @@ module MEM (
   reg        [31:0]   mem_data_read;
   wire       [31:0]   mem_data_write;
   wire                page_en;
+  reg        [31:0]   pt_addr;
   reg        [31:0]   reg_data;
   reg        [31:0]   _zz_reg_data;
   reg        [31:0]   _zz_reg_data_1;
-  wire                when_MEM_l77;
-  wire       [31:0]   timer_adr;
+  wire                when_MEM_l78;
   wire                timer_mtime_req;
   wire                timer_mtimeh_req;
   wire                timer_mtimecmp_req;
   wire                timer_mtimecmph_req;
   wire                timer_req;
-  wire                when_MEM_l164;
-  wire                when_MEM_l192;
+  wire                when_MEM_l166;
+  wire                when_MEM_l194;
   wire                fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
   wire       [1:0]    _zz_io_pt_access_type;
   reg        [1:0]    fsm_stateReg;
   reg        [1:0]    fsm_stateNext;
-  wire                _zz_when_StateMachine_l237;
-  wire                _zz_when_StateMachine_l237_1;
-  wire                when_StateMachine_l237;
   wire                when_StateMachine_l253;
   `ifndef SYNTHESIS
   reg [7:0] io_i_csr_op_string;
@@ -2907,7 +2904,7 @@ module MEM (
         reg_data = _zz_reg_data_2;
       end
     endcase
-    if(when_MEM_l77) begin
+    if(when_MEM_l78) begin
       reg_data = io_csr_r;
     end
   end
@@ -2946,7 +2943,7 @@ module MEM (
     endcase
   end
 
-  assign when_MEM_l77 = (io_i_csr_op != CsrOp_N);
+  assign when_MEM_l78 = (io_i_csr_op != CsrOp_N);
   always @(*) begin
     io_trap = io_o_trap_trap;
     case(fsm_stateReg)
@@ -2959,7 +2956,17 @@ module MEM (
             if(timer_req) begin
               io_trap = 1'b0;
             end else begin
-              if(!page_en) begin
+              if(page_en) begin
+                if(io_pt_tlb_hit) begin
+                  if(io_pt_look_up_valid) begin
+                    if(io_dcache_ack) begin
+                      io_trap = 1'b0;
+                    end
+                  end else begin
+                    io_trap = 1'b1;
+                  end
+                end
+              end else begin
                 if(io_dcache_ack) begin
                   io_trap = 1'b0;
                 end
@@ -2995,15 +3002,14 @@ module MEM (
   assign io_forward_we = io_i_reg_we;
   assign io_forward_addr = io_i_reg_addr_d;
   assign io_forward_data = reg_data;
-  assign timer_adr = (page_en ? io_pt_physical_addr : mem_adr);
-  assign timer_mtime_req = (timer_adr == 32'h0200bff8);
-  assign timer_mtimeh_req = (timer_adr == 32'h0200bffc);
-  assign timer_mtimecmp_req = (timer_adr == 32'h02004000);
-  assign timer_mtimecmph_req = (timer_adr == 32'h02004004);
-  assign timer_req = (((timer_mtime_req || timer_mtimeh_req) || timer_mtimecmp_req) || timer_mtimecmph_req);
+  assign timer_mtime_req = (mem_adr == 32'h0200bff8);
+  assign timer_mtimeh_req = (mem_adr == 32'h0200bffc);
+  assign timer_mtimecmp_req = (mem_adr == 32'h02004000);
+  assign timer_mtimecmph_req = (mem_adr == 32'h02004004);
+  assign timer_req = ((io_prv == PrivilegeMode_M) && (((timer_mtime_req || timer_mtimeh_req) || timer_mtimecmp_req) || timer_mtimecmph_req));
   always @(*) begin
     io_timer_mtime_we = 1'b0;
-    if(when_MEM_l164) begin
+    if(when_MEM_l166) begin
       if(timer_mtime_req) begin
         io_timer_mtime_we = 1'b1;
       end
@@ -3012,7 +3018,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimeh_we = 1'b0;
-    if(when_MEM_l164) begin
+    if(when_MEM_l166) begin
       if(timer_mtimeh_req) begin
         io_timer_mtimeh_we = 1'b1;
       end
@@ -3021,7 +3027,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmp_we = 1'b0;
-    if(when_MEM_l164) begin
+    if(when_MEM_l166) begin
       if(timer_mtimecmp_req) begin
         io_timer_mtimecmp_we = 1'b1;
       end
@@ -3030,7 +3036,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmph_we = 1'b0;
-    if(when_MEM_l164) begin
+    if(when_MEM_l166) begin
       if(timer_mtimecmph_req) begin
         io_timer_mtimecmph_we = 1'b1;
       end
@@ -3039,7 +3045,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtime_w = 32'h00000000;
-    if(when_MEM_l164) begin
+    if(when_MEM_l166) begin
       if(timer_mtime_req) begin
         io_timer_mtime_w = mem_data_write;
       end
@@ -3048,7 +3054,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimeh_w = 32'h00000000;
-    if(when_MEM_l164) begin
+    if(when_MEM_l166) begin
       if(timer_mtimeh_req) begin
         io_timer_mtimeh_w = mem_data_write;
       end
@@ -3057,7 +3063,7 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmp_w = 32'h00000000;
-    if(when_MEM_l164) begin
+    if(when_MEM_l166) begin
       if(timer_mtimecmp_req) begin
         io_timer_mtimecmp_w = mem_data_write;
       end
@@ -3066,17 +3072,17 @@ module MEM (
 
   always @(*) begin
     io_timer_mtimecmph_w = 32'h00000000;
-    if(when_MEM_l164) begin
+    if(when_MEM_l166) begin
       if(timer_mtimecmph_req) begin
         io_timer_mtimecmph_w = mem_data_write;
       end
     end
   end
 
-  assign when_MEM_l164 = (io_i_mem_en && io_i_mem_we);
+  assign when_MEM_l166 = (io_i_mem_en && io_i_mem_we);
   always @(*) begin
     io_csr_addr = 12'h000;
-    if(when_MEM_l192) begin
+    if(when_MEM_l194) begin
       io_csr_addr = io_i_imm[11 : 0];
     end
   end
@@ -3100,12 +3106,12 @@ module MEM (
 
   always @(*) begin
     io_csr_we = 1'b0;
-    if(when_MEM_l192) begin
+    if(when_MEM_l194) begin
       io_csr_we = 1'b1;
     end
   end
 
-  assign when_MEM_l192 = (io_i_csr_op != CsrOp_N);
+  assign when_MEM_l194 = (io_i_csr_op != CsrOp_N);
   assign io_stall_req = ((io_i_mem_en && (! timer_req)) && (! io_dcache_ack));
   assign io_flush_req = ((io_i_csr_op != CsrOp_N) || io_i_sfence_req);
   assign io_sfence_req = io_i_sfence_req;
@@ -3133,7 +3139,13 @@ module MEM (
         if(!io_i_trap_trap) begin
           if(io_i_mem_en) begin
             if(!timer_req) begin
-              if(!page_en) begin
+              if(page_en) begin
+                if(io_pt_tlb_hit) begin
+                  if(io_pt_look_up_valid) begin
+                    io_dcache_dcache_en = 1'b1;
+                  end
+                end
+              end else begin
                 io_dcache_dcache_en = 1'b1;
               end
             end
@@ -3162,7 +3174,13 @@ module MEM (
         if(!io_i_trap_trap) begin
           if(io_i_mem_en) begin
             if(!timer_req) begin
-              if(!page_en) begin
+              if(page_en) begin
+                if(io_pt_tlb_hit) begin
+                  if(io_pt_look_up_valid) begin
+                    io_dcache_dcache_we = io_i_mem_we;
+                  end
+                end
+              end else begin
                 io_dcache_dcache_we = io_i_mem_we;
               end
             end
@@ -3191,7 +3209,13 @@ module MEM (
         if(!io_i_trap_trap) begin
           if(io_i_mem_en) begin
             if(!timer_req) begin
-              if(!page_en) begin
+              if(page_en) begin
+                if(io_pt_tlb_hit) begin
+                  if(io_pt_look_up_valid) begin
+                    io_dcache_addr = io_pt_physical_addr;
+                  end
+                end
+              end else begin
                 io_dcache_addr = mem_adr;
               end
             end
@@ -3220,7 +3244,13 @@ module MEM (
         if(!io_i_trap_trap) begin
           if(io_i_mem_en) begin
             if(!timer_req) begin
-              if(!page_en) begin
+              if(page_en) begin
+                if(io_pt_tlb_hit) begin
+                  if(io_pt_look_up_valid) begin
+                    io_dcache_dcache_sel = mem_sel;
+                  end
+                end
+              end else begin
                 io_dcache_dcache_sel = mem_sel;
               end
             end
@@ -3249,7 +3279,13 @@ module MEM (
         if(!io_i_trap_trap) begin
           if(io_i_mem_en) begin
             if(!timer_req) begin
-              if(!page_en) begin
+              if(page_en) begin
+                if(io_pt_tlb_hit) begin
+                  if(io_pt_look_up_valid) begin
+                    io_dcache_data_w = mem_data_write;
+                  end
+                end
+              end else begin
                 io_dcache_data_w = mem_data_write;
               end
             end
@@ -3271,10 +3307,56 @@ module MEM (
     endcase
   end
 
+  always @(*) begin
+    io_pt_look_up_req = 1'b0;
+    case(fsm_stateReg)
+      fsm_enumDef_3_start : begin
+        if(!io_i_trap_trap) begin
+          if(io_i_mem_en) begin
+            if(!timer_req) begin
+              if(page_en) begin
+                io_pt_look_up_req = 1'b1;
+              end
+            end
+          end
+        end
+      end
+      fsm_enumDef_3_translate : begin
+        io_pt_look_up_req = 1'b1;
+      end
+      fsm_enumDef_3_fetch : begin
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  always @(*) begin
+    io_pt_look_up_addr = 32'h00000000;
+    case(fsm_stateReg)
+      fsm_enumDef_3_start : begin
+        if(!io_i_trap_trap) begin
+          if(io_i_mem_en) begin
+            if(!timer_req) begin
+              if(page_en) begin
+                io_pt_look_up_addr = mem_adr;
+              end
+            end
+          end
+        end
+      end
+      fsm_enumDef_3_translate : begin
+        io_pt_look_up_addr = pt_addr;
+      end
+      fsm_enumDef_3_fetch : begin
+      end
+      default : begin
+      end
+    endcase
+  end
+
   assign _zz_io_pt_access_type = (io_i_mem_we ? MemAccessType_Store : MemAccessType_Load);
   assign io_pt_access_type = _zz_io_pt_access_type;
-  assign _zz_when_StateMachine_l237 = (fsm_stateReg == fsm_enumDef_3_translate);
-  assign _zz_when_StateMachine_l237_1 = (fsm_stateNext == fsm_enumDef_3_translate);
   always @(*) begin
     fsm_stateNext = fsm_stateReg;
     case(fsm_stateReg)
@@ -3283,7 +3365,15 @@ module MEM (
           if(io_i_mem_en) begin
             if(!timer_req) begin
               if(page_en) begin
-                fsm_stateNext = fsm_enumDef_3_translate;
+                if(io_pt_tlb_hit) begin
+                  if(io_pt_look_up_valid) begin
+                    if(!io_dcache_ack) begin
+                      fsm_stateNext = fsm_enumDef_3_fetch;
+                    end
+                  end
+                end else begin
+                  fsm_stateNext = fsm_enumDef_3_translate;
+                end
               end else begin
                 if(!io_dcache_ack) begin
                   fsm_stateNext = fsm_enumDef_3_fetch;
@@ -3322,11 +3412,11 @@ module MEM (
     end
   end
 
-  assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_1));
-  assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_1);
+  assign when_StateMachine_l253 = ((! (fsm_stateReg == fsm_enumDef_3_translate)) && (fsm_stateNext == fsm_enumDef_3_translate));
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
       cache_addr <= 32'h00000000;
+      pt_addr <= 32'h00000000;
       io_o_real <= 1'b0;
       io_o_pc <= 32'h00000000;
       io_o_reg_we <= 1'b0;
@@ -3336,8 +3426,6 @@ module MEM (
       io_o_trap_epc <= 32'h00000000;
       io_o_trap_cause <= 32'h00000000;
       io_o_trap_tval <= 32'h00000000;
-      io_pt_look_up_addr <= 32'h00000000;
-      io_pt_look_up_req <= 1'b0;
       fsm_stateReg <= fsm_enumDef_3_BOOT;
     end else begin
       io_o_trap_trap <= io_trap;
@@ -3365,7 +3453,28 @@ module MEM (
                 io_o_trap_epc <= 32'h00000000;
                 io_o_trap_cause <= 32'h00000000;
               end else begin
-                if(!page_en) begin
+                if(page_en) begin
+                  if(io_pt_tlb_hit) begin
+                    if(io_pt_look_up_valid) begin
+                      if(io_dcache_ack) begin
+                        io_o_real <= io_i_real;
+                        io_o_pc <= io_i_pc;
+                        io_o_reg_we <= io_i_reg_we;
+                        io_o_reg_addr_d <= io_i_reg_addr_d;
+                        io_o_reg_data_d <= reg_data;
+                        io_o_trap_epc <= 32'h00000000;
+                        io_o_trap_cause <= 32'h00000000;
+                      end else begin
+                        cache_addr <= io_pt_physical_addr;
+                      end
+                    end else begin
+                      io_o_trap_epc <= io_i_pc;
+                      io_o_trap_cause <= io_pt_exception_code;
+                      io_o_trap_tval <= mem_adr;
+                      io_o_real <= 1'b0;
+                    end
+                  end
+                end else begin
                   if(io_dcache_ack) begin
                     io_o_real <= io_i_real;
                     io_o_pc <= io_i_pc;
@@ -3430,12 +3539,8 @@ module MEM (
         default : begin
         end
       endcase
-      if(when_StateMachine_l237) begin
-        io_pt_look_up_req <= 1'b0;
-      end
       if(when_StateMachine_l253) begin
-        io_pt_look_up_addr <= mem_adr;
-        io_pt_look_up_req <= 1'b1;
+        pt_addr <= mem_adr;
       end
     end
   end
@@ -5077,43 +5182,47 @@ module IF_1 (
   wire       [31:0]   interrupt_delegated;
   wire       [31:0]   interrupt_masked;
   wire                page_en;
+  reg        [31:0]   pt_addr;
   wire                fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
   reg        [1:0]    fsm_stateReg;
   reg        [1:0]    fsm_stateNext;
-  wire                _zz_when_StateMachine_l237;
-  wire                _zz_when_StateMachine_l237_1;
-  wire                when_IF_l177;
-  wire                when_IF_l130;
+  wire                when_IF_l178;
+  wire                when_IF_l128;
+  wire                when_IF_l108;
   wire                when_IF_l110;
-  wire                when_IF_l112;
+  wire                when_IF_l108_1;
   wire                when_IF_l110_1;
-  wire                when_IF_l112_1;
-  wire                when_IF_l132;
-  wire                when_IF_l204;
-  wire                when_IF_l206;
-  wire                when_IF_l208;
-  wire                when_IF_l219;
-  wire                when_IF_l130_1;
+  wire                when_IF_l130;
+  wire                when_IF_l128_1;
+  wire                when_IF_l108_2;
   wire                when_IF_l110_2;
-  wire                when_IF_l112_2;
+  wire                when_IF_l108_3;
   wire                when_IF_l110_3;
-  wire                when_IF_l112_3;
-  wire                when_IF_l132_1;
-  wire                when_IF_l214;
-  wire                when_IF_l249;
-  wire                when_IF_l251;
-  wire                when_IF_l254;
-  wire       [31:0]   _zz_io_o_instr;
-  wire                when_IF_l130_2;
+  wire                when_IF_l130_1;
+  wire                when_IF_l225;
+  wire                when_IF_l227;
+  wire                when_IF_l229;
+  wire                when_IF_l239;
+  wire                when_IF_l128_2;
+  wire                when_IF_l108_4;
   wire                when_IF_l110_4;
-  wire                when_IF_l112_4;
+  wire                when_IF_l108_5;
   wire                when_IF_l110_5;
-  wire                when_IF_l112_5;
-  wire                when_IF_l132_2;
-  wire                when_IF_l257;
-  wire                when_StateMachine_l237;
+  wire                when_IF_l130_2;
+  wire                when_IF_l234;
+  wire                when_IF_l266;
+  wire                when_IF_l268;
+  wire                when_IF_l271;
+  wire       [31:0]   _zz_io_o_instr;
+  wire                when_IF_l128_3;
+  wire                when_IF_l108_6;
+  wire                when_IF_l110_6;
+  wire                when_IF_l108_7;
+  wire                when_IF_l110_7;
+  wire                when_IF_l130_3;
+  wire                when_IF_l274;
   wire                when_StateMachine_l253;
   wire                when_StateMachine_l253_1;
   `ifndef SYNTHESIS
@@ -5172,7 +5281,15 @@ module IF_1 (
       fsm_enumDef_3_start : begin
         if(!io_stall) begin
           if(!io_bubble) begin
-            if(!page_en) begin
+            if(page_en) begin
+              if(io_pt_tlb_hit) begin
+                if(io_pt_look_up_valid) begin
+                  if(io_cache_ack) begin
+                    io_instr = io_cache_data;
+                  end
+                end
+              end
+            end else begin
               if(io_cache_ack) begin
                 io_instr = io_cache_data;
               end
@@ -5181,10 +5298,10 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_translate : begin
-        if(when_IF_l204) begin
-          if(!when_IF_l206) begin
-            if(!when_IF_l214) begin
-              if(when_IF_l219) begin
+        if(when_IF_l225) begin
+          if(!when_IF_l227) begin
+            if(!when_IF_l234) begin
+              if(when_IF_l239) begin
                 if(io_cache_ack) begin
                   io_instr = io_cache_data;
                 end
@@ -5194,9 +5311,9 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_fetch : begin
-        if(when_IF_l249) begin
-          if(!when_IF_l251) begin
-            if(!when_IF_l257) begin
+        if(when_IF_l266) begin
+          if(!when_IF_l268) begin
+            if(!when_IF_l274) begin
               io_instr = _zz_io_o_instr;
             end
           end
@@ -5216,12 +5333,30 @@ module IF_1 (
             io_trap = 1'b0;
           end else begin
             io_trap = 1'b0;
-            if(!page_en) begin
+            if(page_en) begin
+              if(io_pt_tlb_hit) begin
+                if(io_pt_look_up_valid) begin
+                  if(io_cache_ack) begin
+                    if(when_IF_l128) begin
+                      io_trap = 1'b1;
+                    end else begin
+                      if(when_IF_l130) begin
+                        io_trap = 1'b1;
+                      end else begin
+                        io_trap = 1'b0;
+                      end
+                    end
+                  end
+                end else begin
+                  io_trap = 1'b1;
+                end
+              end
+            end else begin
               if(io_cache_ack) begin
-                if(when_IF_l130) begin
+                if(when_IF_l128_1) begin
                   io_trap = 1'b1;
                 end else begin
-                  if(when_IF_l132) begin
+                  if(when_IF_l130_1) begin
                     io_trap = 1'b1;
                   end else begin
                     io_trap = 1'b0;
@@ -5234,15 +5369,15 @@ module IF_1 (
       end
       fsm_enumDef_3_translate : begin
         io_trap = 1'b0;
-        if(when_IF_l204) begin
-          if(!when_IF_l206) begin
-            if(!when_IF_l214) begin
-              if(when_IF_l219) begin
+        if(when_IF_l225) begin
+          if(!when_IF_l227) begin
+            if(!when_IF_l234) begin
+              if(when_IF_l239) begin
                 if(io_cache_ack) begin
-                  if(when_IF_l130_1) begin
+                  if(when_IF_l128_2) begin
                     io_trap = 1'b1;
                   end else begin
-                    if(when_IF_l132_1) begin
+                    if(when_IF_l130_2) begin
                       io_trap = 1'b1;
                     end else begin
                       io_trap = 1'b0;
@@ -5258,13 +5393,13 @@ module IF_1 (
       end
       fsm_enumDef_3_fetch : begin
         io_trap = 1'b0;
-        if(when_IF_l249) begin
-          if(!when_IF_l251) begin
-            if(!when_IF_l257) begin
-              if(when_IF_l130_2) begin
+        if(when_IF_l266) begin
+          if(!when_IF_l268) begin
+            if(!when_IF_l274) begin
+              if(when_IF_l128_3) begin
                 io_trap = 1'b1;
               end else begin
-                if(when_IF_l132_2) begin
+                if(when_IF_l130_3) begin
                   io_trap = 1'b1;
                 end else begin
                   io_trap = 1'b0;
@@ -5303,17 +5438,23 @@ module IF_1 (
       fsm_enumDef_3_start : begin
         if(!io_stall) begin
           if(!io_bubble) begin
-            if(!page_en) begin
+            if(page_en) begin
+              if(io_pt_tlb_hit) begin
+                if(io_pt_look_up_valid) begin
+                  io_cache_icache_en = 1'b1;
+                end
+              end
+            end else begin
               io_cache_icache_en = 1'b1;
             end
           end
         end
       end
       fsm_enumDef_3_translate : begin
-        if(when_IF_l204) begin
-          if(!when_IF_l206) begin
-            if(!when_IF_l214) begin
-              if(when_IF_l219) begin
+        if(when_IF_l225) begin
+          if(!when_IF_l227) begin
+            if(!when_IF_l234) begin
+              if(when_IF_l239) begin
                 io_cache_icache_en = 1'b1;
               end
             end
@@ -5334,17 +5475,23 @@ module IF_1 (
       fsm_enumDef_3_start : begin
         if(!io_stall) begin
           if(!io_bubble) begin
-            if(!page_en) begin
-              io_cache_addr = (page_en ? io_pt_physical_addr : (io_br_br ? io_br_pc : pc));
+            if(page_en) begin
+              if(io_pt_tlb_hit) begin
+                if(io_pt_look_up_valid) begin
+                  io_cache_addr = io_pt_physical_addr;
+                end
+              end
+            end else begin
+              io_cache_addr = (io_br_br ? io_br_pc : pc);
             end
           end
         end
       end
       fsm_enumDef_3_translate : begin
-        if(when_IF_l204) begin
-          if(!when_IF_l206) begin
-            if(!when_IF_l214) begin
-              if(when_IF_l219) begin
+        if(when_IF_l225) begin
+          if(!when_IF_l227) begin
+            if(!when_IF_l234) begin
+              if(when_IF_l239) begin
                 io_cache_addr = (page_en ? (delay_ack ? delay_pa : io_pt_physical_addr) : pc);
               end
             end
@@ -5359,8 +5506,50 @@ module IF_1 (
     endcase
   end
 
-  assign _zz_when_StateMachine_l237 = (fsm_stateReg == fsm_enumDef_3_translate);
-  assign _zz_when_StateMachine_l237_1 = (fsm_stateNext == fsm_enumDef_3_translate);
+  always @(*) begin
+    io_pt_look_up_req = 1'b0;
+    case(fsm_stateReg)
+      fsm_enumDef_3_start : begin
+        if(!io_stall) begin
+          if(!io_bubble) begin
+            if(page_en) begin
+              io_pt_look_up_req = 1'b1;
+            end
+          end
+        end
+      end
+      fsm_enumDef_3_translate : begin
+        io_pt_look_up_req = (! delay_ack);
+      end
+      fsm_enumDef_3_fetch : begin
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  always @(*) begin
+    io_pt_look_up_addr = 32'h00000000;
+    case(fsm_stateReg)
+      fsm_enumDef_3_start : begin
+        if(!io_stall) begin
+          if(!io_bubble) begin
+            if(page_en) begin
+              io_pt_look_up_addr = pc;
+            end
+          end
+        end
+      end
+      fsm_enumDef_3_translate : begin
+        io_pt_look_up_addr = pt_addr;
+      end
+      fsm_enumDef_3_fetch : begin
+      end
+      default : begin
+      end
+    endcase
+  end
+
   always @(*) begin
     fsm_stateNext = fsm_stateReg;
     case(fsm_stateReg)
@@ -5368,7 +5557,15 @@ module IF_1 (
         if(!io_stall) begin
           if(!io_bubble) begin
             if(page_en) begin
-              fsm_stateNext = fsm_enumDef_3_translate;
+              if(io_pt_tlb_hit) begin
+                if(io_pt_look_up_valid) begin
+                  if(!io_cache_ack) begin
+                    fsm_stateNext = fsm_enumDef_3_fetch;
+                  end
+                end
+              end else begin
+                fsm_stateNext = fsm_enumDef_3_translate;
+              end
             end else begin
               if(!io_cache_ack) begin
                 fsm_stateNext = fsm_enumDef_3_fetch;
@@ -5378,12 +5575,12 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_translate : begin
-        if(when_IF_l204) begin
-          if(!when_IF_l206) begin
-            if(when_IF_l214) begin
+        if(when_IF_l225) begin
+          if(!when_IF_l227) begin
+            if(when_IF_l234) begin
               fsm_stateNext = fsm_enumDef_3_start;
             end else begin
-              if(when_IF_l219) begin
+              if(when_IF_l239) begin
                 if(io_cache_ack) begin
                   fsm_stateNext = fsm_enumDef_3_start;
                 end else begin
@@ -5397,9 +5594,9 @@ module IF_1 (
         end
       end
       fsm_enumDef_3_fetch : begin
-        if(when_IF_l249) begin
-          if(!when_IF_l251) begin
-            if(when_IF_l257) begin
+        if(when_IF_l266) begin
+          if(!when_IF_l268) begin
+            if(when_IF_l274) begin
               fsm_stateNext = fsm_enumDef_3_start;
             end else begin
               fsm_stateNext = fsm_enumDef_3_start;
@@ -5418,37 +5615,42 @@ module IF_1 (
     end
   end
 
-  assign when_IF_l177 = (io_br_br || delay_br);
-  assign when_IF_l130 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l110 = interrupt_masked[7];
-  assign when_IF_l112 = interrupt_masked[5];
-  assign when_IF_l110_1 = interrupt_delegated[7];
-  assign when_IF_l112_1 = interrupt_delegated[5];
-  assign when_IF_l132 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l204 = (io_pt_look_up_ack || delay_ack);
-  assign when_IF_l206 = (io_stall || io_bubble);
-  assign when_IF_l208 = (! delay_ack);
-  assign when_IF_l219 = (((! delay_ack) && io_pt_look_up_valid) || delay_valid);
-  assign when_IF_l130_1 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l110_2 = interrupt_masked[7];
-  assign when_IF_l112_2 = interrupt_masked[5];
-  assign when_IF_l110_3 = interrupt_delegated[7];
-  assign when_IF_l112_3 = interrupt_delegated[5];
-  assign when_IF_l132_1 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l214 = (io_br_br || delay_br);
-  assign when_IF_l249 = (io_cache_ack || delay_ack);
-  assign when_IF_l251 = (io_stall || io_bubble);
-  assign when_IF_l254 = (! delay_ack);
+  assign when_IF_l178 = (io_br_br || delay_br);
+  assign when_IF_l128 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l108 = interrupt_masked[7];
+  assign when_IF_l110 = interrupt_masked[5];
+  assign when_IF_l108_1 = interrupt_delegated[7];
+  assign when_IF_l110_1 = interrupt_delegated[5];
+  assign when_IF_l130 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l128_1 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l108_2 = interrupt_masked[7];
+  assign when_IF_l110_2 = interrupt_masked[5];
+  assign when_IF_l108_3 = interrupt_delegated[7];
+  assign when_IF_l110_3 = interrupt_delegated[5];
+  assign when_IF_l130_1 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l225 = (io_pt_look_up_ack || delay_ack);
+  assign when_IF_l227 = (io_stall || io_bubble);
+  assign when_IF_l229 = (! delay_ack);
+  assign when_IF_l239 = (((! delay_ack) && io_pt_look_up_valid) || delay_valid);
+  assign when_IF_l128_2 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l108_4 = interrupt_masked[7];
+  assign when_IF_l110_4 = interrupt_masked[5];
+  assign when_IF_l108_5 = interrupt_delegated[7];
+  assign when_IF_l110_5 = interrupt_delegated[5];
+  assign when_IF_l130_2 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l234 = (io_br_br || delay_br);
+  assign when_IF_l266 = (io_cache_ack || delay_ack);
+  assign when_IF_l268 = (io_stall || io_bubble);
+  assign when_IF_l271 = (! delay_ack);
   assign _zz_io_o_instr = (delay_ack ? delay_instr : io_cache_data);
-  assign when_IF_l130_2 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l110_4 = interrupt_masked[7];
-  assign when_IF_l112_4 = interrupt_masked[5];
-  assign when_IF_l110_5 = interrupt_delegated[7];
-  assign when_IF_l112_5 = interrupt_delegated[5];
-  assign when_IF_l132_2 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
-  assign when_IF_l257 = (io_br_br || delay_br);
-  assign when_StateMachine_l237 = (_zz_when_StateMachine_l237 && (! _zz_when_StateMachine_l237_1));
-  assign when_StateMachine_l253 = ((! _zz_when_StateMachine_l237) && _zz_when_StateMachine_l237_1);
+  assign when_IF_l128_3 = ((|interrupt_masked) && ((((io_prv == PrivilegeMode_M) && io_mie) || (io_prv == PrivilegeMode_S)) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l108_6 = interrupt_masked[7];
+  assign when_IF_l110_6 = interrupt_masked[5];
+  assign when_IF_l108_7 = interrupt_delegated[7];
+  assign when_IF_l110_7 = interrupt_delegated[5];
+  assign when_IF_l130_3 = ((|interrupt_delegated) && (((io_prv == PrivilegeMode_S) && io_sie) || (io_prv == PrivilegeMode_U)));
+  assign when_IF_l274 = (io_br_br || delay_br);
+  assign when_StateMachine_l253 = ((! (fsm_stateReg == fsm_enumDef_3_translate)) && (fsm_stateNext == fsm_enumDef_3_translate));
   assign when_StateMachine_l253_1 = ((! (fsm_stateReg == fsm_enumDef_3_fetch)) && (fsm_stateNext == fsm_enumDef_3_fetch));
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
@@ -5459,6 +5661,7 @@ module IF_1 (
       delay_instr <= 32'h00000013;
       delay_pa <= 32'h00000000;
       delay_valid <= 1'b0;
+      pt_addr <= 32'h00000000;
       io_o_real <= 1'b0;
       io_o_pc <= 32'h80000000;
       io_o_instr <= 32'h00000013;
@@ -5467,8 +5670,6 @@ module IF_1 (
       io_o_trap_epc <= 32'h00000000;
       io_o_trap_cause <= 32'h00000000;
       io_o_trap_tval <= 32'h00000000;
-      io_pt_look_up_req <= 1'b0;
-      io_pt_look_up_addr <= 32'h00000000;
       fsm_stateReg <= fsm_enumDef_3_BOOT;
     end else begin
       io_o_trap_trap <= io_trap;
@@ -5496,19 +5697,71 @@ module IF_1 (
               io_o_trap_epc <= 32'h00000000;
               io_o_trap_cause <= 32'h00000000;
               io_o_trap_tval <= 32'h00000000;
-              if(when_IF_l177) begin
+              if(when_IF_l178) begin
                 delay_br <= 1'b0;
               end
-              if(!page_en) begin
-                cache_addr <= (page_en ? io_pt_physical_addr : (io_br_br ? io_br_pc : pc));
+              if(page_en) begin
+                if(io_pt_tlb_hit) begin
+                  if(io_pt_look_up_valid) begin
+                    cache_addr <= io_pt_physical_addr;
+                    if(io_cache_ack) begin
+                      io_o_next_taken <= io_next_taken;
+                      if(when_IF_l128) begin
+                        io_o_trap_epc <= pc;
+                        if(when_IF_l108) begin
+                          io_o_trap_cause <= 32'h80000007;
+                        end else begin
+                          if(when_IF_l110) begin
+                            io_o_trap_cause <= 32'h80000005;
+                          end else begin
+                            io_o_trap_cause <= 32'h80000010;
+                          end
+                        end
+                        io_o_trap_tval <= 32'h00000000;
+                        io_o_real <= 1'b0;
+                      end else begin
+                        if(when_IF_l130) begin
+                          io_o_trap_epc <= pc;
+                          if(when_IF_l108_1) begin
+                            io_o_trap_cause <= 32'h80000007;
+                          end else begin
+                            if(when_IF_l110_1) begin
+                              io_o_trap_cause <= 32'h80000005;
+                            end else begin
+                              io_o_trap_cause <= 32'h80000010;
+                            end
+                          end
+                          io_o_trap_tval <= 32'h00000000;
+                          io_o_real <= 1'b0;
+                        end else begin
+                          io_o_real <= 1'b1;
+                          io_o_pc <= pc;
+                          io_o_instr <= io_cache_data;
+                          if(io_next_taken) begin
+                            pc <= io_next_pc;
+                          end else begin
+                            pc <= (pc + 32'h00000004);
+                          end
+                        end
+                      end
+                    end
+                  end else begin
+                    io_o_trap_epc <= io_pt_look_up_addr;
+                    io_o_trap_cause <= 32'h0000000c;
+                    io_o_trap_tval <= io_pt_look_up_addr;
+                    io_o_real <= 1'b0;
+                  end
+                end
+              end else begin
+                cache_addr <= (io_br_br ? io_br_pc : pc);
                 if(io_cache_ack) begin
                   io_o_next_taken <= io_next_taken;
-                  if(when_IF_l130) begin
+                  if(when_IF_l128_1) begin
                     io_o_trap_epc <= pc;
-                    if(when_IF_l110) begin
+                    if(when_IF_l108_2) begin
                       io_o_trap_cause <= 32'h80000007;
                     end else begin
-                      if(when_IF_l112) begin
+                      if(when_IF_l110_2) begin
                         io_o_trap_cause <= 32'h80000005;
                       end else begin
                         io_o_trap_cause <= 32'h80000010;
@@ -5517,12 +5770,12 @@ module IF_1 (
                     io_o_trap_tval <= 32'h00000000;
                     io_o_real <= 1'b0;
                   end else begin
-                    if(when_IF_l132) begin
+                    if(when_IF_l130_1) begin
                       io_o_trap_epc <= pc;
-                      if(when_IF_l110_1) begin
+                      if(when_IF_l108_3) begin
                         io_o_trap_cause <= 32'h80000007;
                       end else begin
-                        if(when_IF_l112_1) begin
+                        if(when_IF_l110_3) begin
                           io_o_trap_cause <= 32'h80000005;
                         end else begin
                           io_o_trap_cause <= 32'h80000010;
@@ -5554,28 +5807,27 @@ module IF_1 (
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
           io_o_trap_tval <= 32'h00000000;
-          if(when_IF_l204) begin
-            if(when_IF_l206) begin
-              if(when_IF_l208) begin
-                io_pt_look_up_req <= 1'b0;
+          if(when_IF_l225) begin
+            if(when_IF_l227) begin
+              if(when_IF_l229) begin
                 delay_ack <= 1'b1;
                 delay_valid <= io_pt_look_up_valid;
                 delay_pa <= io_pt_physical_addr;
               end
             end else begin
-              if(when_IF_l214) begin
+              if(when_IF_l234) begin
                 delay_br <= 1'b0;
               end else begin
-                if(when_IF_l219) begin
+                if(when_IF_l239) begin
                   cache_addr <= (page_en ? (delay_ack ? delay_pa : io_pt_physical_addr) : pc);
                   if(io_cache_ack) begin
                     io_o_next_taken <= io_next_taken;
-                    if(when_IF_l130_1) begin
+                    if(when_IF_l128_2) begin
                       io_o_trap_epc <= pc;
-                      if(when_IF_l110_2) begin
+                      if(when_IF_l108_4) begin
                         io_o_trap_cause <= 32'h80000007;
                       end else begin
-                        if(when_IF_l112_2) begin
+                        if(when_IF_l110_4) begin
                           io_o_trap_cause <= 32'h80000005;
                         end else begin
                           io_o_trap_cause <= 32'h80000010;
@@ -5584,12 +5836,12 @@ module IF_1 (
                       io_o_trap_tval <= 32'h00000000;
                       io_o_real <= 1'b0;
                     end else begin
-                      if(when_IF_l132_1) begin
+                      if(when_IF_l130_2) begin
                         io_o_trap_epc <= pc;
-                        if(when_IF_l110_3) begin
+                        if(when_IF_l108_5) begin
                           io_o_trap_cause <= 32'h80000007;
                         end else begin
-                          if(when_IF_l112_3) begin
+                          if(when_IF_l110_5) begin
                             io_o_trap_cause <= 32'h80000005;
                           end else begin
                             io_o_trap_cause <= 32'h80000010;
@@ -5627,23 +5879,23 @@ module IF_1 (
           io_o_trap_epc <= 32'h00000000;
           io_o_trap_cause <= 32'h00000000;
           io_o_trap_tval <= 32'h00000000;
-          if(when_IF_l249) begin
-            if(when_IF_l251) begin
+          if(when_IF_l266) begin
+            if(when_IF_l268) begin
               delay_ack <= 1'b1;
-              if(when_IF_l254) begin
+              if(when_IF_l271) begin
                 delay_instr <= io_cache_data;
               end
             end else begin
-              if(when_IF_l257) begin
+              if(when_IF_l274) begin
                 delay_br <= 1'b0;
               end else begin
                 io_o_next_taken <= io_next_taken;
-                if(when_IF_l130_2) begin
+                if(when_IF_l128_3) begin
                   io_o_trap_epc <= pc;
-                  if(when_IF_l110_4) begin
+                  if(when_IF_l108_6) begin
                     io_o_trap_cause <= 32'h80000007;
                   end else begin
-                    if(when_IF_l112_4) begin
+                    if(when_IF_l110_6) begin
                       io_o_trap_cause <= 32'h80000005;
                     end else begin
                       io_o_trap_cause <= 32'h80000010;
@@ -5652,12 +5904,12 @@ module IF_1 (
                   io_o_trap_tval <= 32'h00000000;
                   io_o_real <= 1'b0;
                 end else begin
-                  if(when_IF_l132_2) begin
+                  if(when_IF_l130_3) begin
                     io_o_trap_epc <= pc;
-                    if(when_IF_l110_5) begin
+                    if(when_IF_l108_7) begin
                       io_o_trap_cause <= 32'h80000007;
                     end else begin
-                      if(when_IF_l112_5) begin
+                      if(when_IF_l110_7) begin
                         io_o_trap_cause <= 32'h80000005;
                       end else begin
                         io_o_trap_cause <= 32'h80000010;
@@ -5683,12 +5935,8 @@ module IF_1 (
         default : begin
         end
       endcase
-      if(when_StateMachine_l237) begin
-        io_pt_look_up_req <= 1'b0;
-      end
       if(when_StateMachine_l253) begin
-        io_pt_look_up_addr <= pc;
-        io_pt_look_up_req <= 1'b1;
+        pt_addr <= pc;
         delay_ack <= 1'b0;
         delay_valid <= 1'b0;
       end
@@ -13306,27 +13554,30 @@ module PageTable (
 
   reg                 _zz__zz_trans_io_tlb_hit;
   reg        [19:0]   _zz__zz_trans_io_tlb_hit_1;
-  wire       [11:0]   _zz_pte_ppn_0;
-  wire       [9:0]    _zz_pte_ppn_0_1;
-  reg        [31:0]   _zz_pte;
-  reg        [11:0]   _zz__zz_when_PageTable_l169;
-  wire       [34:0]   _zz_wb_adr;
+  reg        [31:0]   _zz__zz_wb_adr;
+  wire       [11:0]   _zz__zz_trans_io_physical_addr;
+  wire       [9:0]    _zz__zz_trans_io_physical_addr_1;
+  reg        [11:0]   _zz_when_PageTable_l168;
   wire       [34:0]   _zz_wb_adr_1;
   wire       [34:0]   _zz_wb_adr_2;
-  wire       [12:0]   _zz_wb_adr_3;
-  reg        [9:0]    _zz_wb_adr_4;
-  wire       [0:0]    _zz_wb_adr_5;
-  wire       [34:0]   _zz_wb_adr_6;
+  wire       [34:0]   _zz_wb_adr_3;
+  wire       [12:0]   _zz_wb_adr_4;
+  reg        [9:0]    _zz_wb_adr_5;
+  wire       [0:0]    _zz_wb_adr_6;
   wire       [34:0]   _zz_wb_adr_7;
   wire       [34:0]   _zz_wb_adr_8;
-  wire       [12:0]   _zz_wb_adr_9;
-  reg        [9:0]    _zz_wb_adr_10;
-  wire       [34:0]   _zz_wb_adr_11;
+  wire       [34:0]   _zz_wb_adr_9;
+  wire       [12:0]   _zz_wb_adr_10;
+  reg        [9:0]    _zz_wb_adr_11;
+  wire       [11:0]   _zz__zz_trans_io_physical_addr_2;
+  wire       [9:0]    _zz__zz_trans_io_physical_addr_2_1;
+  reg        [11:0]   _zz_when_PageTable_l168_1;
   wire       [34:0]   _zz_wb_adr_12;
   wire       [34:0]   _zz_wb_adr_13;
-  wire       [12:0]   _zz_wb_adr_14;
-  reg        [9:0]    _zz_wb_adr_15;
-  wire       [0:0]    _zz_wb_adr_16;
+  wire       [34:0]   _zz_wb_adr_14;
+  wire       [12:0]   _zz_wb_adr_15;
+  reg        [9:0]    _zz_wb_adr_16;
+  wire       [0:0]    _zz_wb_adr_17;
   wire       [21:0]   satp_ppn;
   wire       [9:0]    va_vpn_0;
   wire       [9:0]    va_vpn_1;
@@ -13525,6 +13776,7 @@ module PageTable (
   wire       [5:0]    TLBIndex;
   wire                _zz_trans_io_tlb_hit;
   wire       [19:0]   _zz_trans_io_tlb_hit_1;
+  wire       [31:0]   _zz_wb_adr;
   wire       [63:0]   _zz_1;
   wire                _zz_2;
   wire                _zz_3;
@@ -13591,49 +13843,49 @@ module PageTable (
   wire                _zz_64;
   wire                _zz_65;
   reg        [0:0]    i;
-  reg        [31:0]   pte;
-  wire                pte_v;
-  wire                pte_r;
-  wire                pte_w;
-  wire                pte_x;
-  wire                pte_u;
-  wire                pte_a;
-  wire                pte_d;
-  wire       [21:0]   pte_ppn_raw;
-  wire       [11:0]   pte_ppn_0;
-  wire       [11:0]   pte_ppn_1;
   wire                fsm_wantExit;
   reg                 fsm_wantStart;
   wire                fsm_wantKill;
   reg        [1:0]    fsm_stateReg;
   reg        [1:0]    fsm_stateNext;
-  wire                when_PageTable_l225;
-  wire                when_PageTable_l138;
-  wire                when_PageTable_l143;
-  wire                when_PageTable_l147;
-  wire       [0:0]    switch_PageTable_l181;
-  wire                when_PageTable_l150;
-  wire                when_PageTable_l157;
-  wire                when_PageTable_l160;
-  wire                when_PageTable_l163;
-  wire                when_PageTable_l166;
-  wire       [11:0]   _zz_when_PageTable_l169;
-  wire                when_PageTable_l169;
-  wire                when_PageTable_l193;
-  wire                when_PageTable_l243;
+  wire                when_PageTable_l223;
+  wire                _zz_when_PageTable_l137;
+  wire                _zz_when_PageTable_l137_1;
+  wire                _zz_when_PageTable_l142;
+  wire                _zz_when_PageTable_l149;
+  wire       [11:0]   _zz_trans_io_physical_addr;
+  wire       [11:0]   _zz_trans_io_physical_addr_1;
+  wire                when_PageTable_l137;
+  wire                when_PageTable_l142;
+  wire                when_PageTable_l146;
+  wire       [0:0]    switch_PageTable_l180;
+  wire                when_PageTable_l149;
+  wire                when_PageTable_l156;
+  wire                when_PageTable_l159;
+  wire                when_PageTable_l162;
+  wire                when_PageTable_l165;
+  wire                when_PageTable_l168;
+  wire                when_PageTable_l192;
+  wire                when_PageTable_l239;
   wire       [19:0]   _zz_TLBTable_0_vpn;
-  reg                 when_PageTable_l248;
-  wire                when_PageTable_l138_1;
-  wire                when_PageTable_l143_1;
-  wire                when_PageTable_l147_1;
-  wire       [0:0]    switch_PageTable_l181_1;
-  wire                when_PageTable_l150_1;
-  wire                when_PageTable_l157_1;
-  wire                when_PageTable_l160_1;
-  wire                when_PageTable_l163_1;
-  wire                when_PageTable_l166_1;
-  wire                when_PageTable_l169_1;
-  wire                when_PageTable_l193_1;
+  wire                _zz_when_PageTable_l137_2;
+  wire                _zz_when_PageTable_l137_3;
+  wire                _zz_when_PageTable_l142_1;
+  wire                _zz_when_PageTable_l149_1;
+  wire       [11:0]   _zz_trans_io_physical_addr_2;
+  wire       [11:0]   _zz_trans_io_physical_addr_3;
+  reg                 when_PageTable_l244;
+  wire                when_PageTable_l137_1;
+  wire                when_PageTable_l142_1;
+  wire                when_PageTable_l146_1;
+  wire       [0:0]    switch_PageTable_l180_1;
+  wire                when_PageTable_l149_1;
+  wire                when_PageTable_l156_1;
+  wire                when_PageTable_l159_1;
+  wire                when_PageTable_l162_1;
+  wire                when_PageTable_l165_1;
+  wire                when_PageTable_l168_1;
+  wire                when_PageTable_l192_1;
   wire                when_StateMachine_l253;
   `ifndef SYNTHESIS
   reg [7:0] io_privilege_mode_string;
@@ -13643,343 +13895,345 @@ module PageTable (
   `endif
 
 
-  assign _zz_pte_ppn_0_1 = pte[19 : 10];
-  assign _zz_pte_ppn_0 = {2'd0, _zz_pte_ppn_0_1};
-  assign _zz_wb_adr = (_zz_wb_adr_1 + _zz_wb_adr_2);
-  assign _zz_wb_adr_1 = (pte_ppn_raw * 13'h1000);
-  assign _zz_wb_adr_3 = (_zz_wb_adr_4 * 3'b100);
-  assign _zz_wb_adr_2 = {22'd0, _zz_wb_adr_3};
-  assign _zz_wb_adr_5 = (i - 1'b1);
-  assign _zz_wb_adr_6 = (_zz_wb_adr_7 + _zz_wb_adr_8);
-  assign _zz_wb_adr_7 = (satp_ppn * 13'h1000);
-  assign _zz_wb_adr_9 = (_zz_wb_adr_10 * 3'b100);
-  assign _zz_wb_adr_8 = {22'd0, _zz_wb_adr_9};
-  assign _zz_wb_adr_11 = (_zz_wb_adr_12 + _zz_wb_adr_13);
-  assign _zz_wb_adr_12 = (pte_ppn_raw * 13'h1000);
-  assign _zz_wb_adr_14 = (_zz_wb_adr_15 * 3'b100);
-  assign _zz_wb_adr_13 = {22'd0, _zz_wb_adr_14};
-  assign _zz_wb_adr_16 = (i - 1'b1);
+  assign _zz__zz_trans_io_physical_addr_1 = _zz_wb_adr[19 : 10];
+  assign _zz__zz_trans_io_physical_addr = {2'd0, _zz__zz_trans_io_physical_addr_1};
+  assign _zz_wb_adr_1 = (_zz_wb_adr_2 + _zz_wb_adr_3);
+  assign _zz_wb_adr_2 = (_zz_wb_adr[31 : 10] * 13'h1000);
+  assign _zz_wb_adr_4 = (_zz_wb_adr_5 * 3'b100);
+  assign _zz_wb_adr_3 = {22'd0, _zz_wb_adr_4};
+  assign _zz_wb_adr_6 = (i - 1'b1);
+  assign _zz_wb_adr_7 = (_zz_wb_adr_8 + _zz_wb_adr_9);
+  assign _zz_wb_adr_8 = (satp_ppn * 13'h1000);
+  assign _zz_wb_adr_10 = (_zz_wb_adr_11 * 3'b100);
+  assign _zz_wb_adr_9 = {22'd0, _zz_wb_adr_10};
+  assign _zz__zz_trans_io_physical_addr_2_1 = wb_dat_r[19 : 10];
+  assign _zz__zz_trans_io_physical_addr_2 = {2'd0, _zz__zz_trans_io_physical_addr_2_1};
+  assign _zz_wb_adr_12 = (_zz_wb_adr_13 + _zz_wb_adr_14);
+  assign _zz_wb_adr_13 = (wb_dat_r[31 : 10] * 13'h1000);
+  assign _zz_wb_adr_15 = (_zz_wb_adr_16 * 3'b100);
+  assign _zz_wb_adr_14 = {22'd0, _zz_wb_adr_15};
+  assign _zz_wb_adr_17 = (i - 1'b1);
   always @(*) begin
     case(TLBIndex)
       6'b000000 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_0_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_0_vpn;
-        _zz_pte = TLBTable_0_pte;
+        _zz__zz_wb_adr = TLBTable_0_pte;
       end
       6'b000001 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_1_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_1_vpn;
-        _zz_pte = TLBTable_1_pte;
+        _zz__zz_wb_adr = TLBTable_1_pte;
       end
       6'b000010 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_2_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_2_vpn;
-        _zz_pte = TLBTable_2_pte;
+        _zz__zz_wb_adr = TLBTable_2_pte;
       end
       6'b000011 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_3_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_3_vpn;
-        _zz_pte = TLBTable_3_pte;
+        _zz__zz_wb_adr = TLBTable_3_pte;
       end
       6'b000100 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_4_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_4_vpn;
-        _zz_pte = TLBTable_4_pte;
+        _zz__zz_wb_adr = TLBTable_4_pte;
       end
       6'b000101 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_5_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_5_vpn;
-        _zz_pte = TLBTable_5_pte;
+        _zz__zz_wb_adr = TLBTable_5_pte;
       end
       6'b000110 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_6_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_6_vpn;
-        _zz_pte = TLBTable_6_pte;
+        _zz__zz_wb_adr = TLBTable_6_pte;
       end
       6'b000111 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_7_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_7_vpn;
-        _zz_pte = TLBTable_7_pte;
+        _zz__zz_wb_adr = TLBTable_7_pte;
       end
       6'b001000 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_8_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_8_vpn;
-        _zz_pte = TLBTable_8_pte;
+        _zz__zz_wb_adr = TLBTable_8_pte;
       end
       6'b001001 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_9_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_9_vpn;
-        _zz_pte = TLBTable_9_pte;
+        _zz__zz_wb_adr = TLBTable_9_pte;
       end
       6'b001010 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_10_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_10_vpn;
-        _zz_pte = TLBTable_10_pte;
+        _zz__zz_wb_adr = TLBTable_10_pte;
       end
       6'b001011 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_11_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_11_vpn;
-        _zz_pte = TLBTable_11_pte;
+        _zz__zz_wb_adr = TLBTable_11_pte;
       end
       6'b001100 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_12_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_12_vpn;
-        _zz_pte = TLBTable_12_pte;
+        _zz__zz_wb_adr = TLBTable_12_pte;
       end
       6'b001101 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_13_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_13_vpn;
-        _zz_pte = TLBTable_13_pte;
+        _zz__zz_wb_adr = TLBTable_13_pte;
       end
       6'b001110 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_14_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_14_vpn;
-        _zz_pte = TLBTable_14_pte;
+        _zz__zz_wb_adr = TLBTable_14_pte;
       end
       6'b001111 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_15_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_15_vpn;
-        _zz_pte = TLBTable_15_pte;
+        _zz__zz_wb_adr = TLBTable_15_pte;
       end
       6'b010000 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_16_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_16_vpn;
-        _zz_pte = TLBTable_16_pte;
+        _zz__zz_wb_adr = TLBTable_16_pte;
       end
       6'b010001 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_17_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_17_vpn;
-        _zz_pte = TLBTable_17_pte;
+        _zz__zz_wb_adr = TLBTable_17_pte;
       end
       6'b010010 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_18_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_18_vpn;
-        _zz_pte = TLBTable_18_pte;
+        _zz__zz_wb_adr = TLBTable_18_pte;
       end
       6'b010011 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_19_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_19_vpn;
-        _zz_pte = TLBTable_19_pte;
+        _zz__zz_wb_adr = TLBTable_19_pte;
       end
       6'b010100 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_20_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_20_vpn;
-        _zz_pte = TLBTable_20_pte;
+        _zz__zz_wb_adr = TLBTable_20_pte;
       end
       6'b010101 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_21_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_21_vpn;
-        _zz_pte = TLBTable_21_pte;
+        _zz__zz_wb_adr = TLBTable_21_pte;
       end
       6'b010110 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_22_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_22_vpn;
-        _zz_pte = TLBTable_22_pte;
+        _zz__zz_wb_adr = TLBTable_22_pte;
       end
       6'b010111 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_23_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_23_vpn;
-        _zz_pte = TLBTable_23_pte;
+        _zz__zz_wb_adr = TLBTable_23_pte;
       end
       6'b011000 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_24_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_24_vpn;
-        _zz_pte = TLBTable_24_pte;
+        _zz__zz_wb_adr = TLBTable_24_pte;
       end
       6'b011001 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_25_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_25_vpn;
-        _zz_pte = TLBTable_25_pte;
+        _zz__zz_wb_adr = TLBTable_25_pte;
       end
       6'b011010 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_26_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_26_vpn;
-        _zz_pte = TLBTable_26_pte;
+        _zz__zz_wb_adr = TLBTable_26_pte;
       end
       6'b011011 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_27_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_27_vpn;
-        _zz_pte = TLBTable_27_pte;
+        _zz__zz_wb_adr = TLBTable_27_pte;
       end
       6'b011100 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_28_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_28_vpn;
-        _zz_pte = TLBTable_28_pte;
+        _zz__zz_wb_adr = TLBTable_28_pte;
       end
       6'b011101 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_29_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_29_vpn;
-        _zz_pte = TLBTable_29_pte;
+        _zz__zz_wb_adr = TLBTable_29_pte;
       end
       6'b011110 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_30_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_30_vpn;
-        _zz_pte = TLBTable_30_pte;
+        _zz__zz_wb_adr = TLBTable_30_pte;
       end
       6'b011111 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_31_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_31_vpn;
-        _zz_pte = TLBTable_31_pte;
+        _zz__zz_wb_adr = TLBTable_31_pte;
       end
       6'b100000 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_32_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_32_vpn;
-        _zz_pte = TLBTable_32_pte;
+        _zz__zz_wb_adr = TLBTable_32_pte;
       end
       6'b100001 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_33_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_33_vpn;
-        _zz_pte = TLBTable_33_pte;
+        _zz__zz_wb_adr = TLBTable_33_pte;
       end
       6'b100010 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_34_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_34_vpn;
-        _zz_pte = TLBTable_34_pte;
+        _zz__zz_wb_adr = TLBTable_34_pte;
       end
       6'b100011 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_35_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_35_vpn;
-        _zz_pte = TLBTable_35_pte;
+        _zz__zz_wb_adr = TLBTable_35_pte;
       end
       6'b100100 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_36_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_36_vpn;
-        _zz_pte = TLBTable_36_pte;
+        _zz__zz_wb_adr = TLBTable_36_pte;
       end
       6'b100101 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_37_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_37_vpn;
-        _zz_pte = TLBTable_37_pte;
+        _zz__zz_wb_adr = TLBTable_37_pte;
       end
       6'b100110 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_38_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_38_vpn;
-        _zz_pte = TLBTable_38_pte;
+        _zz__zz_wb_adr = TLBTable_38_pte;
       end
       6'b100111 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_39_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_39_vpn;
-        _zz_pte = TLBTable_39_pte;
+        _zz__zz_wb_adr = TLBTable_39_pte;
       end
       6'b101000 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_40_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_40_vpn;
-        _zz_pte = TLBTable_40_pte;
+        _zz__zz_wb_adr = TLBTable_40_pte;
       end
       6'b101001 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_41_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_41_vpn;
-        _zz_pte = TLBTable_41_pte;
+        _zz__zz_wb_adr = TLBTable_41_pte;
       end
       6'b101010 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_42_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_42_vpn;
-        _zz_pte = TLBTable_42_pte;
+        _zz__zz_wb_adr = TLBTable_42_pte;
       end
       6'b101011 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_43_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_43_vpn;
-        _zz_pte = TLBTable_43_pte;
+        _zz__zz_wb_adr = TLBTable_43_pte;
       end
       6'b101100 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_44_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_44_vpn;
-        _zz_pte = TLBTable_44_pte;
+        _zz__zz_wb_adr = TLBTable_44_pte;
       end
       6'b101101 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_45_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_45_vpn;
-        _zz_pte = TLBTable_45_pte;
+        _zz__zz_wb_adr = TLBTable_45_pte;
       end
       6'b101110 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_46_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_46_vpn;
-        _zz_pte = TLBTable_46_pte;
+        _zz__zz_wb_adr = TLBTable_46_pte;
       end
       6'b101111 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_47_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_47_vpn;
-        _zz_pte = TLBTable_47_pte;
+        _zz__zz_wb_adr = TLBTable_47_pte;
       end
       6'b110000 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_48_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_48_vpn;
-        _zz_pte = TLBTable_48_pte;
+        _zz__zz_wb_adr = TLBTable_48_pte;
       end
       6'b110001 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_49_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_49_vpn;
-        _zz_pte = TLBTable_49_pte;
+        _zz__zz_wb_adr = TLBTable_49_pte;
       end
       6'b110010 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_50_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_50_vpn;
-        _zz_pte = TLBTable_50_pte;
+        _zz__zz_wb_adr = TLBTable_50_pte;
       end
       6'b110011 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_51_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_51_vpn;
-        _zz_pte = TLBTable_51_pte;
+        _zz__zz_wb_adr = TLBTable_51_pte;
       end
       6'b110100 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_52_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_52_vpn;
-        _zz_pte = TLBTable_52_pte;
+        _zz__zz_wb_adr = TLBTable_52_pte;
       end
       6'b110101 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_53_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_53_vpn;
-        _zz_pte = TLBTable_53_pte;
+        _zz__zz_wb_adr = TLBTable_53_pte;
       end
       6'b110110 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_54_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_54_vpn;
-        _zz_pte = TLBTable_54_pte;
+        _zz__zz_wb_adr = TLBTable_54_pte;
       end
       6'b110111 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_55_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_55_vpn;
-        _zz_pte = TLBTable_55_pte;
+        _zz__zz_wb_adr = TLBTable_55_pte;
       end
       6'b111000 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_56_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_56_vpn;
-        _zz_pte = TLBTable_56_pte;
+        _zz__zz_wb_adr = TLBTable_56_pte;
       end
       6'b111001 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_57_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_57_vpn;
-        _zz_pte = TLBTable_57_pte;
+        _zz__zz_wb_adr = TLBTable_57_pte;
       end
       6'b111010 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_58_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_58_vpn;
-        _zz_pte = TLBTable_58_pte;
+        _zz__zz_wb_adr = TLBTable_58_pte;
       end
       6'b111011 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_59_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_59_vpn;
-        _zz_pte = TLBTable_59_pte;
+        _zz__zz_wb_adr = TLBTable_59_pte;
       end
       6'b111100 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_60_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_60_vpn;
-        _zz_pte = TLBTable_60_pte;
+        _zz__zz_wb_adr = TLBTable_60_pte;
       end
       6'b111101 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_61_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_61_vpn;
-        _zz_pte = TLBTable_61_pte;
+        _zz__zz_wb_adr = TLBTable_61_pte;
       end
       6'b111110 : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_62_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_62_vpn;
-        _zz_pte = TLBTable_62_pte;
+        _zz__zz_wb_adr = TLBTable_62_pte;
       end
       default : begin
         _zz__zz_trans_io_tlb_hit = TLBTable_63_valid;
         _zz__zz_trans_io_tlb_hit_1 = TLBTable_63_vpn;
-        _zz_pte = TLBTable_63_pte;
+        _zz__zz_wb_adr = TLBTable_63_pte;
       end
     endcase
   end
@@ -13987,27 +14241,29 @@ module PageTable (
   always @(*) begin
     case(i)
       1'b0 : begin
-        _zz__zz_when_PageTable_l169 = pte_ppn_0;
-        _zz_wb_adr_10 = va_vpn_0;
+        _zz_when_PageTable_l168 = _zz_trans_io_physical_addr;
+        _zz_wb_adr_11 = va_vpn_0;
+        _zz_when_PageTable_l168_1 = _zz_trans_io_physical_addr_2;
       end
       default : begin
-        _zz__zz_when_PageTable_l169 = pte_ppn_1;
-        _zz_wb_adr_10 = va_vpn_1;
+        _zz_when_PageTable_l168 = _zz_trans_io_physical_addr_1;
+        _zz_wb_adr_11 = va_vpn_1;
+        _zz_when_PageTable_l168_1 = _zz_trans_io_physical_addr_3;
       end
     endcase
   end
 
   always @(*) begin
-    case(_zz_wb_adr_5)
-      1'b0 : _zz_wb_adr_4 = va_vpn_0;
-      default : _zz_wb_adr_4 = va_vpn_1;
+    case(_zz_wb_adr_6)
+      1'b0 : _zz_wb_adr_5 = va_vpn_0;
+      default : _zz_wb_adr_5 = va_vpn_1;
     endcase
   end
 
   always @(*) begin
-    case(_zz_wb_adr_16)
-      1'b0 : _zz_wb_adr_15 = va_vpn_0;
-      default : _zz_wb_adr_15 = va_vpn_1;
+    case(_zz_wb_adr_17)
+      1'b0 : _zz_wb_adr_16 = va_vpn_0;
+      default : _zz_wb_adr_16 = va_vpn_1;
     endcase
   end
 
@@ -14052,6 +14308,7 @@ module PageTable (
   assign TLBIndex = trans_io_look_up_addr[17 : 12];
   assign _zz_trans_io_tlb_hit = _zz__zz_trans_io_tlb_hit;
   assign _zz_trans_io_tlb_hit_1 = _zz__zz_trans_io_tlb_hit_1;
+  assign _zz_wb_adr = _zz__zz_wb_adr;
   assign _zz_1 = ({63'd0,1'b1} <<< TLBIndex);
   assign _zz_2 = _zz_1[0];
   assign _zz_3 = _zz_1[1];
@@ -14121,16 +14378,6 @@ module PageTable (
   assign wb_cyc = wb_stb;
   assign wb_we = 1'b0;
   assign wb_dat_w = 32'h00000000;
-  assign pte_v = pte[0];
-  assign pte_r = pte[1];
-  assign pte_w = pte[2];
-  assign pte_x = pte[3];
-  assign pte_u = pte[4];
-  assign pte_a = pte[6];
-  assign pte_d = pte[7];
-  assign pte_ppn_raw = pte[31 : 10];
-  assign pte_ppn_0 = _zz_pte_ppn_0;
-  assign pte_ppn_1 = pte[31 : 20];
   assign fsm_wantExit = 1'b0;
   always @(*) begin
     fsm_wantStart = 1'b0;
@@ -14147,32 +14394,12 @@ module PageTable (
 
   assign fsm_wantKill = 1'b0;
   always @(*) begin
-    pte = 32'h00000000;
-    case(fsm_stateReg)
-      fsm_enumDef_idle : begin
-        if(trans_io_look_up_req) begin
-          if(when_PageTable_l225) begin
-            pte = _zz_pte;
-          end
-        end
-      end
-      fsm_enumDef_read : begin
-        if(wb_ack) begin
-          pte = wb_dat_r;
-        end
-      end
-      default : begin
-      end
-    endcase
-  end
-
-  always @(*) begin
     trans_io_exception_code = 32'h00000000;
     case(fsm_stateReg)
       fsm_enumDef_idle : begin
         if(trans_io_look_up_req) begin
-          if(when_PageTable_l225) begin
-            if(when_PageTable_l138) begin
+          if(when_PageTable_l223) begin
+            if(when_PageTable_l137) begin
               case(trans_io_access_type)
                 MemAccessType_Load : begin
                   trans_io_exception_code = 32'h0000000d;
@@ -14185,8 +14412,8 @@ module PageTable (
                 end
               endcase
             end else begin
-              if(when_PageTable_l143) begin
-                if(when_PageTable_l147) begin
+              if(when_PageTable_l142) begin
+                if(when_PageTable_l146) begin
                   case(trans_io_access_type)
                     MemAccessType_Load : begin
                       trans_io_exception_code = 32'h0000000d;
@@ -14199,7 +14426,7 @@ module PageTable (
                     end
                   endcase
                 end else begin
-                  if(when_PageTable_l150) begin
+                  if(when_PageTable_l149) begin
                     case(trans_io_access_type)
                       MemAccessType_Load : begin
                         trans_io_exception_code = 32'h0000000d;
@@ -14212,7 +14439,7 @@ module PageTable (
                       end
                     endcase
                   end else begin
-                    if(when_PageTable_l157) begin
+                    if(when_PageTable_l156) begin
                       case(trans_io_access_type)
                         MemAccessType_Load : begin
                           trans_io_exception_code = 32'h0000000d;
@@ -14225,7 +14452,7 @@ module PageTable (
                         end
                       endcase
                     end else begin
-                      if(when_PageTable_l160) begin
+                      if(when_PageTable_l159) begin
                         case(trans_io_access_type)
                           MemAccessType_Load : begin
                             trans_io_exception_code = 32'h0000000d;
@@ -14238,7 +14465,7 @@ module PageTable (
                           end
                         endcase
                       end else begin
-                        if(when_PageTable_l163) begin
+                        if(when_PageTable_l162) begin
                           case(trans_io_access_type)
                             MemAccessType_Load : begin
                               trans_io_exception_code = 32'h0000000d;
@@ -14251,7 +14478,7 @@ module PageTable (
                             end
                           endcase
                         end else begin
-                          if(when_PageTable_l166) begin
+                          if(when_PageTable_l165) begin
                             case(trans_io_access_type)
                               MemAccessType_Load : begin
                                 trans_io_exception_code = 32'h0000000d;
@@ -14264,7 +14491,7 @@ module PageTable (
                               end
                             endcase
                           end else begin
-                            if(when_PageTable_l169) begin
+                            if(when_PageTable_l168) begin
                               case(trans_io_access_type)
                                 MemAccessType_Load : begin
                                   trans_io_exception_code = 32'h0000000d;
@@ -14284,7 +14511,7 @@ module PageTable (
                   end
                 end
               end else begin
-                if(!when_PageTable_l193) begin
+                if(!when_PageTable_l192) begin
                   case(trans_io_access_type)
                     MemAccessType_Load : begin
                       trans_io_exception_code = 32'h0000000d;
@@ -14304,7 +14531,7 @@ module PageTable (
       end
       fsm_enumDef_read : begin
         if(wb_ack) begin
-          if(when_PageTable_l138_1) begin
+          if(when_PageTable_l137_1) begin
             case(trans_io_access_type)
               MemAccessType_Load : begin
                 trans_io_exception_code = 32'h0000000d;
@@ -14317,8 +14544,8 @@ module PageTable (
               end
             endcase
           end else begin
-            if(when_PageTable_l143_1) begin
-              if(when_PageTable_l147_1) begin
+            if(when_PageTable_l142_1) begin
+              if(when_PageTable_l146_1) begin
                 case(trans_io_access_type)
                   MemAccessType_Load : begin
                     trans_io_exception_code = 32'h0000000d;
@@ -14331,7 +14558,7 @@ module PageTable (
                   end
                 endcase
               end else begin
-                if(when_PageTable_l150_1) begin
+                if(when_PageTable_l149_1) begin
                   case(trans_io_access_type)
                     MemAccessType_Load : begin
                       trans_io_exception_code = 32'h0000000d;
@@ -14344,7 +14571,7 @@ module PageTable (
                     end
                   endcase
                 end else begin
-                  if(when_PageTable_l157_1) begin
+                  if(when_PageTable_l156_1) begin
                     case(trans_io_access_type)
                       MemAccessType_Load : begin
                         trans_io_exception_code = 32'h0000000d;
@@ -14357,7 +14584,7 @@ module PageTable (
                       end
                     endcase
                   end else begin
-                    if(when_PageTable_l160_1) begin
+                    if(when_PageTable_l159_1) begin
                       case(trans_io_access_type)
                         MemAccessType_Load : begin
                           trans_io_exception_code = 32'h0000000d;
@@ -14370,7 +14597,7 @@ module PageTable (
                         end
                       endcase
                     end else begin
-                      if(when_PageTable_l163_1) begin
+                      if(when_PageTable_l162_1) begin
                         case(trans_io_access_type)
                           MemAccessType_Load : begin
                             trans_io_exception_code = 32'h0000000d;
@@ -14383,7 +14610,7 @@ module PageTable (
                           end
                         endcase
                       end else begin
-                        if(when_PageTable_l166_1) begin
+                        if(when_PageTable_l165_1) begin
                           case(trans_io_access_type)
                             MemAccessType_Load : begin
                               trans_io_exception_code = 32'h0000000d;
@@ -14396,7 +14623,7 @@ module PageTable (
                             end
                           endcase
                         end else begin
-                          if(when_PageTable_l169_1) begin
+                          if(when_PageTable_l168_1) begin
                             case(trans_io_access_type)
                               MemAccessType_Load : begin
                                 trans_io_exception_code = 32'h0000000d;
@@ -14416,7 +14643,7 @@ module PageTable (
                 end
               end
             end else begin
-              if(!when_PageTable_l193_1) begin
+              if(!when_PageTable_l192_1) begin
                 case(trans_io_access_type)
                   MemAccessType_Load : begin
                     trans_io_exception_code = 32'h0000000d;
@@ -14444,30 +14671,30 @@ module PageTable (
       fsm_enumDef_idle : begin
         trans_io_look_up_valid = 1'b0;
         if(trans_io_look_up_req) begin
-          if(when_PageTable_l225) begin
-            if(when_PageTable_l138) begin
+          if(when_PageTable_l223) begin
+            if(when_PageTable_l137) begin
               trans_io_look_up_valid = 1'b0;
             end else begin
-              if(when_PageTable_l143) begin
-                if(when_PageTable_l147) begin
+              if(when_PageTable_l142) begin
+                if(when_PageTable_l146) begin
                   trans_io_look_up_valid = 1'b0;
                 end else begin
-                  if(when_PageTable_l150) begin
+                  if(when_PageTable_l149) begin
                     trans_io_look_up_valid = 1'b0;
                   end else begin
-                    if(when_PageTable_l157) begin
+                    if(when_PageTable_l156) begin
                       trans_io_look_up_valid = 1'b0;
                     end else begin
-                      if(when_PageTable_l160) begin
+                      if(when_PageTable_l159) begin
                         trans_io_look_up_valid = 1'b0;
                       end else begin
-                        if(when_PageTable_l163) begin
+                        if(when_PageTable_l162) begin
                           trans_io_look_up_valid = 1'b0;
                         end else begin
-                          if(when_PageTable_l166) begin
+                          if(when_PageTable_l165) begin
                             trans_io_look_up_valid = 1'b0;
                           end else begin
-                            if(when_PageTable_l169) begin
+                            if(when_PageTable_l168) begin
                               trans_io_look_up_valid = 1'b0;
                             end else begin
                               trans_io_look_up_valid = 1'b1;
@@ -14479,7 +14706,7 @@ module PageTable (
                   end
                 end
               end else begin
-                if(!when_PageTable_l193) begin
+                if(!when_PageTable_l192) begin
                   trans_io_look_up_valid = 1'b0;
                 end
               end
@@ -14489,29 +14716,29 @@ module PageTable (
       end
       fsm_enumDef_read : begin
         if(wb_ack) begin
-          if(when_PageTable_l138_1) begin
+          if(when_PageTable_l137_1) begin
             trans_io_look_up_valid = 1'b0;
           end else begin
-            if(when_PageTable_l143_1) begin
-              if(when_PageTable_l147_1) begin
+            if(when_PageTable_l142_1) begin
+              if(when_PageTable_l146_1) begin
                 trans_io_look_up_valid = 1'b0;
               end else begin
-                if(when_PageTable_l150_1) begin
+                if(when_PageTable_l149_1) begin
                   trans_io_look_up_valid = 1'b0;
                 end else begin
-                  if(when_PageTable_l157_1) begin
+                  if(when_PageTable_l156_1) begin
                     trans_io_look_up_valid = 1'b0;
                   end else begin
-                    if(when_PageTable_l160_1) begin
+                    if(when_PageTable_l159_1) begin
                       trans_io_look_up_valid = 1'b0;
                     end else begin
-                      if(when_PageTable_l163_1) begin
+                      if(when_PageTable_l162_1) begin
                         trans_io_look_up_valid = 1'b0;
                       end else begin
-                        if(when_PageTable_l166_1) begin
+                        if(when_PageTable_l165_1) begin
                           trans_io_look_up_valid = 1'b0;
                         end else begin
-                          if(when_PageTable_l169_1) begin
+                          if(when_PageTable_l168_1) begin
                             trans_io_look_up_valid = 1'b0;
                           end else begin
                             trans_io_look_up_valid = 1'b1;
@@ -14523,7 +14750,7 @@ module PageTable (
                 end
               end
             end else begin
-              if(!when_PageTable_l193_1) begin
+              if(!when_PageTable_l192_1) begin
                 trans_io_look_up_valid = 1'b0;
               end
             end
@@ -14541,30 +14768,30 @@ module PageTable (
       fsm_enumDef_idle : begin
         trans_io_look_up_ack = 1'b0;
         if(trans_io_look_up_req) begin
-          if(when_PageTable_l225) begin
-            if(when_PageTable_l138) begin
+          if(when_PageTable_l223) begin
+            if(when_PageTable_l137) begin
               trans_io_look_up_ack = 1'b1;
             end else begin
-              if(when_PageTable_l143) begin
-                if(when_PageTable_l147) begin
+              if(when_PageTable_l142) begin
+                if(when_PageTable_l146) begin
                   trans_io_look_up_ack = 1'b1;
                 end else begin
-                  if(when_PageTable_l150) begin
+                  if(when_PageTable_l149) begin
                     trans_io_look_up_ack = 1'b1;
                   end else begin
-                    if(when_PageTable_l157) begin
+                    if(when_PageTable_l156) begin
                       trans_io_look_up_ack = 1'b1;
                     end else begin
-                      if(when_PageTable_l160) begin
+                      if(when_PageTable_l159) begin
                         trans_io_look_up_ack = 1'b1;
                       end else begin
-                        if(when_PageTable_l163) begin
+                        if(when_PageTable_l162) begin
                           trans_io_look_up_ack = 1'b1;
                         end else begin
-                          if(when_PageTable_l166) begin
+                          if(when_PageTable_l165) begin
                             trans_io_look_up_ack = 1'b1;
                           end else begin
-                            if(when_PageTable_l169) begin
+                            if(when_PageTable_l168) begin
                               trans_io_look_up_ack = 1'b1;
                             end else begin
                               trans_io_look_up_ack = 1'b1;
@@ -14576,7 +14803,7 @@ module PageTable (
                   end
                 end
               end else begin
-                if(!when_PageTable_l193) begin
+                if(!when_PageTable_l192) begin
                   trans_io_look_up_ack = 1'b1;
                 end
               end
@@ -14586,29 +14813,29 @@ module PageTable (
       end
       fsm_enumDef_read : begin
         if(wb_ack) begin
-          if(when_PageTable_l138_1) begin
+          if(when_PageTable_l137_1) begin
             trans_io_look_up_ack = 1'b1;
           end else begin
-            if(when_PageTable_l143_1) begin
-              if(when_PageTable_l147_1) begin
+            if(when_PageTable_l142_1) begin
+              if(when_PageTable_l146_1) begin
                 trans_io_look_up_ack = 1'b1;
               end else begin
-                if(when_PageTable_l150_1) begin
+                if(when_PageTable_l149_1) begin
                   trans_io_look_up_ack = 1'b1;
                 end else begin
-                  if(when_PageTable_l157_1) begin
+                  if(when_PageTable_l156_1) begin
                     trans_io_look_up_ack = 1'b1;
                   end else begin
-                    if(when_PageTable_l160_1) begin
+                    if(when_PageTable_l159_1) begin
                       trans_io_look_up_ack = 1'b1;
                     end else begin
-                      if(when_PageTable_l163_1) begin
+                      if(when_PageTable_l162_1) begin
                         trans_io_look_up_ack = 1'b1;
                       end else begin
-                        if(when_PageTable_l166_1) begin
+                        if(when_PageTable_l165_1) begin
                           trans_io_look_up_ack = 1'b1;
                         end else begin
-                          if(when_PageTable_l169_1) begin
+                          if(when_PageTable_l168_1) begin
                             trans_io_look_up_ack = 1'b1;
                           end else begin
                             trans_io_look_up_ack = 1'b1;
@@ -14620,7 +14847,7 @@ module PageTable (
                 end
               end
             end else begin
-              if(!when_PageTable_l193_1) begin
+              if(!when_PageTable_l192_1) begin
                 trans_io_look_up_ack = 1'b1;
               end
             end
@@ -14637,25 +14864,25 @@ module PageTable (
     case(fsm_stateReg)
       fsm_enumDef_idle : begin
         if(trans_io_look_up_req) begin
-          if(when_PageTable_l225) begin
-            if(!when_PageTable_l138) begin
-              if(when_PageTable_l143) begin
-                if(!when_PageTable_l147) begin
-                  if(!when_PageTable_l150) begin
-                    if(!when_PageTable_l157) begin
-                      if(!when_PageTable_l160) begin
-                        if(!when_PageTable_l163) begin
-                          if(!when_PageTable_l166) begin
-                            if(!when_PageTable_l169) begin
+          if(when_PageTable_l223) begin
+            if(!when_PageTable_l137) begin
+              if(when_PageTable_l142) begin
+                if(!when_PageTable_l146) begin
+                  if(!when_PageTable_l149) begin
+                    if(!when_PageTable_l156) begin
+                      if(!when_PageTable_l159) begin
+                        if(!when_PageTable_l162) begin
+                          if(!when_PageTable_l165) begin
+                            if(!when_PageTable_l168) begin
                               trans_io_physical_addr[11 : 0] = trans_io_look_up_addr[11 : 0];
-                              case(switch_PageTable_l181)
+                              case(switch_PageTable_l180)
                                 1'b1 : begin
                                   trans_io_physical_addr[21 : 12] = trans_io_look_up_addr[21 : 12];
-                                  trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
+                                  trans_io_physical_addr[31 : 22] = _zz_trans_io_physical_addr_1[9 : 0];
                                 end
                                 default : begin
-                                  trans_io_physical_addr[21 : 12] = pte_ppn_0[9 : 0];
-                                  trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
+                                  trans_io_physical_addr[21 : 12] = _zz_trans_io_physical_addr[9 : 0];
+                                  trans_io_physical_addr[31 : 22] = _zz_trans_io_physical_addr_1[9 : 0];
                                 end
                               endcase
                             end
@@ -14672,24 +14899,24 @@ module PageTable (
       end
       fsm_enumDef_read : begin
         if(wb_ack) begin
-          if(!when_PageTable_l138_1) begin
-            if(when_PageTable_l143_1) begin
-              if(!when_PageTable_l147_1) begin
-                if(!when_PageTable_l150_1) begin
-                  if(!when_PageTable_l157_1) begin
-                    if(!when_PageTable_l160_1) begin
-                      if(!when_PageTable_l163_1) begin
-                        if(!when_PageTable_l166_1) begin
-                          if(!when_PageTable_l169_1) begin
+          if(!when_PageTable_l137_1) begin
+            if(when_PageTable_l142_1) begin
+              if(!when_PageTable_l146_1) begin
+                if(!when_PageTable_l149_1) begin
+                  if(!when_PageTable_l156_1) begin
+                    if(!when_PageTable_l159_1) begin
+                      if(!when_PageTable_l162_1) begin
+                        if(!when_PageTable_l165_1) begin
+                          if(!when_PageTable_l168_1) begin
                             trans_io_physical_addr[11 : 0] = trans_io_look_up_addr[11 : 0];
-                            case(switch_PageTable_l181_1)
+                            case(switch_PageTable_l180_1)
                               1'b1 : begin
                                 trans_io_physical_addr[21 : 12] = trans_io_look_up_addr[21 : 12];
-                                trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
+                                trans_io_physical_addr[31 : 22] = _zz_trans_io_physical_addr_3[9 : 0];
                               end
                               default : begin
-                                trans_io_physical_addr[21 : 12] = pte_ppn_0[9 : 0];
-                                trans_io_physical_addr[31 : 22] = pte_ppn_1[9 : 0];
+                                trans_io_physical_addr[21 : 12] = _zz_trans_io_physical_addr_2[9 : 0];
+                                trans_io_physical_addr[31 : 22] = _zz_trans_io_physical_addr_3[9 : 0];
                               end
                             endcase
                           end
@@ -14713,14 +14940,14 @@ module PageTable (
     case(fsm_stateReg)
       fsm_enumDef_idle : begin
         if(trans_io_look_up_req) begin
-          if(!when_PageTable_l225) begin
+          if(!when_PageTable_l223) begin
             fsm_stateNext = fsm_enumDef_read;
           end
         end
       end
       fsm_enumDef_read : begin
         if(wb_ack) begin
-          if(when_PageTable_l248) begin
+          if(when_PageTable_l244) begin
             fsm_stateNext = fsm_enumDef_idle;
           end
         end
@@ -14736,43 +14963,54 @@ module PageTable (
     end
   end
 
-  assign when_PageTable_l225 = (_zz_trans_io_tlb_hit && (_zz_trans_io_tlb_hit_1 == trans_io_look_up_addr[31 : 12]));
-  assign when_PageTable_l138 = ((! pte_v) || ((! pte_r) && pte_w));
-  assign when_PageTable_l143 = (pte_r || pte_x);
-  assign when_PageTable_l147 = (((! io_mstatus_MXR) && (! pte_r)) || ((io_mstatus_MXR && (! pte_r)) && (! pte_x)));
-  assign switch_PageTable_l181 = (trans_io_tlb_hit ? 1'b0 : i);
-  assign when_PageTable_l150 = (((io_privilege_mode == PrivilegeMode_S) && (trans_io_access_type == MemAccessType_Fetch)) && pte_u);
-  assign when_PageTable_l157 = ((io_privilege_mode == PrivilegeMode_U) && (! pte_u));
-  assign when_PageTable_l160 = (((io_privilege_mode == PrivilegeMode_S) && pte_u) && (! io_mstatus_SUM));
-  assign when_PageTable_l163 = ((trans_io_access_type == MemAccessType_Store) && (! pte_w));
-  assign when_PageTable_l166 = ((trans_io_access_type == MemAccessType_Fetch) && (! pte_x));
-  assign _zz_when_PageTable_l169 = _zz__zz_when_PageTable_l169;
-  assign when_PageTable_l169 = (((! trans_io_tlb_hit) && (1'b0 < i)) && (_zz_when_PageTable_l169 != 12'h000));
-  assign when_PageTable_l193 = ((! trans_io_tlb_hit) && (1'b0 < i));
-  assign when_PageTable_l243 = (i == 1'b0);
+  assign when_PageTable_l223 = (_zz_trans_io_tlb_hit && (_zz_trans_io_tlb_hit_1 == trans_io_look_up_addr[31 : 12]));
+  assign _zz_when_PageTable_l137 = _zz_wb_adr[1];
+  assign _zz_when_PageTable_l137_1 = _zz_wb_adr[2];
+  assign _zz_when_PageTable_l142 = _zz_wb_adr[3];
+  assign _zz_when_PageTable_l149 = _zz_wb_adr[4];
+  assign _zz_trans_io_physical_addr = _zz__zz_trans_io_physical_addr;
+  assign _zz_trans_io_physical_addr_1 = _zz_wb_adr[31 : 20];
+  assign when_PageTable_l137 = ((! _zz_wb_adr[0]) || ((! _zz_when_PageTable_l137) && _zz_when_PageTable_l137_1));
+  assign when_PageTable_l142 = (_zz_when_PageTable_l137 || _zz_when_PageTable_l142);
+  assign when_PageTable_l146 = (((! io_mstatus_MXR) && (! _zz_when_PageTable_l137)) || ((io_mstatus_MXR && (! _zz_when_PageTable_l137)) && (! _zz_when_PageTable_l142)));
+  assign switch_PageTable_l180 = (trans_io_tlb_hit ? 1'b0 : i);
+  assign when_PageTable_l149 = (((io_privilege_mode == PrivilegeMode_S) && (trans_io_access_type == MemAccessType_Fetch)) && _zz_when_PageTable_l149);
+  assign when_PageTable_l156 = ((io_privilege_mode == PrivilegeMode_U) && (! _zz_when_PageTable_l149));
+  assign when_PageTable_l159 = (((io_privilege_mode == PrivilegeMode_S) && _zz_when_PageTable_l149) && (! io_mstatus_SUM));
+  assign when_PageTable_l162 = ((trans_io_access_type == MemAccessType_Store) && (! _zz_when_PageTable_l137_1));
+  assign when_PageTable_l165 = ((trans_io_access_type == MemAccessType_Fetch) && (! _zz_when_PageTable_l142));
+  assign when_PageTable_l168 = (((! trans_io_tlb_hit) && (1'b0 < i)) && (_zz_when_PageTable_l168 != 12'h000));
+  assign when_PageTable_l192 = ((! trans_io_tlb_hit) && (1'b0 < i));
+  assign when_PageTable_l239 = (i == 1'b0);
   assign _zz_TLBTable_0_vpn = trans_io_look_up_addr[31 : 12];
+  assign _zz_when_PageTable_l137_2 = wb_dat_r[1];
+  assign _zz_when_PageTable_l137_3 = wb_dat_r[2];
+  assign _zz_when_PageTable_l142_1 = wb_dat_r[3];
+  assign _zz_when_PageTable_l149_1 = wb_dat_r[4];
+  assign _zz_trans_io_physical_addr_2 = _zz__zz_trans_io_physical_addr_2;
+  assign _zz_trans_io_physical_addr_3 = wb_dat_r[31 : 20];
   always @(*) begin
-    when_PageTable_l248 = 1'b1;
-    if(!when_PageTable_l138_1) begin
-      if(!when_PageTable_l143_1) begin
-        if(when_PageTable_l193_1) begin
-          when_PageTable_l248 = 1'b0;
+    when_PageTable_l244 = 1'b1;
+    if(!when_PageTable_l137_1) begin
+      if(!when_PageTable_l142_1) begin
+        if(when_PageTable_l192_1) begin
+          when_PageTable_l244 = 1'b0;
         end
       end
     end
   end
 
-  assign when_PageTable_l138_1 = ((! pte_v) || ((! pte_r) && pte_w));
-  assign when_PageTable_l143_1 = (pte_r || pte_x);
-  assign when_PageTable_l147_1 = (((! io_mstatus_MXR) && (! pte_r)) || ((io_mstatus_MXR && (! pte_r)) && (! pte_x)));
-  assign switch_PageTable_l181_1 = (trans_io_tlb_hit ? 1'b0 : i);
-  assign when_PageTable_l150_1 = (((io_privilege_mode == PrivilegeMode_S) && (trans_io_access_type == MemAccessType_Fetch)) && pte_u);
-  assign when_PageTable_l157_1 = ((io_privilege_mode == PrivilegeMode_U) && (! pte_u));
-  assign when_PageTable_l160_1 = (((io_privilege_mode == PrivilegeMode_S) && pte_u) && (! io_mstatus_SUM));
-  assign when_PageTable_l163_1 = ((trans_io_access_type == MemAccessType_Store) && (! pte_w));
-  assign when_PageTable_l166_1 = ((trans_io_access_type == MemAccessType_Fetch) && (! pte_x));
-  assign when_PageTable_l169_1 = (((! trans_io_tlb_hit) && (1'b0 < i)) && (_zz_when_PageTable_l169 != 12'h000));
-  assign when_PageTable_l193_1 = ((! trans_io_tlb_hit) && (1'b0 < i));
+  assign when_PageTable_l137_1 = ((! wb_dat_r[0]) || ((! _zz_when_PageTable_l137_2) && _zz_when_PageTable_l137_3));
+  assign when_PageTable_l142_1 = (_zz_when_PageTable_l137_2 || _zz_when_PageTable_l142_1);
+  assign when_PageTable_l146_1 = (((! io_mstatus_MXR) && (! _zz_when_PageTable_l137_2)) || ((io_mstatus_MXR && (! _zz_when_PageTable_l137_2)) && (! _zz_when_PageTable_l142_1)));
+  assign switch_PageTable_l180_1 = (trans_io_tlb_hit ? 1'b0 : i);
+  assign when_PageTable_l149_1 = (((io_privilege_mode == PrivilegeMode_S) && (trans_io_access_type == MemAccessType_Fetch)) && _zz_when_PageTable_l149_1);
+  assign when_PageTable_l156_1 = ((io_privilege_mode == PrivilegeMode_U) && (! _zz_when_PageTable_l149_1));
+  assign when_PageTable_l159_1 = (((io_privilege_mode == PrivilegeMode_S) && _zz_when_PageTable_l149_1) && (! io_mstatus_SUM));
+  assign when_PageTable_l162_1 = ((trans_io_access_type == MemAccessType_Store) && (! _zz_when_PageTable_l137_3));
+  assign when_PageTable_l165_1 = ((trans_io_access_type == MemAccessType_Fetch) && (! _zz_when_PageTable_l142_1));
+  assign when_PageTable_l168_1 = (((! trans_io_tlb_hit) && (1'b0 < i)) && (_zz_when_PageTable_l168_1 != 12'h000));
+  assign when_PageTable_l192_1 = ((! trans_io_tlb_hit) && (1'b0 < i));
   assign when_StateMachine_l253 = ((! (fsm_stateReg == fsm_enumDef_idle)) && (fsm_stateNext == fsm_enumDef_idle));
   always @(posedge sys_clk or posedge sys_reset) begin
     if(sys_reset) begin
@@ -15044,19 +15282,19 @@ module PageTable (
       case(fsm_stateReg)
         fsm_enumDef_idle : begin
           if(trans_io_look_up_req) begin
-            if(when_PageTable_l225) begin
-              if(!when_PageTable_l138) begin
-                if(!when_PageTable_l143) begin
-                  if(when_PageTable_l193) begin
+            if(when_PageTable_l223) begin
+              if(!when_PageTable_l137) begin
+                if(!when_PageTable_l142) begin
+                  if(when_PageTable_l192) begin
                     i <= (i - 1'b1);
-                    wb_adr <= _zz_wb_adr[31:0];
+                    wb_adr <= _zz_wb_adr_1[31:0];
                     wb_stb <= 1'b1;
                     wb_sel <= 4'b1111;
                   end
                 end
               end
             end else begin
-              wb_adr <= _zz_wb_adr_6[31:0];
+              wb_adr <= _zz_wb_adr_7[31:0];
               wb_stb <= 1'b1;
               wb_sel <= 4'b1111;
             end
@@ -15065,7 +15303,7 @@ module PageTable (
         fsm_enumDef_read : begin
           if(wb_ack) begin
             wb_stb <= 1'b0;
-            if(when_PageTable_l243) begin
+            if(when_PageTable_l239) begin
               if(_zz_2) begin
                 TLBTable_0_pte <= wb_dat_r;
               end
@@ -15643,11 +15881,11 @@ module PageTable (
                 TLBTable_63_valid <= 1'b1;
               end
             end
-            if(!when_PageTable_l138_1) begin
-              if(!when_PageTable_l143_1) begin
-                if(when_PageTable_l193_1) begin
+            if(!when_PageTable_l137_1) begin
+              if(!when_PageTable_l142_1) begin
+                if(when_PageTable_l192_1) begin
                   i <= (i - 1'b1);
-                  wb_adr <= _zz_wb_adr_11[31:0];
+                  wb_adr <= _zz_wb_adr_12[31:0];
                   wb_stb <= 1'b1;
                   wb_sel <= 4'b1111;
                 end

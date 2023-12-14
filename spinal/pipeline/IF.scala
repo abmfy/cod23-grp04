@@ -69,6 +69,7 @@ class IF(config: IFConfig = IFConfig()) extends Component {
 
     // Paging enabled
     val page_en = io.prv =/= PrivilegeMode.M && io.satp_mode
+    val pt_addr = Reg(Types.addr) init(0)
 
     io.o.real.setAsReg() init(False)
     io.o.pc.setAsReg() init(config.start)
@@ -84,9 +85,6 @@ class IF(config: IFConfig = IFConfig()) extends Component {
 
     io.trap := io.o.trap.trap
     io.o.trap.trap := io.trap
-
-    io.pt.look_up_req.setAsReg() init(False)
-    io.pt.look_up_addr.setAsReg() init(0)
     
     io.pt.access_type := MemAccessType.Fetch
 
@@ -160,6 +158,9 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         io.cache.icache_en := False
         io.cache.addr := 0
 
+        io.pt.look_up_req := False
+        io.pt.look_up_addr := 0
+
         // Delayed branching
         when (io.br.br) {
             delay_br := True
@@ -178,11 +179,28 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                         delay_br := False
                     }
                     when (page_en) {
-                        goto(translate)
+                        io.pt.look_up_req := True
+                        io.pt.look_up_addr := va
+                        when (io.pt.tlb_hit) {
+                            when (io.pt.look_up_valid) {
+                                io.cache.icache_en := True
+                                cache_addr := pa
+                                io.cache.addr := pa
+                                when (io.cache.ack) {
+                                    output(io.cache.data)
+                                } otherwise {
+                                    goto(fetch)
+                                }
+                            } otherwise {
+                                raise_page_fault()
+                            }
+                        } otherwise {
+                            goto(translate)
+                        }
                     } otherwise {
                         io.cache.icache_en := True
-                        cache_addr := page_en ? pa | (io.br.br ? io.br.pc | pc)
-                        io.cache.addr := page_en ? pa | (io.br.br ? io.br.pc | pc)
+                        cache_addr := io.br.br ? io.br.pc | pc
+                        io.cache.addr := io.br.br ? io.br.pc | pc
                         when (io.cache.ack) {
                             output(io.cache.data)
                         } otherwise {
@@ -194,19 +212,21 @@ class IF(config: IFConfig = IFConfig()) extends Component {
         }
         val translate: State = new State {
             onEntry {
-                io.pt.look_up_addr := va
-                io.pt.look_up_req := True
+                pt_addr := va
+                
                 delay_ack := False
                 delay_valid := False
             }
             whenIsActive {
+                io.pt.look_up_req := !delay_ack
+                io.pt.look_up_addr := pt_addr
+
                 bubble()
                 when (io.pt.look_up_ack || delay_ack) {
                     // If stalled, store ack for next cycle
                     when (io.stall || io.bubble) {
                         // Store physical address and stop request when first acked
                         when (!delay_ack) {
-                            io.pt.look_up_req := False
                             delay_ack := True
                             delay_valid := io.pt.look_up_valid
                             delay_pa := pa
@@ -232,9 +252,6 @@ class IF(config: IFConfig = IFConfig()) extends Component {
                         }
                     }
                 }
-            }
-            onExit {
-                io.pt.look_up_req := False
             }
         }
         val fetch: State = new State {

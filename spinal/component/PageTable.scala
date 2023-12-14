@@ -113,19 +113,6 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
     wb.adr.setAsReg() init(0)
     wb.sel.setAsReg() init(0)
 
-    val pte = Types.data
-    val pte_v = pte(0)
-    val pte_r = pte(1)
-    val pte_w = pte(2)
-    val pte_x = pte(3)
-    val pte_u = pte(4)
-    val pte_a = pte(6) allowPruning()
-    val pte_d = pte(7) allowPruning()
-    val pte_ppn_raw = pte(10, 22 bits).asUInt
-    val pte_ppn = Vec(Types.addr(12), 2)
-    pte_ppn(0) := pte(10, 10 bits).resize(12 bits).asUInt
-    pte_ppn(1) := pte(20, 12 bits).asUInt
-
     when (io.clear_tlb) {
         for (i <- 0 until 64) {
             TLBTable(i).valid := False
@@ -133,7 +120,19 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
     }
 
     // Return True if translation completes
-    def translate(): Bool = {
+    def translate(pte: Bits): Bool = {
+        val pte_v = pte(0)
+        val pte_r = pte(1)
+        val pte_w = pte(2)
+        val pte_x = pte(3)
+        val pte_u = pte(4)
+        val pte_a = pte(6) allowPruning()
+        val pte_d = pte(7) allowPruning()
+        val pte_ppn_raw = pte(10, 22 bits).asUInt
+        val pte_ppn = Vec(Types.addr(12), 2)
+        pte_ppn(0) := pte(10, 10 bits).resize(12 bits).asUInt
+        pte_ppn(1) := pte(20, 12 bits).asUInt
+
         val res = True
         when (!pte_v || !pte_r && pte_w) {
             // raise page fault
@@ -205,7 +204,6 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
     }
 
     val fsm = new StateMachine {
-        pte := 0
         trans_io.exception_code := 0
         trans_io.look_up_valid := False
         trans_io.look_up_ack := False
@@ -223,8 +221,7 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
                     //     wb.sel := Sel.WORD
                     //     goto(read)
                     when (TLBEntryValid(TLBIndex)) { // TLB hit
-                        pte := TLBTable(TLBIndex).pte
-                        translate()
+                        translate(TLBTable(TLBIndex).pte)
                     } otherwise {
                         wb.adr := a(satp_ppn, i)
                         wb.stb := True
@@ -238,14 +235,13 @@ class PageTable(config: PageTableConfig = PageTableConfig()) extends Component {
             whenIsActive {
                 when (wb.ack) {
                     wb.stb := False
-                    pte := wb.dat_r
                     // update TLB
                     when (i === 0) {
                         TLBTable(TLBIndex).pte := wb.dat_r
                         TLBTable(TLBIndex).vpn := trans_io.look_up_addr(12, 20 bits)
                         TLBTable(TLBIndex).valid := True
                     }
-                    when (translate()) {
+                    when (translate(wb.dat_r)) {
                         goto(idle)
                     }
                 }
