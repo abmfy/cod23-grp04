@@ -10,6 +10,36 @@
 
 如上图所示，我们的 CPU 能够成功运行 uCore 操作系统并在约 10 分钟的时间内通过 matrix。
 
+## 环境
+
+- [Scala](https://www.scala-lang.org) 2.12.8
+- [Mill](https://mill-build.com) 0.11.5
+- [SpinalHDL](https://spinalhdl.github.io/SpinalDoc-RTD) 1.9.4
+- [Verilator](https://www.veripool.org/verilator/) 5.018
+- [Vivado](https://www.xilinx.com/products/design-tools/vivado.html) 2019.2
+
+## 使用
+
+运行 `mill r` 生成 SystemVerilog 文件，然后使用 Vivado 打开 `thinpad_top.xpr` 即可进行综合。
+
+你可以通过 `install_hook.sh` 安装一个在每次提交前自动运行 `mill r` 的 git 钩子。
+
+运行 `mill t {testcase}` 进行测试，其中 `{testcase}` 为测试用例的名称，测试用例位于 `spinal/tb` 目录下。
+
+以下测试用例也许可以帮助你进行调试：
+
+- `Lab6`: 小实验 6 的测试用例。
+- `Instr19`: 运行基础监控程序所需的 19 条指令测试用例。
+- `Rv32i`: 完整 RV32I 指令集测试用例。
+- `Extra`: 额外指令测试用例。注意，每组分配到的额外指令不同，本组为 ANDN, CLZ, PACK。
+- `Zicsr`: 测试 Zicsr 扩展指令集及 CSR 读写。
+- `Exception`: 测试中断异常。
+- `Supervisor`: 测试中断异常版本监控程序，包括启动、跳转以及环境调用。
+- `SupervisorPaging`: 测试页表版本监控程序，内容与 `Supervisor` 相同。
+- `UCore`: 测试 uCore 启动流程。注意，为了加速测试，我们使用了物理内存空间缩减版的 uCore。同时，我们对波形采样进行了限制，只有在出错位置前一定周期内的波形才会被采样，因此需要根据实际需求定义仿真出错条件。
+
+运行测试后，你可以在 `simWorkspace/Top/test.vcd` 中找到仿真波形，若测试用例中启用了 Tracer，你还可以在 `simWorkspace/trace.txt` 中找到执行的每条指令的 PC 及其对寄存器堆的写入，你可以利用这些信息与已知正确的实现进行比对快速定位出错位置。
+
 ## CPU 结构图
 
 ![assets/cod.png](assets/cod.png)
